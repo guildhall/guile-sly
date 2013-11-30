@@ -72,9 +72,9 @@ signals in the list CONNECTORS."
     (for-each (cut signal-connect! <> signal) connectors)
     signal))
 
-(define (%signal-transform signal value)
+(define (%signal-transform signal value from)
   "Call the transform procedure for SIGNAL with VALUE."
-  ((signal-transformer signal) value (signal-ref signal)))
+  ((signal-transformer signal) value (signal-ref signal) from))
 
 (define (signal-connect! signal listener)
   "Attach LISTENER to SIGNAL. When the value of SIGNAL changes, the
@@ -94,12 +94,12 @@ value will be propagated to LISTENER."
   "Detach all listeners from SIGNAL."
   (%set-signal-listeners! signal '()))
 
-(define (signal-set! signal value)
-  "Modify SIGNAL to store VALUE and propagate VALUE to all listening
-signals."
-  (let ((value (%signal-transform signal value)))
+(define* (signal-set! signal value #:optional (from #f))
+  "Receive new VALUE for SIGNAL from the connected signal FROM and
+propagate VALUE to all listening signals. "
+  (let ((value (%signal-transform signal value from)))
     (%signal-set! signal value)
-    (for-each (cut signal-set! <> value)
+    (for-each (cut signal-set! <> value signal)
               (signal-listeners signal))))
 
 ;;;
@@ -109,13 +109,13 @@ signals."
 (define* (signal-identity #:optional (init #f))
   "Create a new signal with initial value INIT whose transformer procedure
 returns values unchanged."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  value)
                #:init init))
 
 (define (signal-constant constant)
   "Create a new signal with a value CONSTANT that cannot be changed."
-  (make-signal (lambda (value old-value signal)
+  (make-signal (lambda (value prev from)
                  constant)
                #:init constant))
 
@@ -123,14 +123,14 @@ returns values unchanged."
 (define (signal-lift transformer signal)
   "Create a new signal that lifts the procedure TRANSFORMER of arity 1
 onto SIGNAL."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (transformer value))
                #:connectors (list signal)))
 
 (define (signal-lift2 transformer signal1 signal2)
   "Create a new signal that lifts the procedure TRANSFORMER of arity 2
 onto SIGNAL1 and SIGNAL2."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (transformer (signal-ref signal1)
                               (signal-ref signal2)))
                #:connectors (list signal1 signal2)))
@@ -139,29 +139,29 @@ onto SIGNAL1 and SIGNAL2."
   "Create a new signal that merges SIGNAL1 and SIGNAL2 into one. The
 value of the new signal is the value of the most recently changed
 parent signal."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  value)
                #:connectors (list signal1 signal2)))
 
 (define (signal-combine . signals)
   "Create a new signal that combines the values of SIGNALS into a
 list."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (map signal-ref signals))
                #:connectors signals))
 
 (define (signal-count signal)
   "Create a new signal that increments a counter every time the value
 of SIGNAL changes."
-  (make-signal (lambda (value old-value)
-                 (1+ old-value))
+  (make-signal (lambda (value prev from)
+                 (1+ prev))
                #:connectors (list signal)))
 
 (define (signal-if predicate consequent alternate)
   "Create a new signal that emits the value of the signal CONSEQUENT
 when the value of the signal PREDICATE is true and the value of the
 signal ALTERNATE otherwise."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (if (signal-ref predicate)
                      (signal-ref consequent)
                      (signal-ref alternate)))
@@ -172,7 +172,7 @@ signal ALTERNATE otherwise."
 (define (signal-and . signals)
   "Create a new signal that performs a logical AND operation on the
 values of SIGNALS."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (let loop ((signals signals)
                             (prev #t))
                    (cond ((null? signals)
@@ -186,7 +186,7 @@ values of SIGNALS."
 (define (signal-or . signals)
   "Create a new signal that performs a logicla OR operation the values
 of SIGNALS."
-  (make-signal (lambda (value old-value)
+  (make-signal (lambda (value prev from)
                  (let loop ((signals signals))
                    (cond ((null? signals)
                           #f)

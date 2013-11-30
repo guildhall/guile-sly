@@ -32,8 +32,7 @@
   #:use-module (2d mvars)
   #:use-module (2d repl server)
   #:use-module (2d repl repl)
-  #:use-module (2d scene)
-  #:use-module (2d stage)
+  #:use-module (2d signals)
   #:use-module (2d vector2)
   #:use-module (2d window)
   #:export (<game>
@@ -42,7 +41,6 @@
             game-title
             game-resolution
             game-fullscreen?
-            game-first-scene
             current-fps
             run-game
             quit-game
@@ -56,21 +54,27 @@
 ;;;
 
 (define-record-type <game>
-  (%make-game title resolution fullscreen? first-scene)
+  (%make-game title resolution fullscreen? draw)
   game?
   (title game-title)
   (resolution game-resolution)
   (fullscreen? game-fullscreen?)
-  (first-scene game-first-scene))
+  (draw game-draw))
+
+(define (default-draw)
+  #f)
 
 (define* (make-game #:optional #:key
                     (title "A Guile-2D Game")
                     (resolution (vector2 640 480))
                     (fullscreen? #f)
-                    (first-scene #f))
+                    (draw default-draw))
   "Return a new game. All game properties have some reasonable default
 value."
-  (%make-game title resolution fullscreen? first-scene))
+  (%make-game title resolution fullscreen? draw))
+
+(define (draw-game game)
+  ((game-draw game)))
 
 (define (run-game game)
   "Open a window and start the game loop for GAME."
@@ -79,9 +83,8 @@ value."
                (game-fullscreen? game))
   (set! running? #t)
   (resume-game)
-  (push-scene (game-first-scene game))
   (spawn-server)
-  (game-loop (SDL:get-ticks) 0)
+  (game-loop game (SDL:get-ticks) 0)
   (close-window))
 
 ;;;
@@ -91,13 +94,13 @@ value."
 (define running? #f)
 (define paused? #f)
 
-(define (update-and-render stage dt accumulator)
-  (let ((remainder (update stage accumulator)))
+(define (update-and-render game dt accumulator)
+  (let ((remainder (update accumulator)))
     (run-repl)
-    (render stage dt)
+    (draw game dt)
     remainder))
 
-(define (tick dt accumulator)
+(define (tick game dt accumulator)
   "Advance the game by one frame."
   (if paused?
       (begin
@@ -106,10 +109,7 @@ value."
         accumulator)
       (catch #t
         (lambda ()
-          (let ((stage (current-stage)))
-            (if stage
-                (update-and-render stage dt accumulator)
-                (quit-game))))
+          (update-and-render game dt accumulator))
         (lambda (key . args)
           (pause-game)
           accumulator)
@@ -117,7 +117,7 @@ value."
           (display-backtrace (make-stack #t)
                              (current-output-port))))))
 
-(define (game-loop last-time accumulator)
+(define (game-loop game last-time accumulator)
   "Update game state, and render. LAST-TIME is the time in
 milliseconds of the last iteration of the loop. ACCUMULATOR is the
 time in milliseconds that has passed since the last game update."
@@ -125,13 +125,13 @@ time in milliseconds that has passed since the last game update."
     (let* ((current-time (SDL:get-ticks))
            (dt (- current-time last-time))
            (accumulator (+ accumulator dt)))
-      (game-loop current-time (tick dt accumulator)))))
+      (game-loop game current-time (tick game dt accumulator)))))
 
 (define (game-running?)
-  (running?))
+  running?)
 
 (define (game-paused?)
-  (paused?))
+  paused?)
 
 (define (pause-game)
   "Pauses the game loop. Useful when developing."
@@ -158,63 +158,66 @@ time in milliseconds that has passed since the last game update."
 
 ;; By default, pressing the escape key will pop the current scene, and
 ;; closing the window will quit the game.
-(default-events `((key-down . ,(lambda (state key mod unicode)
-                                 (when (eq? key 'escape)
-                                   (pop-scene))))
-                  (quit . ,(lambda (state)
-                             (quit-game)))))
+;; (default-events `((key-down . ,(lambda (state key mod unicode)
+;;                                  (when (eq? key 'escape)
+;;                                    (pop-scene))))
+;;                   (quit . ,(lambda (state)
+;;                              (quit-game)))))
 
 (define handle-events
   (let ((e (SDL:make-event)))
-    (lambda (stage)
+    (lambda ()
       "Handle all events in the SDL event queue."
       (while (SDL:poll-event e)
-        (handle-event stage e)))))
+        (handle-event e)))))
 
-(define (handle-event stage e)
-  "Call the relevant callbacks for the event, E."
+(define-public window-size (signal-identity (vector2 0 0)))
+(define-public key-down (signal-identity))
+(define-public key-up (signal-identity))
+(define-public mouse-position (signal-identity (vector2 0 0)))
+(define-public mouse-down (signal-identity))
+(define-public mouse-up (signal-identity))
+
+(define-public (key-is-down key)
+  (make-signal (lambda (value prev from)
+                 (cond ((and (eq? from key-down)
+                             (eq? value key))
+                        #t)
+                       ((and (eq? from key-up)
+                             (eq? value key))
+                        #f)
+                       (else
+                        prev)))
+               #:connectors (list key-down key-up)))
+
+(define (handle-event e)
+  "Call the relevant callbacks for the event E."
   (case (SDL:event:type e)
     ((active)
-     (stage-trigger stage 'active))
+     #f)
     ((video-resize)
-     (stage-trigger stage
-                    'resize
-                    (SDL:event:resize:w e)
-                    (SDL:event:resize:h e)))
+     (signal-set! window-size (vector2 (SDL:event:resize:w e)
+                                       (SDL:event:resize:h e))))
     ((quit)
-     (stage-trigger stage 'quit))
+     (quit-game))
     ((key-down)
-     (stage-trigger stage
-                    'key-down
-                    (SDL:event:key:keysym:sym e)
-                    (SDL:event:key:keysym:mod e)
-                    (SDL:event:key:keysym:unicode e)))
+     (signal-set! key-down (SDL:event:key:keysym:sym e)))
     ((key-up)
-     (stage-trigger stage
-                    'key-up
-                    (SDL:event:key:keysym:sym e)
-                    (SDL:event:key:keysym:mod e)
-                    (SDL:event:key:keysym:unicode e)))
+     (signal-set! key-up (SDL:event:key:keysym:sym e)))
     ((mouse-motion)
-     (stage-trigger stage
-                    'mouse-motion
-                    (SDL:event:motion:state e)
-                    (SDL:event:motion:x e)
-                    (SDL:event:motion:y e)
-                    (SDL:event:motion:xrel e)
-                    (SDL:event:motion:yrel e)))
+     (signal-set! mouse-position
+                  (vector2 (SDL:event:motion:x e)
+                           (SDL:event:motion:y e))))
     ((mouse-button-down)
-     (stage-trigger stage
-                    'mouse-press
-                    (SDL:event:button:button e)
-                    (SDL:event:button:x e)
-                    (SDL:event:button:y e)))
+     (signal-set! mouse-down
+                  (list (SDL:event:button:button e)
+                        (SDL:event:button:x e)
+                        (SDL:event:button:y e))))
     ((mouse-button-up)
-     (stage-trigger stage
-                    'mouse-click
-                    (SDL:event:button:button e)
-                    (SDL:event:button:x e)
-                    (SDL:event:button:y e)))))
+     (signal-set! mouse-up
+                  (list (SDL:event:button:button e)
+                        (SDL:event:button:x e)
+                        (SDL:event:button:y e))))))
 
 ;;;
 ;;; Frames Per Second
@@ -244,28 +247,28 @@ second."
   game-fps)
 
 ;;;
-;;; Update and Render
+;;; Update and Draw
 ;;;
 
-(define (render stage dt)
+(define (draw game dt)
   "Render a frame."
   (set-gl-matrix-mode (matrix-mode modelview))
   (gl-load-identity)
   (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-  (draw-stage stage)
+  (draw-game game)
   (SDL:gl-swap-buffers)
   (accumulate-fps! dt))
 
-(define (update stage accumulator)
+(define (update accumulator)
   "Call the update callback. The update callback will be called as
 many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
   (if (>= accumulator tick-interval)
       (begin
-        (handle-events stage)
+        (handle-events)
         (update-agenda)
-        (update-stage stage)
-        (update stage (- accumulator tick-interval)))
+        ;; (update-stage stage)
+        (update (- accumulator tick-interval)))
       accumulator))
 
 ;;;
