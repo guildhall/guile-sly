@@ -29,6 +29,7 @@
             signal?
             make-signal
             signal-ref
+            signal-ref-maybe
             signal-transformer
             signal-listeners
             signal-connect!
@@ -66,11 +67,18 @@
                       (init #f) (connectors '()))
   "Create a new signal with initial value INIT that uses the given
 TRANSFORMER procedure to process incoming values from another
-signal. Additionally, the signal will be connected to all of the
+signal.  Additionally, the signal will be connected to all of the
 signals in the list CONNECTORS."
   (let ((signal (%make-signal init transformer '())))
     (for-each (cut signal-connect! <> signal) connectors)
     signal))
+
+(define (signal-ref-maybe object)
+  "Dereferences OBJECT if it is a signal and returns OBJECT
+otherwise."
+  (if (signal? object)
+      (signal-ref object)
+      object))
 
 (define (%signal-transform signal value from)
   "Call the transform procedure for SIGNAL with VALUE."
