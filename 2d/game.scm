@@ -34,7 +34,6 @@
   #:use-module (2d repl repl)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:use-module (2d window)
   #:export (<game>
             make-game
             game?
@@ -54,38 +53,28 @@
 ;;;
 
 (define-record-type <game>
-  (%make-game title resolution fullscreen? draw)
+  (%make-game  draw)
   game?
-  (title game-title)
-  (resolution game-resolution)
-  (fullscreen? game-fullscreen?)
   (draw game-draw))
 
 (define (default-draw)
   #f)
 
 (define* (make-game #:optional #:key
-                    (title "A Guile-2D Game")
-                    (resolution (vector2 640 480))
-                    (fullscreen? #f)
                     (draw default-draw))
-  "Return a new game. All game properties have some reasonable default
-value."
-  (%make-game title resolution fullscreen? draw))
+  "Create a new game."
+  (%make-game draw))
 
 (define (draw-game game)
   ((game-draw game)))
 
-(define (run-game game)
-  "Open a window and start the game loop for GAME."
-  (open-window (game-title game)
-               (game-resolution game)
-               (game-fullscreen? game))
+(define* (run-game #:optional #:key
+                   (draw default-draw))
+  "Start the game loop."
   (set! running? #t)
   (resume-game)
   (spawn-server)
-  (game-loop game (SDL:get-ticks) 0)
-  (close-window))
+  (game-loop (make-game #:draw draw) (SDL:get-ticks) 0))
 
 ;;;
 ;;; Game Loop

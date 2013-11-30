@@ -22,26 +22,46 @@
 ;;; Code:
 
 (define-module (2d window)
+  #:use-module (srfi srfi-9)
   #:use-module (figl gl)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (2d vector2)
-  #:export (open-window
-            close-window))
+  #:export (<window>
+            make-window
+            window?
+            window-title
+            window-resolution
+            window-fullscreen?
+            open-window
+            close-window
+            with-window))
 
-(define* (open-window title resolution fullscreen)
-  "Open the game window with the given TITLE and RESOLUTION. If
-FULLSCREEN is #t, open a fullscreen window."
-  (let ((flags (if fullscreen '(opengl fullscreen) 'opengl))
-        (width (vx resolution))
-        (height (vy resolution)))
+(define-record-type <window>
+  (%make-window title resolution fullscreen?)
+  window?
+  (title window-title)
+  (resolution window-resolution)
+  (fullscreen? window-fullscreen?))
+
+(define* (make-window #:optional #:key
+                      (title "Guile-2D Window")
+                      (resolution (vector2 640 480))
+                      (fullscreen? #f))
+  (%make-window title resolution fullscreen?))
+
+(define* (open-window window)
+  "Open the game window using the settings in WINDOW."
+  (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
+        (width (vx (window-resolution window)))
+        (height (vy (window-resolution window))))
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)
     (SDL:open-audio)
     ;; Open SDL window in OpenGL mode.
     (SDL:set-video-mode width height 24 flags)
-    (SDL:set-caption title)
+    (SDL:set-caption (window-title window))
     ;; Initialize OpenGL orthographic view
     (gl-viewport 0 0 width height)
     (set-gl-matrix-mode (matrix-mode projection))
@@ -56,6 +76,12 @@ FULLSCREEN is #t, open a fullscreen window."
                            (blending-factor-dest one-minus-src-alpha))))
 
 (define (close-window)
-  "Close the game window and audio."
+  "Close the currently open window and audio."
   (SDL:close-audio)
   (SDL:quit))
+
+(define-syntax-rule (with-window window body ...)
+  (begin
+    (open-window window)
+    body ...
+    (close-window)))
