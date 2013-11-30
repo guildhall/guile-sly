@@ -62,10 +62,15 @@
   (transformer signal-transformer)
   (listeners signal-listeners %set-signal-listeners!))
 
-(define* (make-signal transformer #:optional (init #f))
+(define* (make-signal transformer #:optional #:key
+                      (init #f) (connectors '()))
   "Create a new signal with initial value INIT that uses the given
-TRANSFORMER procedure to process incoming values from another signal."
-  (%make-signal init transformer '()))
+TRANSFORMER procedure to process incoming values from another
+signal. Additionally, the signal will be connected to all of the
+signals in the list CONNECTORS."
+  (let ((signal (%make-signal init transformer '())))
+    (for-each (cut signal-connect! <> signal) connectors)
+    signal))
 
 (define (%signal-transform signal value)
   "Call the transform procedure for SIGNAL with VALUE."
@@ -103,106 +108,90 @@ signals."
 
 (define* (signal-identity #:optional (init #f))
   "Create a new signal with initial value INIT whose transformer procedure
-returns the given value unchanged."
-  (make-signal (lambda (value old-value) value) init))
+returns values unchanged."
+  (make-signal (lambda (value old-value)
+                 value)
+               #:init init))
 
 (define (signal-constant constant)
   "Create a new signal with a value CONSTANT that cannot be changed."
-  (make-signal (lambda (value old-value signal) constant) constant))
+  (make-signal (lambda (value old-value signal)
+                 constant)
+               #:init constant))
 
 ;; TODO: Write a macro for generating lifts
 (define (signal-lift transformer signal)
   "Create a new signal that lifts the procedure TRANSFORMER of arity 1
 onto SIGNAL."
-  (let ((new-signal (make-signal (lambda (value old-value)
-                                   (transformer value)))))
-    (signal-connect! signal new-signal)
-    new-signal))
+  (make-signal (lambda (value old-value)
+                 (transformer value))
+               #:connectors (list signal)))
 
 (define (signal-lift2 transformer signal1 signal2)
   "Create a new signal that lifts the procedure TRANSFORMER of arity 2
 onto SIGNAL1 and SIGNAL2."
-  (define (transform value old-value)
-    (transformer (signal-ref signal1)
-                 (signal-ref signal2)))
-
-  (let ((new-signal (make-signal transform)))
-    (signal-connect! signal1 new-signal)
-    (signal-connect! signal2 new-signal)
-    new-signal))
+  (make-signal (lambda (value old-value)
+                 (transformer (signal-ref signal1)
+                              (signal-ref signal2)))
+               #:connectors (list signal1 signal2)))
 
 (define (signal-merge signal1 signal2)
   "Create a new signal that merges SIGNAL1 and SIGNAL2 into one. The
 value of the new signal is the value of the most recently changed
 parent signal."
-  (let ((merged (signal-identity)))
-    (signal-connect! signal1 merged)
-    (signal-connect! signal2 merged)
-    merged))
+  (make-signal (lambda (value old-value)
+                 value)
+               #:connectors (list signal1 signal2)))
 
 (define (signal-combine . signals)
   "Create a new signal that combines the values of SIGNALS into a
 list."
-  (define (combiner value old-value)
-    (map signal-ref signals))
-
-  (let ((combined (make-signal combiner)))
-    (for-each (cut signal-connect! <> combined) signals)
-    combined))
+  (make-signal (lambda (value old-value)
+                 (map signal-ref signals))
+               #:connectors signals))
 
 (define (signal-count signal)
   "Create a new signal that increments a counter every time the value
 of SIGNAL changes."
-  (define (increment value old-value)
-    (1+ old-value))
-
-  (let ((counter (make-signal increment -1)))
-    (signal-connect! signal counter)
-    counter))
+  (make-signal (lambda (value old-value)
+                 (1+ old-value))
+               #:connectors (list signal)))
 
 (define (signal-if predicate consequent alternate)
   "Create a new signal that emits the value of the signal CONSEQUENT
 when the value of the signal PREDICATE is true and the value of the
 signal ALTERNATE otherwise."
-  (define (transform value old-value)
-    (if (signal-ref predicate)
-        (signal-ref consequent)
-        (signal-ref alternate)))
-
-  (let ((signal (make-signal transform)))
-    (signal-connect! predicate signal)
-    (signal-connect! consequent signal)
-    (signal-connect! alternate signal)
-    signal))
+  (make-signal (lambda (value old-value)
+                 (if (signal-ref predicate)
+                     (signal-ref consequent)
+                     (signal-ref alternate)))
+               #:connectors (list predicate
+                                  consequent
+                                  alternate)))
 
 (define (signal-and . signals)
   "Create a new signal that performs a logical AND operation on the
 values of SIGNALS."
-  (define (do-and signals prev)
-    (cond ((null? signals)
-           (signal-ref prev))
-          ((signal-ref (car signals))
-           (do-and (cdr signals) (car signals)))
-          (else
-           #f)))
-
-  (let ((signal (make-signal (lambda (value old-value)
-                               (do-and signals #t)))))
-    (for-each (cut signal-connect! <> signal) signals)
-    signal))
+  (make-signal (lambda (value old-value)
+                 (let loop ((signals signals)
+                            (prev #t))
+                   (cond ((null? signals)
+                          (signal-ref prev))
+                         ((signal-ref (car signals))
+                          (loop (cdr signals) (car signals)))
+                         (else
+                          #f))))
+               #:connectors signals))
 
 (define (signal-or . signals)
   "Create a new signal that performs a logicla OR operation the values
 of SIGNALS."
-  (define (do-or signals)
-    (cond ((null? signals)
-           #f)
-          ((signal-ref (car signals))
-           (signal-ref (car signals)))
-          (else
-           (do-or (cdr signals)))))
-
-  (let ((signal (make-signal (lambda (value old-value)
-                               (do-or signals)))))
-    (for-each (cut signal-connect! <> signal) signals)
-    signal))
+  (make-signal (lambda (value old-value)
+                 (let loop ((signals signals))
+                   (cond ((null? signals)
+                          #f)
+                         ((signal-ref (car signals))
+                          (signal-ref (car signals)))
+                         (else
+                          (loop (cdr signals))))))
+               #:connectors signals))
