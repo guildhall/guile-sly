@@ -33,6 +33,7 @@
   #:use-module (2d color)
   #:use-module (2d helpers)
   #:use-module (2d math)
+  #:use-module (2d signals)
   #:use-module (2d texture)
   #:use-module (2d vector2)
   #:use-module (2d wrappers gl))
@@ -225,8 +226,8 @@ sprite."
 
 (define (update-sprite-vertices! sprite)
   "Rebuild the internal vertex array."
-  (let ((pos (sprite-position sprite))
-        (scale (sprite-scale sprite))
+  (let ((pos (signal-ref-maybe (sprite-position sprite)))
+        (scale (signal-ref-maybe (sprite-scale sprite)))
         (anchor (sprite-anchor-vector sprite))
         (texture (sprite-texture sprite)))
     (pack-sprite-vertices (sprite-vertices sprite)
@@ -239,7 +240,7 @@ sprite."
                           (vy anchor)
                           (vx scale)
                           (vy scale)
-                          (sprite-rotation sprite)
+                          (signal-ref-maybe (sprite-rotation sprite))
                           (texture-s1 texture)
                           (texture-t1 texture)
                           (texture-s2 texture)
@@ -264,8 +265,8 @@ currently bound."
 (define (draw-sprite-batched sprite)
   "Add SPRITE to the current sprite batch batch."
   (let ((texture (sprite-texture sprite))
-        (pos (sprite-position sprite))
-        (scale (sprite-scale sprite))
+        (pos (signal-ref-maybe (sprite-position sprite)))
+        (scale (signal-ref-maybe (sprite-scale sprite)))
         (anchor (sprite-anchor-vector sprite)))
     (register-animated-sprite-maybe sprite)
     (%sprite-batch-draw *sprite-batch*
@@ -278,7 +279,7 @@ currently bound."
                         (vy anchor)
                         (vx scale)
                         (vy scale)
-                        (sprite-rotation sprite)
+                        (signal-ref-maybe (sprite-rotation sprite))
                         (texture-s1 texture)
                         (texture-t1 texture)
                         (texture-s2 texture)
