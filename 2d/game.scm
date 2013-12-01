@@ -43,6 +43,7 @@
             window-size
             key-last-pressed
             key-down?
+            arrows
             mouse-position
             mouse-down?
             current-fps))
@@ -193,6 +194,17 @@ time in milliseconds that has passed since the last game update."
 (define (mouse-down? button)
   "Return a signal for BUTTON."
   (signal-hash-ref mouse-signals button))
+
+(define arrows (signal-lift4 (lambda (up? down? left? right?)
+                               (let ((up (if up? -1 0))
+                                     (down (if down? 1 0))
+                                     (left (if left? -1 0))
+                                     (right (if right? 1 0)))
+                                 (vector2 (+ left right) (+ up down))))
+                             (key-down? 'up)
+                             (key-down? 'down)
+                             (key-down? 'left)
+                             (key-down? 'right)))
 
 (define (handle-event e)
   "Call the relevant callbacks for the event E."
