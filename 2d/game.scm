@@ -34,71 +34,88 @@
   #:use-module (2d repl repl)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (<game>
-            make-game
-            game?
-            game-title
-            game-resolution
-            game-fullscreen?
-            current-fps
-            run-game
+  #:export (run-game
             quit-game
             pause-game
             resume-game
             game-running?
-            game-paused?))
-
-;;;
-;;; Games
-;;;
-
-(define-record-type <game>
-  (%make-game  draw)
-  game?
-  (draw game-draw))
-
-(define (default-draw)
-  #f)
-
-(define* (make-game #:optional #:key
-                    (draw default-draw))
-  "Create a new game."
-  (%make-game draw))
-
-(define (draw-game game)
-  ((game-draw game)))
-
-(define* (run-game #:optional #:key
-                   (draw default-draw))
-  "Start the game loop."
-  (set! running? #t)
-  (resume-game)
-  (spawn-server)
-  (game-loop (make-game #:draw draw) (SDL:get-ticks) 0))
+            game-paused?
+            window-size
+            key-last-pressed
+            key-down?
+            mouse-position
+            mouse-down?
+            current-fps))
 
 ;;;
 ;;; Game Loop
 ;;;
 
-(define running? #f)
-(define paused? #f)
+(define (default-draw)
+  #f)
 
-(define (update-and-render game dt accumulator)
+(define (default-update)
+  #f)
+
+;; Possible states are:
+;; * stopped
+;; * running
+;; * paused
+(define %state 'stopped)
+(define %draw #f)
+(define %update #f)
+;; TODO: Make this configurable
+(define ticks-per-second 60)
+(define tick-interval (floor (/ 1000 ticks-per-second)))
+
+(define* (run-game #:optional #:key
+                   (draw default-draw)
+                   (update default-update))
+  "Start the game loop."
+  (set! %state 'running)
+  (set! %draw draw)
+  (set! %update update)
+  (resume-game)
+  (spawn-server)
+  (game-loop (SDL:get-ticks) 0))
+
+(define (draw dt)
+  "Render a frame."
+  (set-gl-matrix-mode (matrix-mode modelview))
+  (gl-load-identity)
+  (gl-clear (clear-buffer-mask color-buffer depth-buffer))
+  (%draw)
+  (SDL:gl-swap-buffers)
+  (accumulate-fps! dt))
+
+(define (update accumulator)
+  "Call the update callback. The update callback will be called as
+many times as `tick-interval` can divide ACCUMULATOR. The return value
+is the unused accumulator time."
+  (if (>= accumulator tick-interval)
+      (begin
+        (handle-events)
+        (update-agenda)
+        (%update)
+        (update (- accumulator tick-interval)))
+      accumulator))
+
+(define (update-and-render dt accumulator)
   (let ((remainder (update accumulator)))
     (run-repl)
-    (draw game dt)
+    (draw dt)
     remainder))
 
-(define (tick game dt accumulator)
+(define (tick dt accumulator)
   "Advance the game by one frame."
-  (if paused?
+  (if (game-paused?)
       (begin
         (run-repl)
         (SDL:delay tick-interval)
         accumulator)
       (catch #t
         (lambda ()
-          (update-and-render game dt accumulator))
+          (update-and-render dt accumulator))
         (lambda (key . args)
           (pause-game)
           accumulator)
@@ -106,52 +123,43 @@
           (display-backtrace (make-stack #t)
                              (current-output-port))))))
 
-(define (game-loop game last-time accumulator)
+(define (game-loop last-time accumulator)
   "Update game state, and render. LAST-TIME is the time in
 milliseconds of the last iteration of the loop. ACCUMULATOR is the
 time in milliseconds that has passed since the last game update."
-  (when running?
+  (when (game-running?)
     (let* ((current-time (SDL:get-ticks))
            (dt (- current-time last-time))
            (accumulator (+ accumulator dt)))
-      (game-loop game current-time (tick game dt accumulator)))))
+      (game-loop current-time (tick dt accumulator)))))
+
+;;;
+;;; State management
+;;;
 
 (define (game-running?)
-  running?)
+  (or (eq? %state 'running)
+      (eq? %state 'paused)))
 
 (define (game-paused?)
-  paused?)
+  (eq? %state 'paused))
 
 (define (pause-game)
   "Pauses the game loop. Useful when developing."
-  (set! paused? #t))
+  (set! %state 'paused))
 
 (define (resume-game)
   "Resumes the game loop."
-  (set! paused? #f))
+  (when (game-paused?)
+    (set! %state 'running)))
 
 (define (quit-game)
   "Finish the current frame and terminate the game loop."
-  (set! running? #f))
-
-;;;
-;;; Constants
-;;;
-
-(define target-fps 60)
-(define tick-interval (floor (/ 1000 target-fps)))
+  (set! %state 'stopped))
 
 ;;;
 ;;; Event Handling
 ;;;
-
-;; By default, pressing the escape key will pop the current scene, and
-;; closing the window will quit the game.
-;; (default-events `((key-down . ,(lambda (state key mod unicode)
-;;                                  (when (eq? key 'escape)
-;;                                    (pop-scene))))
-;;                   (quit . ,(lambda (state)
-;;                              (quit-game)))))
 
 (define handle-events
   (let ((e (SDL:make-event)))
@@ -160,24 +168,31 @@ time in milliseconds that has passed since the last game update."
       (while (SDL:poll-event e)
         (handle-event e)))))
 
-(define-public window-size (signal-identity (vector2 0 0)))
-(define-public key-down (signal-identity))
-(define-public key-up (signal-identity))
-(define-public mouse-position (signal-identity (vector2 0 0)))
-(define-public mouse-down (signal-identity))
-(define-public mouse-up (signal-identity))
+;; Keyboard and mouse signals.
+(define window-size (signal-identity (vector2 0 0)))
+(define key-last-pressed (signal-identity))
+(define mouse-position (signal-identity (vector2 0 0)))
+(define key-signals (make-hash-table))
+(define mouse-signals (make-hash-table))
 
-(define-public (key-is-down key)
-  (make-signal (lambda (value prev from)
-                 (cond ((and (eq? from key-down)
-                             (eq? value key))
-                        #t)
-                       ((and (eq? from key-up)
-                             (eq? value key))
-                        #f)
-                       (else
-                        prev)))
-               #:connectors (list key-down key-up)))
+(define (signal-hash-ref hash key)
+  (let ((signal (hashq-ref hash key)))
+    (if (signal? signal)
+        signal
+        (let ((signal (signal-identity)))
+          (hashq-set! hash key signal)
+          signal))))
+
+(define (signal-hash-set! hash key value)
+  (signal-set! (signal-hash-ref hash key) value))
+
+(define (key-down? key)
+  "Return a signal for KEY."
+  (signal-hash-ref key-signals key))
+
+(define (mouse-down? button)
+  "Return a signal for BUTTON."
+  (signal-hash-ref mouse-signals button))
 
 (define (handle-event e)
   "Call the relevant callbacks for the event E."
@@ -190,23 +205,19 @@ time in milliseconds that has passed since the last game update."
     ((quit)
      (quit-game))
     ((key-down)
-     (signal-set! key-down (SDL:event:key:keysym:sym e)))
+     (let ((key (SDL:event:key:keysym:sym e)))
+       (signal-hash-set! key-signals key #t)
+       (signal-set! key-last-pressed key)))
     ((key-up)
-     (signal-set! key-up (SDL:event:key:keysym:sym e)))
+     (signal-hash-set! key-signals (SDL:event:key:keysym:sym e) #f))
     ((mouse-motion)
      (signal-set! mouse-position
                   (vector2 (SDL:event:motion:x e)
                            (SDL:event:motion:y e))))
     ((mouse-button-down)
-     (signal-set! mouse-down
-                  (list (SDL:event:button:button e)
-                        (SDL:event:button:x e)
-                        (SDL:event:button:y e))))
+     (signal-hash-set! mouse-signals (SDL:event:button:button e) #t))
     ((mouse-button-up)
-     (signal-set! mouse-up
-                  (list (SDL:event:button:button e)
-                        (SDL:event:button:x e)
-                        (SDL:event:button:y e))))))
+     (signal-hash-set! mouse-signals (SDL:event:button:button e) #f))))
 
 ;;;
 ;;; Frames Per Second
@@ -234,31 +245,6 @@ second."
 (define (current-fps)
   "Return the current FPS value."
   game-fps)
-
-;;;
-;;; Update and Draw
-;;;
-
-(define (draw game dt)
-  "Render a frame."
-  (set-gl-matrix-mode (matrix-mode modelview))
-  (gl-load-identity)
-  (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-  (draw-game game)
-  (SDL:gl-swap-buffers)
-  (accumulate-fps! dt))
-
-(define (update accumulator)
-  "Call the update callback. The update callback will be called as
-many times as `tick-interval` can divide ACCUMULATOR. The return value
-is the unused accumulator time."
-  (if (>= accumulator tick-interval)
-      (begin
-        (handle-events)
-        (update-agenda)
-        ;; (update-stage stage)
-        (update (- accumulator tick-interval)))
-      accumulator))
 
 ;;;
 ;;; REPL
