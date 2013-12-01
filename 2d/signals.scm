@@ -32,7 +32,7 @@
             signal-ref-maybe
             signal-transformer
             signal-filter
-            signal-listeners
+            signal-connectors
             signal-connect!
             signal-disconnect!
             signal-clear!
@@ -60,12 +60,12 @@
 ;; programming. State mutation is hidden away and a functional,
 ;; declarative interface is exposed.
 (define-record-type <signal>
-  (%make-signal value transformer filter listeners)
+  (%make-signal value transformer filter connectors)
   signal?
   (value signal-ref %signal-set!)
   (transformer signal-transformer)
   (filter signal-filter)
-  (listeners signal-listeners %set-signal-listeners!))
+  (connectors signal-connectors %set-signal-connectors!))
 
 (define (keep-all value old from)
   "Keep all values."
@@ -95,20 +95,20 @@ otherwise."
 (define (signal-connect! signal listener)
   "Attach LISTENER to SIGNAL. When the value of SIGNAL changes, the
 value will be propagated to LISTENER."
-  (%set-signal-listeners!
+  (%set-signal-connectors!
    signal
-   (cons listener (signal-listeners signal)))
+   (cons listener (signal-connectors signal)))
   (signal-set! listener (signal-ref signal)))
 
 (define (signal-disconnect! signal listener)
   "Detach LISTENER from SIGNAL."
-  (%set-signal-listeners!
+  (%set-signal-connectors!
    signal
-   (delete listener (signal-listeners signal) eq?)))
+   (delete listener (signal-connectors signal) eq?)))
 
 (define (signal-clear! signal)
-  "Detach all listeners from SIGNAL."
-  (%set-signal-listeners! signal '()))
+  "Detach all connectors from SIGNAL."
+  (%set-signal-connectors! signal '()))
 
 (define* (signal-set! signal value #:optional (from #f))
   "Set VALUE for SIGNAL from the connected signal FROM and
@@ -116,7 +116,7 @@ propagate VALUE to all connected signals. "
   (let ((value (%signal-transform signal value from)))
     (%signal-set! signal value)
     (for-each (cut signal-receive! <> value signal)
-              (signal-listeners signal))))
+              (signal-connectors signal))))
 
 (define (signal-keep? signal value from)
   "Call the filter procedure for SIGNAL with VALUE."
