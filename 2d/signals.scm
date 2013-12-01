@@ -31,6 +31,7 @@
             signal-ref
             signal-ref-maybe
             signal-transformer
+            signal-filter
             signal-listeners
             signal-connect!
             signal-disconnect!
@@ -59,19 +60,24 @@
 ;; programming. State mutation is hidden away and a functional,
 ;; declarative interface is exposed.
 (define-record-type <signal>
-  (%make-signal value transformer listeners)
+  (%make-signal value transformer filter listeners)
   signal?
   (value signal-ref %signal-set!)
   (transformer signal-transformer)
+  (filter signal-filter)
   (listeners signal-listeners %set-signal-listeners!))
 
+(define (keep-all value old from)
+  "Keep all values."
+  #t)
+
 (define* (make-signal transformer #:optional #:key
-                      (init #f) (connectors '()))
+                      (init #f) (connectors '()) (filter keep-all))
   "Create a new signal with initial value INIT that uses the given
 TRANSFORMER procedure to process incoming values from another
 signal.  Additionally, the signal will be connected to all of the
 signals in the list CONNECTORS."
-  (let ((signal (%make-signal init transformer '())))
+  (let ((signal (%make-signal init transformer filter '())))
     (for-each (cut signal-connect! <> signal) connectors)
     signal))
 
@@ -105,12 +111,22 @@ value will be propagated to LISTENER."
   (%set-signal-listeners! signal '()))
 
 (define* (signal-set! signal value #:optional (from #f))
-  "Receive new VALUE for SIGNAL from the connected signal FROM and
-propagate VALUE to all listening signals. "
+  "Set VALUE for SIGNAL from the connected signal FROM and
+propagate VALUE to all connected signals. "
   (let ((value (%signal-transform signal value from)))
     (%signal-set! signal value)
-    (for-each (cut signal-set! <> value signal)
+    (for-each (cut signal-receive! <> value signal)
               (signal-listeners signal))))
+
+(define (signal-keep? signal value from)
+  "Call the filter procedure for SIGNAL with VALUE."
+  ((signal-filter signal) value (signal-ref signal) from))
+
+(define (signal-receive! signal value from)
+  "Receive VALUE for SIGNAL from the connected signal FROM.  VALUE
+will be set if it passes through the filter."
+  (when (signal-keep? signal value from)
+    (signal-set! signal value from)))
 
 ;;;
 ;;; Primitive signals
