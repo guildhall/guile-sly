@@ -40,6 +40,8 @@
             signal-constant
             signal-lift
             signal-lift2
+            signal-lift3
+            signal-lift4
             signal-merge
             signal-combine
             signal-count
@@ -142,6 +144,25 @@ onto SIGNAL1 and SIGNAL2."
                  (transformer (signal-ref signal1)
                               (signal-ref signal2)))
                #:connectors (list signal1 signal2)))
+
+(define (signal-lift3 transformer signal1 signal2 signal3)
+  "Create a new signal that lifts the procedure TRANSFORMER of arity 3
+onto SIGNAL1, SIGNAL2, and SIGNAL3."
+  (make-signal (lambda (value prev from)
+                 (transformer (signal-ref signal1)
+                              (signal-ref signal2)
+                              (signal-ref signal3)))
+               #:connectors (list signal1 signal2 signal3)))
+
+(define (signal-lift4 transformer signal1 signal2 signal3 signal4)
+  "Create a new signal that lifts the procedure TRANSFORMER of arity 4
+onto SIGNAL1, SIGNAL2, SIGNAL3, and SIGNAL4."
+  (make-signal (lambda (value prev from)
+                 (transformer (signal-ref signal1)
+                              (signal-ref signal2)
+                              (signal-ref signal3)
+                              (signal-ref signal4)))
+               #:connectors (list signal1 signal2 signal3 signal4)))
 
 (define (signal-merge signal1 signal2)
   "Create a new signal that merges SIGNAL1 and SIGNAL2 into one. The
