@@ -1,32 +1,52 @@
-(use-modules (2d game)
+(use-modules (srfi srfi-1)
+             (2d color)
+             (2d game)
              (2d signals)
              (2d sprite)
-             (2d vector2))
+             (2d texture)
+             (2d time)
+             (2d vector2)
+             (2d window))
 
-(define sprite
-  (delay (load-sprite "images/ghost.png"
-                      #:position (vector2 320 240))))
+(with-window (make-window #:title "FRP is cool"
+                          #:resolution (vector2 640 480)
+                          #:fullscreen? #f)
 
-(define quit-on-esc
-  (signal-lift (lambda (down?)
-                 (when down?
-                   (quit-game)))
-               (key-is-down 'escape)))
+  (define move
+    (make-signal
+     #:init (vector2 320 240)
+     #:transformer (lambda (value old from)
+                     (if (eq? from arrows)
+                         old
+                         (v+ (vscale (signal-ref arrows) 5)
+                             old)))
+     #:connectors (list arrows (time-every))))
 
-(define sprite-position
-  (signal-lift (lambda (pos)
-                 (when (game-running?)
-                   (set-sprite-position! (force sprite) pos)))
-               mouse-position))
+  (define ghost-texture (load-texture "images/ghost.png"))
 
-(define (draw)
-  (draw-sprite (force sprite)))
+  (define sprite
+    (make-sprite ghost-texture
+                 #:position move))
 
-;; TODO: make the quit condition a signal
+  (define follower-count 8)
+  (define followers
+    (list-tabulate
+     follower-count
+     (lambda (i)
+       (make-sprite ghost-texture
+                    #:position (time-delay (* (- follower-count i) 1) move)
+                    #:color (make-color 1 1 1 (/ (1+ i) 16))))))
 
-(define demo
-  (make-game
-   #:title "Simple Demo"
-   #:draw draw))
+  ;; Temporary hack. There shouldn't be side effects like this in
+  ;; signals.
+  (define quit-on-esc
+    (signal-lift (lambda (down?)
+                   (when down?
+                     (quit-game)))
+                 (key-down? 'escape)))
 
-(run-game demo)
+  (define (draw)
+    (for-each draw-sprite followers)
+    (draw-sprite sprite))
+
+  (run-game #:draw draw))
