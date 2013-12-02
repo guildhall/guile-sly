@@ -81,7 +81,7 @@
   (SDL:quit))
 
 (define-syntax-rule (with-window window body ...)
-  (begin
-    (open-window window)
-    body ...
-    (close-window)))
+  (dynamic-wind
+    (lambda () (open-window window))
+    (lambda () body ...)
+    (lambda () (close-window))))
