@@ -26,6 +26,8 @@
   #:use-module (figl gl)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl mixer) #:prefix SDL:)
+  #:use-module (2d game)
+  #:use-module (2d signals)
   #:use-module (2d vector2)
   #:export (<window>
             make-window
@@ -33,6 +35,7 @@
             window-title
             window-resolution
             window-fullscreen?
+            window-size
             open-window
             close-window
             with-window))
@@ -49,6 +52,15 @@
                       (resolution (vector2 640 480))
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
+
+(define window-size (make-signal #:init (vector2 0 0)))
+
+(register-event-handler
+ 'video-resize
+ (lambda (e)
+   (signal-set! window-size
+                (vector2 (SDL:event:resize:w e)
+                         (SDL:event:resize:h e)))))
 
 (define* (open-window window)
   "Open the game window using the settings in WINDOW."

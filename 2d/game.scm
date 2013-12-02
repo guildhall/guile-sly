@@ -40,14 +40,7 @@
             resume-game
             game-running?
             game-paused?
-            window-size
-            key-last-pressed
-            key-down?
-            key-directions
-            key-arrows
-            key-wasd
-            mouse-position
-            mouse-down?
+            register-event-handler
             current-fps))
 
 ;;;
@@ -171,71 +164,17 @@ time in milliseconds that has passed since the last game update."
       (while (SDL:poll-event e)
         (handle-event e)))))
 
-;; Keyboard and mouse signals.
-(define window-size (make-signal #:init (vector2 0 0)))
-(define key-last-pressed (make-signal))
-(define mouse-position (make-signal #:init (vector2 0 0)))
-(define key-signals (make-hash-table))
-(define mouse-signals (make-hash-table))
+(define event-handlers '())
 
-(define (signal-hash-ref hash key)
-  (let ((signal (hashq-ref hash key)))
-    (if (signal? signal)
-        signal
-        (let ((signal (make-signal)))
-          (hashq-set! hash key signal)
-          signal))))
-
-(define (signal-hash-set! hash key value)
-  (signal-set! (signal-hash-ref hash key) value))
-
-(define (key-down? key)
-  "Return a signal for KEY."
-  (signal-hash-ref key-signals key))
-
-(define (mouse-down? button)
-  "Return a signal for BUTTON."
-  (signal-hash-ref mouse-signals button))
-
-(define (key-directions up down left right)
-  (signal-lift4 (lambda (up? down? left? right?)
-                  (let ((up (if up? -1 0))
-                        (down (if down? 1 0))
-                        (left (if left? -1 0))
-                        (right (if right? 1 0)))
-                    (vector2 (+ left right) (+ up down))))
-                (key-down? up)
-                (key-down? down)
-                (key-down? left)
-                (key-down? right)))
-
-(define key-arrows (key-directions 'up 'down 'left 'right))
-(define key-wasd (key-directions 'w 's 'a 'd))
+(define (register-event-handler event callback)
+  "Register CALLBACK to respond to events of type EVENT."
+  (set! event-handlers (acons event callback event-handlers)))
 
 (define (handle-event e)
-  "Call the relevant callbacks for the event E."
-  (case (SDL:event:type e)
-    ((active)
-     #f)
-    ((video-resize)
-     (signal-set! window-size (vector2 (SDL:event:resize:w e)
-                                       (SDL:event:resize:h e))))
-    ((quit)
-     (quit-game))
-    ((key-down)
-     (let ((key (SDL:event:key:keysym:sym e)))
-       (signal-hash-set! key-signals key #t)
-       (signal-set! key-last-pressed key)))
-    ((key-up)
-     (signal-hash-set! key-signals (SDL:event:key:keysym:sym e) #f))
-    ((mouse-motion)
-     (signal-set! mouse-position
-                  (vector2 (SDL:event:motion:x e)
-                           (SDL:event:motion:y e))))
-    ((mouse-button-down)
-     (signal-hash-set! mouse-signals (SDL:event:button:button e) #t))
-    ((mouse-button-up)
-     (signal-hash-set! mouse-signals (SDL:event:button:button e) #f))))
+  "Call the relevant callback procedure for the event E."
+  (let ((handler (assq-ref event-handlers (SDL:event:type e))))
+    (when handler
+      (handler e))))
 
 ;;;
 ;;; Frames Per Second
