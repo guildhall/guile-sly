@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
+  #:use-module (2d coroutine)
   #:export (<signal>
             signal?
             make-signal
@@ -110,7 +111,12 @@ value will be propagated to LISTENER."
   "Detach all connectors from SIGNAL."
   (%set-signal-connectors! signal '()))
 
-(define* (signal-set! signal value #:optional (from #f))
+(codefine* (signal-set! signal value #:optional (from #f))
+  "Set VALUE for SIGNAL from the connected signal FROM and
+propagate VALUE to all connected signals. "
+  (signal-set-and-propagate! signal value from))
+
+(define (signal-set-and-propagate! signal value from)
   "Set VALUE for SIGNAL from the connected signal FROM and
 propagate VALUE to all connected signals. "
   (let ((value (%signal-transform signal value from)))
@@ -126,7 +132,7 @@ propagate VALUE to all connected signals. "
   "Receive VALUE for SIGNAL from the connected signal FROM.  VALUE
 will be set if it passes through the filter."
   (when (signal-keep? signal value from)
-    (signal-set! signal value from)))
+    (signal-set-and-propagate! signal value from)))
 
 ;;;
 ;;; Primitive signals
