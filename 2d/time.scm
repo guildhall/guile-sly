@@ -28,18 +28,18 @@
             time-interval
             time-delay))
 
-(define (time-interval ticks)
-  "Create a new signal that sets its value to #t every TICKS agenda
-updates."
-  (let ((signal (make-signal #:init #t)))
+(define (time-interval ticks signal)
+  "Create a new signal that emits the value of SIGNAL every TICKS
+agenda updates."
+  (let ((ticker (make-signal #:init (signal-ref signal))))
     (agenda-schedule-interval
      (lambda ()
-       (signal-set! signal #t)) ticks)
-    signal))
+       (signal-set! ticker (signal-ref signal))) ticks)
+    ticker))
 
-(define (time-every)
-  "Create a new signal that sets its value to #t every agenda update."
-  (time-interval 1))
+(define (time-every signal)
+  "Create a new signal that emits the value of SIGNAL every agenda update."
+  (time-interval 1 signal))
 
 (define (time-delay ticks signal)
   (make-signal
