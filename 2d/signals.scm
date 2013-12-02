@@ -208,10 +208,9 @@ values of SIGNAL using PROC."
 (define (signal-count signal)
   "Create a new signal that increments a counter every time the value
 of SIGNAL changes."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (1+ prev))
-   #:connectors (list signal)))
+  ;; Initial value is -1 to compensate for the inital signal update
+  ;; when connecting.
+  (signal-fold (lambda (new old) (1+ old)) -1 signal))
 
 (define (signal-constant constant signal)
   "Create a new signal that emits the value CONSTANT whenever a new
