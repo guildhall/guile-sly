@@ -170,9 +170,9 @@ time in milliseconds that has passed since the last game update."
         (handle-event e)))))
 
 ;; Keyboard and mouse signals.
-(define window-size (signal-identity (vector2 0 0)))
-(define key-last-pressed (signal-identity))
-(define mouse-position (signal-identity (vector2 0 0)))
+(define window-size (make-signal #:init (vector2 0 0)))
+(define key-last-pressed (make-signal))
+(define mouse-position (make-signal #:init (vector2 0 0)))
 (define key-signals (make-hash-table))
 (define mouse-signals (make-hash-table))
 
@@ -180,7 +180,7 @@ time in milliseconds that has passed since the last game update."
   (let ((signal (hashq-ref hash key)))
     (if (signal? signal)
         signal
-        (let ((signal (signal-identity)))
+        (let ((signal (make-signal)))
           (hashq-set! hash key signal)
           signal))))
 
