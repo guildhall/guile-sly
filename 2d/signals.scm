@@ -45,6 +45,7 @@
             signal-lift4
             signal-merge
             signal-combine
+            signal-fold
             signal-count
             signal-if
             signal-and
@@ -201,6 +202,15 @@ list."
    #:transformer (lambda (value prev from)
                    (map signal-ref signals))
    #:connectors signals))
+
+(define (signal-fold proc init signal)
+  "Create a new signal that accumulates the current and previous
+values of SIGNAL using PROC."
+  (make-signal
+   #:init init
+   #:transformer (lambda (value prev from)
+                   (proc value prev))
+   #:connectors (list signal)))
 
 (define (signal-count signal)
   "Create a new signal that increments a counter every time the value
