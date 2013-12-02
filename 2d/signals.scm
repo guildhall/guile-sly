@@ -117,12 +117,7 @@ value will be propagated to LISTENER."
   "Detach all connectors from SIGNAL."
   (%set-signal-connectors! signal '()))
 
-(codefine* (signal-set! signal value #:optional (from #f))
-  "Set VALUE for SIGNAL from the connected signal FROM and
-propagate VALUE to all connected signals. "
-  (signal-set-and-propagate! signal value from))
-
-(define (signal-set-and-propagate! signal value from)
+(define* (signal-set! signal value #:optional (from #f))
   "Set VALUE for SIGNAL from the connected signal FROM and
 propagate VALUE to all connected signals. "
   (let ((value (%signal-transform signal value from)))
@@ -134,11 +129,11 @@ propagate VALUE to all connected signals. "
   "Call the filter procedure for SIGNAL with VALUE."
   ((signal-filter signal) value (signal-ref signal) from))
 
-(define (signal-receive! signal value from)
+(codefine (signal-receive! signal value from)
   "Receive VALUE for SIGNAL from the connected signal FROM.  VALUE
 will be set if it passes through the filter."
   (when (signal-keep? signal value from)
-    (signal-set-and-propagate! signal value from)))
+    (signal-set! signal value from)))
 
 ;;;
 ;;; Primitive signals
