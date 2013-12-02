@@ -140,13 +140,6 @@ will be set if it passes through the filter."
 ;;; Primitive signals
 ;;;
 
-(define (signal-constant constant)
-  "Create a new signal with a value CONSTANT that cannot be changed."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   constant)
-   #:init constant))
-
 ;; TODO: Write a macro for generating lifts
 (define (signal-lift transformer signal)
   "Create a new signal that lifts the procedure TRANSFORMER of arity 1
@@ -219,6 +212,11 @@ of SIGNAL changes."
    #:transformer (lambda (value prev from)
                    (1+ prev))
    #:connectors (list signal)))
+
+(define (signal-constant constant signal)
+  "Create a new signal that emits the value CONSTANT whenever a new
+value is received from SIGNAL."
+  (signal-lift (lambda (value) constant) signal))
 
 (define (signal-if predicate consequent alternate)
   "Create a new signal that emits the value of the signal CONSEQUENT
