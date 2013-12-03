@@ -43,6 +43,7 @@ agenda updates."
 
 (define (time-delay ticks signal)
   (make-signal
+   #:init (signal-ref signal)
    #:filter (lambda (value old from)
               (wait ticks)
               #t)
