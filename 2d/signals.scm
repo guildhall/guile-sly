@@ -49,7 +49,9 @@
             signal-count
             signal-if
             signal-and
-            signal-or))
+            signal-or
+            signal-when
+            signal-unless))
 
 ;;;
 ;;; Signals
@@ -258,3 +260,27 @@ of SIGNALS."
                            (else
                             (loop (cdr signals))))))
    #:connectors signals))
+
+(define (signal-when predicate init consequent)
+  "Create a new signal that keeps the value from CONSEQUENT only when
+PREDICATE is true.  INIT specifies the value that is set if PREDICATE
+is never true."
+  (make-signal
+   #:init init
+   #:filter (lambda (value prev from)
+              (signal-ref predicate))
+   #:transformer (lambda (value prev from)
+                   (signal-ref consequent))
+   #:connectors (list predicate consequent)))
+
+(define (signal-unless predicate init consequent)
+  "Create a new signal that drops the value from CONSEQUENT only when
+PREDICATE is true.  INIT specifies the value that is set if PREDICATE
+is never true."
+  (make-signal
+   #:init init
+   #:filter (lambda (value prev from)
+              (not (signal-ref predicate)))
+   #:transformer (lambda (value prev from)
+                   (signal-ref consequent))
+   #:connectors (list predicate consequent)))
