@@ -106,7 +106,7 @@ value will be propagated to LISTENER."
   (%set-signal-connectors!
    signal
    (cons listener (signal-connectors signal)))
-  (signal-set! listener (signal-ref signal)))
+  (signal-receive! listener (signal-ref signal) signal))
 
 (define (signal-disconnect! signal listener)
   "Detach LISTENER from SIGNAL."
