@@ -12,15 +12,14 @@
 (with-window (make-window #:title "FRP is cool"
                           #:resolution (vector2 640 480)
                           #:fullscreen? #f)
+  (define speed 4)
+
   ;; Move when arrow keys are pressed.
   (define move
-    (make-signal
-     #:init (vector2 320 240)
-     #:transformer (lambda (value old from)
-                     (v+ (vscale (signal-ref key-arrows) 4) old))
-     #:filter (lambda (value old from)
-                (not (eq? from key-arrows)))
-     #:connectors (list key-arrows (time-every))))
+    (signal-fold (lambda (direction position)
+                   (v+ (vscale direction speed) position))
+                 (vector2 320 240)
+                 (time-every key-arrows)))
 
   (define ghost-texture (load-texture "images/ghost.png"))
 
