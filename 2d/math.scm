@@ -28,7 +28,8 @@
             sin-degrees
             cos-degrees
             tan-degrees
-            atan-degrees))
+            atan-degrees
+            clamp))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -80,3 +81,10 @@
 (define (atan-degrees y x)
   "Compute the arctangent in degrees of the coordinates Y and X."
   (radians->degrees (atan y x)))
+
+(define (clamp min max x)
+  "Restrict X to the range defined by MIN and MAX. Assumes that MIN is
+actually less than MAX."
+  (cond ((< x min) min)
+        ((> x max) max)
+        (else x)))
