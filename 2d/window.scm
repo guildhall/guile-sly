@@ -97,3 +97,10 @@
     (lambda () (open-window window))
     (lambda () body ...)
     (lambda () (close-window))))
+
+;; Open a window immediately to create an OpenGL context. This allows
+;; for textures to be loaded before the program explicitly sets the
+;; window settings.
+;;
+;; TODO: Hide the window initially. This will require SDL 2.0.
+(open-window (make-window #:title ""))
