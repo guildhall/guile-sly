@@ -181,14 +181,11 @@ onto SIGNAL1, SIGNAL2, SIGNAL3, and SIGNAL4."
                                 (signal-ref signal4)))
    #:connectors (list signal1 signal2 signal3 signal4)))
 
-(define (signal-merge signal1 signal2)
-  "Create a new signal that merges SIGNAL1 and SIGNAL2 into one. The
-value of the new signal is the value of the most recently changed
-parent signal."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   value)
-   #:connectors (list signal1 signal2)))
+(define (signal-merge . signals)
+  "Create a new signal that merges every signal in the list SIGNALS
+into one. The value of the new signal is the value of the most
+recently changed signal in the list."
+  (make-signal #:connectors signals))
 
 (define (signal-combine . signals)
   "Create a new signal that combines the values of SIGNALS into a
