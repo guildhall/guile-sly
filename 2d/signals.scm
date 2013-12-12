@@ -51,7 +51,8 @@
             signal-and
             signal-or
             signal-when
-            signal-unless))
+            signal-unless
+            signal-do))
 
 ;;;
 ;;; Signals
@@ -281,3 +282,14 @@ is never true."
    #:transformer (lambda (value prev from)
                    (signal-ref consequent))
    #:connectors (list predicate consequent)))
+
+(define (signal-do proc signal)
+  "Create a new signal that applies PROC with incoming values from
+SIGNAL.  The value of the new signal will always be the value of
+SIGNAL.  This signal is a convenient way to apply a side-effect to a
+signal value."
+  (make-signal
+   #:transformer (lambda (value prev from)
+                   (proc value)
+                   value)
+   #:connectors (list signal)))
