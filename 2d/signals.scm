@@ -79,10 +79,9 @@
   "Keep all values."
   #t)
 
-(define* (make-signal #:optional #:key
+(define* (make-signal #:optional init #:key
                       (transformer identity-transform)
                       (filter keep-all)
-                      (init #f)
                       (connectors '()))
   "Create a new signal with initial value INIT that uses the given
 TRANSFORMER procedure to process incoming values from another
@@ -200,7 +199,7 @@ list."
   "Create a new signal that accumulates the current and previous
 values of SIGNAL using PROC."
   (make-signal
-   #:init init
+   init
    #:transformer (lambda (value prev from)
                    (proc value prev))
    #:connectors (list signal)))
@@ -264,7 +263,7 @@ of SIGNALS."
 PREDICATE is true.  INIT specifies the value that is set if PREDICATE
 is never true."
   (make-signal
-   #:init init
+   init
    #:filter (lambda (value prev from)
               (signal-ref predicate))
    #:transformer (lambda (value prev from)
@@ -276,7 +275,7 @@ is never true."
 PREDICATE is true.  INIT specifies the value that is set if PREDICATE
 is never true."
   (make-signal
-   #:init init
+   init
    #:filter (lambda (value prev from)
               (not (signal-ref predicate)))
    #:transformer (lambda (value prev from)

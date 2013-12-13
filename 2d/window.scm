@@ -53,7 +53,7 @@
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
 
-(define window-size (make-signal #:init (vector2 0 0)))
+(define window-size (make-signal (vector2 0 0)))
 
 (register-event-handler
  'video-resize

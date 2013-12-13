@@ -31,7 +31,7 @@
 (define (time-interval ticks signal)
   "Create a new signal that emits the value of SIGNAL every TICKS
 agenda updates."
-  (let ((ticker (make-signal #:init (signal-ref signal))))
+  (let ((ticker (make-signal (signal-ref signal))))
     (agenda-schedule-interval
      (lambda ()
        (signal-set! ticker (signal-ref signal))) ticks)
@@ -43,7 +43,7 @@ agenda updates."
 
 (define (time-delay ticks signal)
   (make-signal
-   #:init (signal-ref signal)
+   (signal-ref signal)
    #:filter (lambda (value old from)
               (wait ticks)
               #t)

@@ -33,7 +33,7 @@
 
 (define mouse-last-down (make-signal))
 (define mouse-last-up (make-signal))
-(define mouse-position (make-signal #:init (vector2 0 0)))
+(define mouse-position (make-signal (vector2 0 0)))
 
 (define (mouse-down? button)
   "Create a signal for the state of BUTTON. Value is #t when mouse
