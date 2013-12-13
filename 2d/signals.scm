@@ -43,6 +43,7 @@
             signal-lift2
             signal-lift3
             signal-lift4
+            signal-liftn
             signal-merge
             signal-combine
             signal-fold
@@ -180,6 +181,14 @@ onto SIGNAL1, SIGNAL2, SIGNAL3, and SIGNAL4."
                                 (signal-ref signal3)
                                 (signal-ref signal4)))
    #:connectors (list signal1 signal2 signal3 signal4)))
+
+(define (signal-liftn transformer . signals)
+  "Create a new signal that lifts the procedure TRANSFORMER of arity n
+onto SIGNALS where n is the size of SIGNALS."
+  (make-signal
+   #:transformer (lambda (value prev from)
+                   (apply transformer (map signal-ref signals)))
+   #:connectors signals))
 
 (define (signal-merge . signals)
   "Create a new signal that merges every signal in the list SIGNALS
