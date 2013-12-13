@@ -49,8 +49,6 @@
             signal-fold
             signal-count
             signal-if
-            signal-and
-            signal-or
             signal-when
             signal-unless
             signal-do))
@@ -237,35 +235,6 @@ signal ALTERNATE otherwise."
    #:connectors (list predicate
                       consequent
                       alternate)))
-
-(define (signal-and . signals)
-  "Create a new signal that performs a logical AND operation on the
-values of SIGNALS."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (let loop ((signals signals)
-                              (prev #t))
-                     (cond ((null? signals)
-                            (signal-ref prev))
-                           ((signal-ref (car signals))
-                            (loop (cdr signals) (car signals)))
-                           (else
-                            #f))))
-   #:connectors signals))
-
-(define (signal-or . signals)
-  "Create a new signal that performs a logicla OR operation the values
-of SIGNALS."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (let loop ((signals signals))
-                     (cond ((null? signals)
-                            #f)
-                           ((signal-ref (car signals))
-                            (signal-ref (car signals)))
-                           (else
-                            (loop (cdr signals))))))
-   #:connectors signals))
 
 (define (signal-when predicate init consequent)
   "Create a new signal that keeps the value from CONSEQUENT only when
