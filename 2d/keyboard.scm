@@ -33,29 +33,33 @@
             key-arrows
             key-wasd))
 
-(define key-last-down (make-signal))
-(define key-last-up (make-signal))
+(define key-last-down (make-root-signal 'none))
+(define key-last-up (make-root-signal 'none))
 
 (define (key-down? key)
-  "Create a signal for the state of KEY. Value is #t when key is
-pressed and #f otherwise."
-  (make-signal
-   #:filter (lambda (value old from)
-              (eq? value key))
-   #:transformer (lambda (value old from)
-                   (if (eq? from key-last-down) #t #f))
-   #:connectors (list key-last-down key-last-up)))
+  "Create a signal for the state of KEY. The signal value is #t when
+KEY is pressed or #f otherwise."
+  (define (same-key? other-key)
+    (eq? key other-key))
+
+  (define (key-filter value signal)
+    (signal-constant value (signal-filter same-key? #f signal)))
+
+  (signal-merge (key-filter #f key-last-up)
+                (key-filter #t key-last-down)))
 
 (define (key-directions up down left right)
-  (signal-lift4 (lambda (up? down? left? right?)
-                  (vector2 (+ (if left? -1 0)
-                              (if right? 1 0))
-                           (+ (if up? -1 0)
-                              (if down? 1 0))))
-                (key-down? up)
-                (key-down? down)
-                (key-down? left)
-                (key-down? right)))
+  (signal-map (lambda (up? down? left? right?)
+                ;; (display (list up? down? left? right?))
+                ;; (newline)
+                (vector2 (+ (if left? -1 0)
+                            (if right? 1 0))
+                         (+ (if up? -1 0)
+                            (if down? 1 0))))
+              (key-down? up)
+              (key-down? down)
+              (key-down? left)
+              (key-down? right)))
 
 (define key-arrows (key-directions 'up 'down 'left 'right))
 (define key-wasd (key-directions 'w 's 'a 'd))
