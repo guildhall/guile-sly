@@ -26,31 +26,36 @@
   #:use-module (2d game)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (mouse-position
+  #:export (mouse-x
+            mouse-y
+            mouse-position
             mouse-last-down
             mouse-last-up
             mouse-down?))
 
-(define mouse-last-down (make-signal))
-(define mouse-last-up (make-signal))
-(define mouse-position (make-signal (vector2 0 0)))
+(define mouse-last-down (make-root-signal 'none))
+(define mouse-last-up (make-root-signal 'none))
+(define mouse-x (make-root-signal 0))
+(define mouse-y (make-root-signal 0))
+(define mouse-position (signal-map vector2 mouse-x mouse-y))
 
 (define (mouse-down? button)
   "Create a signal for the state of BUTTON. Value is #t when mouse
-button is pressed and #f otherwise."
-  (make-signal
-   #:filter (lambda (value old from)
-              (eq? value button))
-   #:transformer (lambda (value old from)
-                   (if (eq? from mouse-last-down) #t #f))
-   #:connectors (list mouse-last-down mouse-last-up)))
+button is pressed or #f otherwise."
+  (define (same-button? other-button)
+    (eq? button other-button))
+
+  (define (button-filter value signal)
+    (signal-constant value (signal-filter #f same-button? signal)))
+
+  (signal-merge (button-filter #f mouse-last-up)
+                (button-filter #t mouse-last-down)))
 
 (register-event-handler
  'mouse-motion
  (lambda (e)
-   (signal-set! mouse-position
-                (vector2 (SDL:event:motion:x e)
-                         (SDL:event:motion:y e)))))
+   (signal-set! mouse-x (SDL:event:motion:x e))
+   (signal-set! mouse-y (SDL:event:motion:y e))))
 
 (register-event-handler
  'mouse-down
