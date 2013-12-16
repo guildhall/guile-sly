@@ -167,10 +167,12 @@ or more SIGNALS."
   (define (update)
     (apply proc (map signal-ref (cons signal signals))))
 
-  (make-signal (update)
-               (lambda (map-signal from)
-                 (signal-set! map-signal (update)))
-               signal))
+  (apply make-signal
+         (update)
+         (lambda (map-signal from)
+           (signal-set! map-signal (update)))
+         signal
+         signals))
 
 (define (signal-fold proc init signal)
   "Create a new signal that applies PROC to the values stored in
