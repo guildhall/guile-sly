@@ -25,33 +25,29 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
-  #:use-module (2d coroutine)
   #:export (<signal>
             signal?
+            root-signal?
             make-signal
+            make-root-signal
             signal-ref
             signal-ref-maybe
-            signal-transformer
-            signal-filter
-            signal-connectors
+            signal-receiver
+            signal-connections
             signal-connect!
             signal-disconnect!
             signal-clear!
             signal-set!
-            signal-constant
-            signal-lift
-            signal-lift2
-            signal-lift3
-            signal-lift4
-            signal-liftn
             signal-merge
             signal-combine
+            signal-do
+            signal-map
             signal-fold
-            signal-count
-            signal-if
-            signal-when
-            signal-unless
-            signal-do))
+            signal-filter
+            signal-reject
+            signal-fold
+            signal-constant
+            signal-count))
 
 ;;;
 ;;; Signals
@@ -63,210 +59,155 @@
 ;; programming. State mutation is hidden away and a functional,
 ;; declarative interface is exposed.
 (define-record-type <signal>
-  (%make-signal value transformer filter connectors)
+  (%make-signal value receiver connections)
   signal?
   (value signal-ref %signal-set!)
-  (transformer signal-transformer)
-  (filter signal-filter)
-  (connectors signal-connectors %set-signal-connectors!))
+  (receiver signal-receiver)
+  (connections signal-connections %set-signal-connections!))
 
-(define (identity-transform value old from)
-  "Return VALUE unchanged."
-  value)
-
-(define (keep-all value old from)
-  "Keep all values."
-  #t)
-
-(define* (make-signal #:optional init #:key
-                      (transformer identity-transform)
-                      (filter keep-all)
-                      (connectors '()))
-  "Create a new signal with initial value INIT that uses the given
-TRANSFORMER procedure to process incoming values from another
-signal.  Additionally, the signal will be connected to all of the
-signals in the list CONNECTORS."
-  (let ((signal (%make-signal init transformer filter '())))
-    (for-each (cut signal-connect! <> signal) connectors)
+(define (make-signal init receiver . connections)
+  "Create a new signal with initial value INIT, a procedure RECEIVER
+to transform incoming signal values and zero or more signals to
+connect to."
+  (let ((signal (%make-signal init receiver '())))
+    (for-each (cut signal-connect! <> signal) connections)
     signal))
 
-(define (signal-ref-maybe object)
-  "Dereferences OBJECT if it is a signal and returns OBJECT
+(define (make-root-signal init)
+  "Create a new root level signal with initial value INIT."
+  (%make-signal init #f '()))
+
+(define (root-signal? signal)
+  "Returns true if a signal has no receiver procedure or false
 otherwise."
+  (not (signal-receiver signal)))
+
+(define (signal-ref-maybe object)
+  "Retrieves the signal value from OBJECT if it is a signal and or
+simply returns OBJECT otherwise."
   (if (signal? object)
       (signal-ref object)
       object))
 
-(define (%signal-transform signal value from)
-  "Call the transform procedure for SIGNAL with VALUE."
-  ((signal-transformer signal) value (signal-ref signal) from))
+(define (signal-connect! signal-in signal-out)
+  "Attach SIGNAL-OUT to SIGNAL-IN. When the value of SIGNAL-IN changes, the
+value will be propagated to SIGNAL-OUT."
+  (if (root-signal? signal-out)
+      (error 'root-signal-error
+             "Cannot connect to a root signal"
+             signal-out)
+      (%set-signal-connections!
+       signal-in
+       (cons signal-out (signal-connections signal-in)))))
 
-(define (signal-connect! signal listener)
-  "Attach LISTENER to SIGNAL. When the value of SIGNAL changes, the
-value will be propagated to LISTENER."
-  (%set-signal-connectors!
-   signal
-   (cons listener (signal-connectors signal)))
-  (signal-receive! listener (signal-ref signal) signal))
-
-(define (signal-disconnect! signal listener)
-  "Detach LISTENER from SIGNAL."
-  (%set-signal-connectors!
-   signal
-   (delete listener (signal-connectors signal) eq?)))
+(define (signal-disconnect! signal-in signal-out)
+  "Detach SIGNAL-OUT from SIGNAL-IN."
+  (%set-signal-connections!
+   signal-in
+   (delete signal-out (signal-connections signal-in) eq?)))
 
 (define (signal-clear! signal)
-  "Detach all connectors from SIGNAL."
-  (%set-signal-connectors! signal '()))
+  "Disconnect all connections from SIGNAL."
+  (%set-signal-connections! signal '()))
 
-(define* (signal-set! signal value #:optional (from #f))
-  "Set VALUE for SIGNAL from the connected signal FROM and
-propagate VALUE to all connected signals. "
-  (let ((value (%signal-transform signal value from)))
-    (%signal-set! signal value)
-    (for-each (cut signal-receive! <> value signal)
-              (signal-connectors signal))))
+(define (signal-receive to from)
+  "Evaluate the receiver procedure for the signal TO with the signal
+FROM."
+  ((signal-receiver to) to from))
 
-(define (signal-keep? signal value from)
-  "Call the filter procedure for SIGNAL with VALUE."
-  ((signal-filter signal) value (signal-ref signal) from))
+(define (signal-propagate signal)
+  "Notify all connected signals about the current value of SIGNAL."
+  (for-each (cut signal-receive <> signal)
+            (signal-connections signal)))
 
-(codefine (signal-receive! signal value from)
-  "Receive VALUE for SIGNAL from the connected signal FROM.  VALUE
-will be set if it passes through the filter."
-  (when (signal-keep? signal value from)
-    (signal-set! signal value from)))
+(define (signal-set! signal value)
+  "Change the current value of SIGNAL to VALUE and propagate SIGNAL to
+all connected signals."
+  (%signal-set! signal value)
+  (signal-propagate signal))
 
 ;;;
-;;; Primitive signals
+;;; Higher Order Signals
 ;;;
-
-;; TODO: Write a macro for generating lifts
-(define (signal-lift transformer signal)
-  "Create a new signal that lifts the procedure TRANSFORMER of arity 1
-onto SIGNAL."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (transformer value))
-   #:connectors (list signal)))
-
-(define (signal-lift2 transformer signal1 signal2)
-  "Create a new signal that lifts the procedure TRANSFORMER of arity 2
-onto SIGNAL1 and SIGNAL2."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (transformer (signal-ref signal1)
-                                (signal-ref signal2)))
-   #:connectors (list signal1 signal2)))
-
-(define (signal-lift3 transformer signal1 signal2 signal3)
-  "Create a new signal that lifts the procedure TRANSFORMER of arity 3
-onto SIGNAL1, SIGNAL2, and SIGNAL3."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (transformer (signal-ref signal1)
-                                (signal-ref signal2)
-                                (signal-ref signal3)))
-   #:connectors (list signal1 signal2 signal3)))
-
-(define (signal-lift4 transformer signal1 signal2 signal3 signal4)
-  "Create a new signal that lifts the procedure TRANSFORMER of arity 4
-onto SIGNAL1, SIGNAL2, SIGNAL3, and SIGNAL4."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (transformer (signal-ref signal1)
-                                (signal-ref signal2)
-                                (signal-ref signal3)
-                                (signal-ref signal4)))
-   #:connectors (list signal1 signal2 signal3 signal4)))
-
-(define (signal-liftn transformer . signals)
-  "Create a new signal that lifts the procedure TRANSFORMER of arity n
-onto SIGNALS where n is the size of SIGNALS."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (apply transformer (map signal-ref signals)))
-   #:connectors signals))
 
 (define (signal-merge . signals)
-  "Create a new signal that merges every signal in the list SIGNALS
-into one. The value of the new signal is the value of the most
-recently changed signal in the list."
-  (make-signal #:connectors signals))
+  "Create a new signal whose value is the that of the most recently
+changed signal in SIGNALs.  The initial value is that of the first
+signal in SIGNALS."
+  (apply make-signal
+         (signal-ref (car signals))
+         (lambda (merger from)
+           (signal-set! merger (signal-ref from)))
+         signals))
 
 (define (signal-combine . signals)
-  "Create a new signal that combines the values of SIGNALS into a
-list."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (map signal-ref signals))
-   #:connectors signals))
+  "Create a new signal whose value is a list of the values stored in
+the list SIGNALS."
+  (define (update)
+    (map signal-ref signals))
 
-(define (signal-fold proc init signal)
-  "Create a new signal that accumulates the current and previous
-values of SIGNAL using PROC."
-  (make-signal
-   init
-   #:transformer (lambda (value prev from)
-                   (proc value prev))
-   #:connectors (list signal)))
-
-(define (signal-count signal)
-  "Create a new signal that increments a counter every time the value
-of SIGNAL changes."
-  ;; Initial value is -1 to compensate for the inital signal update
-  ;; when connecting.
-  (signal-fold (lambda (new old) (1+ old)) -1 signal))
-
-(define (signal-constant constant signal)
-  "Create a new signal that emits the value CONSTANT whenever a new
-value is received from SIGNAL."
-  (signal-lift (lambda (value) constant) signal))
-
-(define (signal-if predicate consequent alternate)
-  "Create a new signal that emits the value of the signal CONSEQUENT
-when the value of the signal PREDICATE is true and the value of the
-signal ALTERNATE otherwise."
-  (make-signal
-   #:transformer (lambda (value prev from)
-                   (if (signal-ref predicate)
-                       (signal-ref consequent)
-                       (signal-ref alternate)))
-   #:connectors (list predicate
-                      consequent
-                      alternate)))
-
-(define (signal-when predicate init consequent)
-  "Create a new signal that keeps the value from CONSEQUENT only when
-PREDICATE is true.  INIT specifies the value that is set if PREDICATE
-is never true."
-  (make-signal
-   init
-   #:filter (lambda (value prev from)
-              (signal-ref predicate))
-   #:transformer (lambda (value prev from)
-                   (signal-ref consequent))
-   #:connectors (list predicate consequent)))
-
-(define (signal-unless predicate init consequent)
-  "Create a new signal that drops the value from CONSEQUENT only when
-PREDICATE is true.  INIT specifies the value that is set if PREDICATE
-is never true."
-  (make-signal
-   init
-   #:filter (lambda (value prev from)
-              (not (signal-ref predicate)))
-   #:transformer (lambda (value prev from)
-                   (signal-ref consequent))
-   #:connectors (list predicate consequent)))
+  (make-signal (update)
+               (lambda (combiner from)
+                 (signal-set! combiner (update)))))
 
 (define (signal-do proc signal)
-  "Create a new signal that applies PROC with incoming values from
-SIGNAL.  The value of the new signal will always be the value of
-SIGNAL.  This signal is a convenient way to apply a side-effect to a
-signal value."
-  (make-signal
-   #:transformer (lambda (value prev from)
+  "Create a new signal that applies PROC when a new values is received
+from SIGNAL.  The value of the new signal will always be the value of
+SIGNAL.  This signal is a convenient way to sneak a procedure that has
+a side-effect into a signal chain."
+  (make-signal (signal-ref signal)
+               (lambda (do-signal from)
+                 (let ((value (signal-ref signal)))
                    (proc value)
-                   value)
-   #:connectors (list signal)))
+                   value))))
+
+(define (signal-map proc signal . signals)
+  "Create a new signal that applies PROC to the values stored in one
+or more SIGNALS."
+  (define (update)
+    (apply proc (map signal-ref (cons signal signals))))
+
+  (make-signal (update)
+               (lambda (map-signal from)
+                 (signal-set! map-signal (update)))
+               signal))
+
+(define (signal-fold proc init signal)
+  "Create a new signal that applies PROC to the values stored in
+SIGNAL. PROC is applied with the current value of SIGNAL and the
+previously computed value, or INIT for the first call."
+  (make-signal init
+               (let ((previous init))
+                 (lambda (fold-signal from)
+                   (let ((value (proc previous (signal-ref from))))
+                     (set! previous value)
+                     (signal-set! fold-signal value))))
+               signal))
+
+(define (signal-filter predicate default signal)
+  "Create a new signal that keeps an incoming value from SIGNAL when
+it satifies the procedure PREDICATE.  The value of the signal is
+DEFAULT when the predicate is never satisfied."
+  (make-signal (if (predicate (signal-ref signal))
+                   (signal-ref signal)
+                   default)
+               (lambda (filter from)
+                 (when (predicate (signal-ref from))
+                   (signal-set! filter (signal-ref from))))
+               signal))
+
+(define (signal-reject predicate default signal)
+  "Create a new signal that does not keep an incoming value from
+SIGNAL when it satisfies the procedure PREDICATE.  The value of the
+signal is DEFAULT when the predicate is never satisfied."
+  (signal-filter (lambda (x) (not (predicate x))) default signal))
+
+(define (signal-constant constant signal)
+  "Create a new signal whose value is always CONSTANT regardless of
+what the value received from SIGNAL."
+  (signal-map (lambda (value) constant) signal))
+
+(define (signal-count signal)
+  "Create a new signal that increments a counter every time a new
+value from SIGNAL is received."
+  (signal-fold + 0 (signal-constant 1 signal)))
