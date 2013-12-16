@@ -45,7 +45,6 @@
             signal-fold
             signal-filter
             signal-reject
-            signal-fold
             signal-constant
             signal-count))
 
