@@ -23,28 +23,33 @@
 
 (define-module (2d time)
   #:use-module (2d agenda)
+  #:use-module (2d coroutine)
   #:use-module (2d signals)
   #:export (time-every
-            time-interval
+            time-each
             time-delay))
 
-(define (time-interval ticks signal)
-  "Create a new signal that emits the value of SIGNAL every TICKS
-agenda updates."
-  (let ((ticker (make-signal (signal-ref signal))))
+(define (time-every ticks value)
+  "Create a new signal that emits VALUE every TICKS agenda updates.  VALUE may
+be a signal, in which case the stored value of the signal will be
+emitted."
+  (let ((ticker (make-root-signal (signal-ref-maybe value))))
     (agenda-schedule-interval
      (lambda ()
-       (signal-set! ticker (signal-ref signal))) ticks)
+       (signal-set! ticker (signal-ref-maybe value)))
+     ticks)
     ticker))
 
-(define (time-every signal)
-  "Create a new signal that emits the value of SIGNAL every agenda update."
-  (time-interval 1 signal))
+(define (time-each value)
+  "Create a new signal that emits VALUE every agenda update."
+  (time-every 1 value))
 
 (define (time-delay ticks signal)
-  (make-signal
-   (signal-ref signal)
-   #:filter (lambda (value old from)
-              (wait ticks)
-              #t)
-   #:connectors (list signal)))
+  "Create a new signal that delays propagation of values received from
+SIGNAL by TICKS agenda updates."
+  (make-signal (signal-ref signal)
+               (colambda (delay-signal from)
+                 (let ((value (signal-ref signal)))
+                   (wait ticks)
+                   (signal-set! delay-signal value)))
+               signal))
