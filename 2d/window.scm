@@ -35,6 +35,8 @@
             window-title
             window-resolution
             window-fullscreen?
+            window-width
+            window-height
             window-size
             open-window
             close-window
@@ -53,14 +55,15 @@
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
 
-(define window-size (make-signal (vector2 0 0)))
+(define window-width (make-root-signal 0))
+(define window-height (make-root-signal 0))
+(define window-size (signal-map vector2 window-width window-height))
 
 (register-event-handler
  'video-resize
  (lambda (e)
-   (signal-set! window-size
-                (vector2 (SDL:event:resize:w e)
-                         (SDL:event:resize:h e)))))
+   (signal-set! window-width (SDL:event:resize:w e))
+   (signal-set! window-height (SDL:event:resize:h e))))
 
 (define* (open-window window)
   "Open the game window using the settings in WINDOW."
