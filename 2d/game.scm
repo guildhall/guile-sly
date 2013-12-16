@@ -34,7 +34,8 @@
   #:use-module (2d repl repl)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (run-game
+  #:export (game-draw
+            run-game
             quit-game
             pause-game
             resume-game
@@ -50,36 +51,32 @@
 (define (default-draw)
   #f)
 
-(define (default-update)
-  #f)
-
 ;; Possible states are:
 ;; * stopped
 ;; * running
 ;; * paused
 (define %state 'stopped)
 (define %draw #f)
-(define %update #f)
+(define game-draw (make-root-signal 0))
 ;; TODO: Make this configurable
 (define ticks-per-second 60)
 (define tick-interval (floor (/ 1000 ticks-per-second)))
 
 (define* (run-game #:optional #:key
-                   (draw default-draw)
-                   (update default-update))
+                   (draw default-draw))
   "Start the game loop."
   (set! %state 'running)
   (set! %draw draw)
-  (set! %update update)
   (resume-game)
   (spawn-server)
   (game-loop (SDL:get-ticks) 0))
 
-(define (draw dt)
+(define (draw dt alpha)
   "Render a frame."
   (set-gl-matrix-mode (matrix-mode modelview))
   (gl-load-identity)
   (gl-clear (clear-buffer-mask color-buffer depth-buffer))
+  (signal-set! game-draw alpha)
   (%draw)
   (SDL:gl-swap-buffers)
   (accumulate-fps! dt))
@@ -92,14 +89,13 @@ is the unused accumulator time."
       (begin
         (handle-events)
         (update-agenda)
-        (%update)
         (update (- accumulator tick-interval)))
       accumulator))
 
 (define (update-and-render dt accumulator)
   (let ((remainder (update accumulator)))
     (run-repl)
-    (draw dt)
+    (draw dt (/ remainder tick-interval))
     remainder))
 
 (define (tick dt accumulator)
