@@ -159,7 +159,8 @@ a side-effect into a signal chain."
                (lambda (do-signal from)
                  (let ((value (signal-ref signal)))
                    (proc value)
-                   value))))
+                   value))
+               signal))
 
 (define (signal-map proc signal . signals)
   "Create a new signal that applies PROC to the values stored in one
