@@ -181,7 +181,7 @@ previously computed value, or INIT for the first call."
   (make-signal init
                (let ((previous init))
                  (lambda (fold-signal from)
-                   (let ((value (proc previous (signal-ref from))))
+                   (let ((value (proc (signal-ref from) previous)))
                      (set! previous value)
                      (signal-set! fold-signal value))))
                signal))
