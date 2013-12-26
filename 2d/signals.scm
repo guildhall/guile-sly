@@ -33,7 +33,8 @@
             signal-ref
             signal-ref-maybe
             signal-receiver
-            signal-connections
+            signal-inputs
+            signal-outputs
             signal-connect!
             signal-disconnect!
             signal-clear!
@@ -58,23 +59,25 @@
 ;; programming. State mutation is hidden away and a functional,
 ;; declarative interface is exposed.
 (define-record-type <signal>
-  (%make-signal value receiver connections)
+  (%make-signal value receiver inputs outputs)
   signal?
   (value signal-ref %signal-set!)
   (receiver signal-receiver)
-  (connections signal-connections %set-signal-connections!))
+  (inputs signal-inputs %set-signal-inputs!)
+  (outputs signal-outputs %set-signal-outputs!))
 
-(define (make-signal init receiver . connections)
+(define (make-signal init receiver input . inputs)
   "Create a new signal with initial value INIT, a procedure RECEIVER
-to transform incoming signal values and zero or more signals to
-connect to."
-  (let ((signal (%make-signal init receiver '())))
-    (for-each (cut signal-connect! <> signal) connections)
+to transform incoming signal values and one or more signals to connect
+to."
+  (let ((signal (%make-signal init receiver '() '())))
+    (for-each (cut signal-connect! <> signal)
+              (cons input inputs))
     signal))
 
 (define (make-root-signal init)
   "Create a new root level signal with initial value INIT."
-  (%make-signal init #f '()))
+  (%make-signal init #f '() '()))
 
 (define (root-signal? signal)
   "Returns true if a signal has no receiver procedure or false
@@ -95,19 +98,27 @@ value will be propagated to SIGNAL-OUT."
       (error 'root-signal-error
              "Cannot connect to a root signal"
              signal-out)
-      (%set-signal-connections!
-       signal-in
-       (cons signal-out (signal-connections signal-in)))))
+      (let ((inputs  (signal-inputs  signal-out))
+            (outputs (signal-outputs signal-in)))
+        (%set-signal-inputs!  signal-out (cons signal-in  inputs))
+        (%set-signal-outputs! signal-in  (cons signal-out outputs)))))
 
 (define (signal-disconnect! signal-in signal-out)
   "Detach SIGNAL-OUT from SIGNAL-IN."
-  (%set-signal-connections!
-   signal-in
-   (delete signal-out (signal-connections signal-in) eq?)))
+  (let ((inputs (signal-inputs signal-out))
+        (outputs (signal-outputs signal-in)))
+    (%set-signal-inputs!  signal-out (delete signal-in  inputs  eq?))
+    (%set-signal-outputs! signal-in  (delete signal-out outputs eq?))))
 
-(define (signal-clear! signal)
-  "Disconnect all connections from SIGNAL."
-  (%set-signal-connections! signal '()))
+(define (signal-clear-outputs! signal)
+  "Disconnect all output signals from SIGNAL."
+  (for-each (cut signal-disconnect! signal <>)
+            (signal-outputs signal)))
+
+(define (signal-clear-inputs! signal)
+  "Disconnect all inputs signals from SIGNAL."
+  (for-each (cut signal-disconnect! <> signal)
+            (signal-inputs signal)))
 
 (define (signal-receive to from)
   "Evaluate the receiver procedure for the signal TO with the signal
@@ -117,7 +128,7 @@ FROM."
 (define (signal-propagate signal)
   "Notify all connected signals about the current value of SIGNAL."
   (for-each (cut signal-receive <> signal)
-            (signal-connections signal)))
+            (signal-outputs signal)))
 
 (define (signal-set! signal value)
   "Change the current value of SIGNAL to VALUE and propagate SIGNAL to
@@ -145,9 +156,11 @@ the list SIGNALS."
   (define (update)
     (map signal-ref signals))
 
-  (make-signal (update)
-               (lambda (combiner from)
-                 (signal-set! combiner (update)))))
+  (apply make-signal
+         (update)
+         (lambda (combiner from)
+           (signal-set! combiner (update)))
+         signals))
 
 (define (signal-do proc signal)
   "Create a new signal that applies PROC when a new values is received
