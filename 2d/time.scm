@@ -48,8 +48,8 @@ emitted."
   "Create a new signal that delays propagation of values received from
 SIGNAL by TICKS agenda updates."
   (make-signal (signal-ref signal)
-               (colambda (delay-signal from)
-                 (let ((value (signal-ref signal)))
+               (colambda (self from)
+                 (let ((value (signal-ref from)))
                    (wait ticks)
-                   (signal-set! delay-signal value)))
-               signal))
+                   (signal-set! self value)))
+               (list signal)))
