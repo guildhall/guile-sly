@@ -53,7 +53,7 @@
   (queue segment-queue))
 
 (define (make-time-segment time . callbacks)
-  "Create a new time segment at TIME and enqueus everything in the
+  "Create a new time segment at TIME and enqueues everything in the
 list CALLBACKS."
   (let ((segment (%make-time-segment time (make-q))))
     ;; Enqueue all callbacks
@@ -207,6 +207,6 @@ tick."
   (%clear-agenda (current-agenda)))
 
 (define* (wait #:optional (delay 1))
-  "Yield coroutine and schdule the continuation to be run after DELAY
-ticks."
+  "Yield coroutine and schedule the continuation to be run after DELAY
+ticks.  DELAY is 1 by default."
   (yield (cut schedule <> delay)))
