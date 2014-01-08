@@ -73,20 +73,6 @@ list CALLBACKS."
   "Create a new, empty agenda."
   (%make-agenda 0 '()))
 
-;; The global agenda that will be used when schedule is called outside
-;; of a with-agenda form.
-(define global-agenda (make-agenda))
-
-(define *current-agenda* global-agenda)
-
-;; emacs: (put 'with-agenda 'scheme-indent-function 1)
-(define-syntax-rule (with-agenda agenda body ...)
-  (begin
-    (set! *current-agenda* agenda)
-    body
-    ...
-    (set! *current-agenda* global-agenda)))
-
 (define (agenda-empty? agenda)
   "Return #t if AGENDA has no scheduled procedures."
   (null? (agenda-segments agenda)))
@@ -171,17 +157,28 @@ and enqueue CALLBACK."
   "Remove all scheduled procedures from AGENDA."
   (set-agenda-segments! agenda '()))
 
+;; The global agenda that will be used when schedule is called outside
+;; of a with-agenda form.
+(define *global-agenda* (make-agenda))
+
+(define current-agenda (make-parameter *global-agenda*))
+
+;; emacs: (put 'with-agenda 'scheme-indent-function 1)
+(define-syntax-rule (with-agenda agenda body ...)
+  (parameterize ((current-agenda agenda))
+    body ...))
+
 (define* (agenda-schedule thunk #:optional (delay 1))
   "Schedule THUNK in the current agenda to run after DELAY updates (1
 by default)."
-  (%agenda-schedule *current-agenda* thunk delay))
+  (%agenda-schedule (current-agenda) thunk delay))
 
 (define* (agenda-schedule-interval thunk #:optional (interval 1) (delay 1))
   "Schedule THUNK in the current agenda to run after DELAY updates and
 run every INTERVAL updates thereafter. Both DELAY and INTERVAL default
 to 1. Simply pass THUNK and nothing else to schedule THUNK to be run
 upon every update."
-  (%agenda-schedule *current-agenda*
+  (%agenda-schedule (current-agenda)
                     (lambda ()
                       (thunk)
                       (agenda-schedule-interval thunk interval interval))
@@ -189,11 +186,11 @@ upon every update."
 
 (define (update-agenda)
   "Update the current agenda."
-  (%update-agenda *current-agenda*))
+  (%update-agenda (current-agenda)))
 
 (define (clear-agenda)
   "Clear the current agenda."
-  (%clear-agenda *current-agenda*))
+  (%clear-agenda (current-agenda)))
 
 (define* (wait #:optional (delay 1))
   "Yield coroutine and schdule the continuation to be run after DELAY
