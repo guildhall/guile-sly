@@ -34,7 +34,9 @@
   #:use-module (2d repl repl)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (draw-hook
+  #:export (ticks-per-second
+            tick-interval
+            draw-hook
             run-game-loop
             quit-game
             pause-game
@@ -53,17 +55,17 @@
 ;; * running
 ;; * paused
 (define %state 'stopped)
-;; TODO: Make this configurable
 (define ticks-per-second 60)
-(define tick-interval (floor (/ 1000 ticks-per-second)))
+(define tick-interval (make-parameter 0))
 (define draw-hook (make-hook))
 
 (define (run-game-loop)
   "Start the game loop."
-  (set! %state 'running)
-  (resume-game)
-  (spawn-server)
-  (game-loop (SDL:get-ticks) 0))
+  (parameterize ((tick-interval (floor (/ 1000 ticks-per-second))))
+    (set! %state 'running)
+    (resume-game)
+    (spawn-server)
+    (game-loop (SDL:get-ticks) 0)))
 
 (define (draw dt alpha)
   "Render a frame."
@@ -78,17 +80,17 @@
   "Call the update callback. The update callback will be called as
 many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
-  (if (>= accumulator tick-interval)
+  (if (>= accumulator (tick-interval))
       (begin
         (handle-events)
         (tick-agenda!)
-        (update (- accumulator tick-interval)))
+        (update (- accumulator (tick-interval))))
       accumulator))
 
 (define (update-and-render dt accumulator)
   (let ((remainder (update accumulator)))
     (run-repl)
-    (draw dt (/ remainder tick-interval))
+    (draw dt (/ remainder (tick-interval)))
     remainder))
 
 (define (tick dt accumulator)
@@ -96,7 +98,7 @@ is the unused accumulator time."
   (if (game-paused?)
       (begin
         (run-repl)
-        (SDL:delay tick-interval)
+        (SDL:delay (tick-interval))
         accumulator)
       (catch #t
         (lambda ()
