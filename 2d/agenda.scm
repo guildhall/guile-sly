@@ -34,8 +34,8 @@
             schedule-interval
             schedule-next
             schedule-every
-            update-agenda
-            clear-agenda
+            tick-agenda!
+            clear-agenda!
             wait))
 
 ;; This code is a modified version of the agenda implementation in
@@ -197,11 +197,11 @@ next tick."
 tick."
   (schedule-interval thunk 1))
 
-(define (update-agenda)
-  "Update the current agenda."
+(define (tick-agenda!)
+  "Advance time by 1 for the current agenda."
   (%update-agenda (current-agenda)))
 
-(define (clear-agenda)
+(define (clear-agenda!)
   "Clear the current agenda."
   (%clear-agenda (current-agenda)))
 
