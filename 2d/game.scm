@@ -82,7 +82,7 @@ many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
   (if (>= accumulator (tick-interval))
       (begin
-        (handle-events)
+        (read-input)
         (tick-agenda!)
         (update (- accumulator (tick-interval))))
       accumulator))
@@ -148,24 +148,23 @@ time in milliseconds that has passed since the last game update."
 ;;; Event Handling
 ;;;
 
-(define handle-events
+(define read-input
   (let ((e (SDL:make-event)))
     (lambda ()
-      "Handle all events in the SDL event queue."
+      "Process all events in the input event queue."
       (while (SDL:poll-event e)
         (handle-event e)))))
 
-(define event-handlers '())
+(define event-handlers (make-hash-table))
 
-(define (register-event-handler event callback)
-  "Register CALLBACK to respond to events of type EVENT."
-  (set! event-handlers (acons event callback event-handlers)))
+(define (register-event-handler event-type proc)
+  (hashq-set! event-handlers event-type proc))
 
 (define (handle-event e)
-  "Call the relevant callback procedure for the event E."
-  (let ((handler (assq-ref event-handlers (SDL:event:type e))))
-    (when handler
-      (handler e))))
+  "Run the relevant hook for the event E."
+  (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
+    (when handle
+      ((car handle) e))))
 
 ;;;
 ;;; Frames Per Second
