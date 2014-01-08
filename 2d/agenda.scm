@@ -25,6 +25,7 @@
   #:use-module (ice-9 q)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-26)
   #:use-module (2d coroutine)
   #:export (make-agenda
             *global-agenda*
@@ -56,7 +57,7 @@
 list CALLBACKS."
   (let ((segment (%make-time-segment time (make-q))))
     ;; Enqueue all callbacks
-    (for-each (lambda (c) (segment-enq segment c)) callbacks)
+    (for-each (cut segment-enq segment <>) callbacks)
     segment))
 
 (define (segment-enq segment callback)
@@ -208,4 +209,4 @@ tick."
 (define* (wait #:optional (delay 1))
   "Yield coroutine and schdule the continuation to be run after DELAY
 ticks."
-  (yield (lambda (resume) (schedule resume delay))))
+  (yield (cut schedule <> delay)))
