@@ -54,15 +54,15 @@
 ;; * stopped
 ;; * running
 ;; * paused
-(define %state 'stopped)
+(define game-loop-status (make-parameter 'stopped))
 (define ticks-per-second 60)
 (define tick-interval (make-parameter 0))
 (define draw-hook (make-hook))
 
 (define (run-game-loop)
   "Start the game loop."
-  (parameterize ((tick-interval (floor (/ 1000 ticks-per-second))))
-    (set! %state 'running)
+  (parameterize ((game-loop-status 'running)
+                 (tick-interval (floor (/ 1000 ticks-per-second))))
     (resume-game)
     (spawn-server)
     (game-loop (SDL:get-ticks) 0)))
@@ -125,24 +125,24 @@ time in milliseconds that has passed since the last game update."
 ;;;
 
 (define (game-running?)
-  (or (eq? %state 'running)
-      (eq? %state 'paused)))
+  (or (eq? (game-loop-status) 'running)
+      (eq? (game-loop-status) 'paused)))
 
 (define (game-paused?)
-  (eq? %state 'paused))
+  (eq? (game-loop-status) 'paused))
 
 (define (pause-game)
   "Pauses the game loop. Useful when developing."
-  (set! %state 'paused))
+  (game-loop-status 'paused))
 
 (define (resume-game)
   "Resumes the game loop."
   (when (game-paused?)
-    (set! %state 'running)))
+    (game-loop-status 'running)))
 
 (define (quit-game)
   "Finish the current frame and terminate the game loop."
-  (set! %state 'stopped))
+  (game-loop-status 'stopped))
 
 ;;;
 ;;; Event Handling
