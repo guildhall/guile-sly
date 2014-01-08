@@ -27,6 +27,8 @@
   #:use-module (srfi srfi-9)
   #:use-module (2d coroutine)
   #:export (make-agenda
+            *global-agenda*
+            current-agenda
             with-agenda
             schedule
             schedule-interval
