@@ -34,7 +34,7 @@
 be a signal, in which case the stored value of the signal will be
 emitted."
   (let ((ticker (make-root-signal (signal-ref-maybe value))))
-    (agenda-schedule-interval
+    (schedule-interval
      (lambda ()
        (signal-set! ticker (signal-ref-maybe value)))
      ticks)

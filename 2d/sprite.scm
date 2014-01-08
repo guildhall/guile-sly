@@ -302,7 +302,7 @@ currently bound."
   (hash-clear! animated-sprites))
 
 ;; Update animated sprites upon every update.
-(agenda-schedule-interval update-animated-sprites!)
+(schedule-every update-animated-sprites!)
 
 (export make-sprite
         sprite?

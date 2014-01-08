@@ -28,8 +28,10 @@
   #:use-module (2d coroutine)
   #:export (make-agenda
             with-agenda
-            agenda-schedule
-            agenda-schedule-interval
+            schedule
+            schedule-interval
+            schedule-next
+            schedule-every
             update-agenda
             clear-agenda
             wait))
@@ -168,21 +170,30 @@ and enqueue CALLBACK."
   (parameterize ((current-agenda agenda))
     body ...))
 
-(define* (agenda-schedule thunk #:optional (delay 1))
-  "Schedule THUNK in the current agenda to run after DELAY updates (1
-by default)."
+(define (schedule thunk delay)
+  "Schedule THUNK within the current agenda to be applied after DELAY
+ticks."
   (%agenda-schedule (current-agenda) thunk delay))
 
-(define* (agenda-schedule-interval thunk #:optional (interval 1) (delay 1))
-  "Schedule THUNK in the current agenda to run after DELAY updates and
-run every INTERVAL updates thereafter. Both DELAY and INTERVAL default
-to 1. Simply pass THUNK and nothing else to schedule THUNK to be run
-upon every update."
+(define* (schedule-interval thunk interval #:optional (delay 1))
+  "Schedule THUNK within the current agenda to be applied after DELAY
+ticks and then to be applied every INTERVAL ticks thereafter.  DELAY
+is 1 by default."
   (%agenda-schedule (current-agenda)
                     (lambda ()
                       (thunk)
-                      (agenda-schedule-interval thunk interval interval))
+                      (schedule-interval thunk interval interval))
                     delay))
+
+(define (schedule-next thunk)
+  "Schedule THUNK within the current agenda to be applied upon the
+next tick."
+  (schedule thunk 1))
+
+(define (schedule-every thunk)
+  "Schedule THUNK within the current agenda to be applied upon every
+tick."
+  (schedule-interval thunk 1))
 
 (define (update-agenda)
   "Update the current agenda."
@@ -195,4 +206,4 @@ upon every update."
 (define* (wait #:optional (delay 1))
   "Yield coroutine and schdule the continuation to be run after DELAY
 ticks."
-  (yield (lambda (resume) (agenda-schedule resume delay))))
+  (yield (lambda (resume) (schedule resume delay))))
