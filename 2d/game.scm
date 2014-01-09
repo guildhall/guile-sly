@@ -43,8 +43,7 @@
             resume-game
             game-running?
             game-paused?
-            register-event-handler
-            current-fps))
+            register-event-handler))
 
 ;;;
 ;;; Game Loop
@@ -57,43 +56,44 @@
 (define game-loop-status (make-parameter 'stopped))
 (define ticks-per-second 60)
 (define tick-interval (make-parameter 0))
-(define draw-hook (make-hook))
+(define draw-hook (make-hook 2))
+(define accumulator (make-parameter 0))
 
 (define (run-game-loop)
   "Start the game loop."
   (parameterize ((game-loop-status 'running)
-                 (tick-interval (floor (/ 1000 ticks-per-second))))
+                 (tick-interval (floor (/ 1000 ticks-per-second)))
+                 (accumulator 0))
     (resume-game)
     (spawn-server)
-    (game-loop (SDL:get-ticks) 0)))
+    (game-loop (SDL:get-ticks))))
 
 (define (draw dt alpha)
   "Render a frame."
   (set-gl-matrix-mode (matrix-mode modelview))
   (gl-load-identity)
   (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-  (run-hook draw-hook)
-  (SDL:gl-swap-buffers)
-  (accumulate-fps! dt))
+  (run-hook draw-hook dt alpha)
+  (SDL:gl-swap-buffers))
 
-(define (update accumulator)
+(define (update)
   "Call the update callback. The update callback will be called as
 many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
-  (if (>= accumulator (tick-interval))
-      (begin
-        (read-input)
-        (tick-agenda!)
-        (update (- accumulator (tick-interval))))
-      accumulator))
+  (while (>= (accumulator) (tick-interval))
+      (read-input)
+      (tick-agenda!)
+      (accumulator (- (accumulator) (tick-interval)))))
 
-(define (update-and-render dt accumulator)
-  (let ((remainder (update accumulator)))
-    (run-repl)
-    (draw dt (/ remainder (tick-interval)))
-    remainder))
+(define (alpha)
+  (/ (accumulator) (tick-interval)))
 
-(define (tick dt accumulator)
+(define (update-and-render dt)
+  (update)
+  (run-repl)
+  (draw dt (alpha)))
+
+(define (tick dt)
   "Advance the game by one frame."
   (if (game-paused?)
       (begin
@@ -102,7 +102,7 @@ is the unused accumulator time."
         accumulator)
       (catch #t
         (lambda ()
-          (update-and-render dt accumulator))
+          (update-and-render dt))
         (lambda (key . args)
           (pause-game)
           accumulator)
@@ -110,15 +110,15 @@ is the unused accumulator time."
           (display-backtrace (make-stack #t)
                              (current-output-port))))))
 
-(define (game-loop last-time accumulator)
+(define (game-loop last-time)
   "Update game state, and render. LAST-TIME is the time in
-milliseconds of the last iteration of the loop. ACCUMULATOR is the
-time in milliseconds that has passed since the last game update."
+milliseconds of the last iteration of the loop."
   (when (game-running?)
     (let* ((current-time (SDL:get-ticks))
-           (dt (- current-time last-time))
-           (accumulator (+ accumulator dt)))
-      (game-loop current-time (tick dt accumulator)))))
+           (dt (- current-time last-time)))
+      (accumulator (+ (accumulator) dt))
+      (tick dt)
+      (game-loop current-time))))
 
 ;;;
 ;;; State management
@@ -165,33 +165,6 @@ time in milliseconds that has passed since the last game update."
   (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
     (when handle
       ((car handle) e))))
-
-;;;
-;;; Frames Per Second
-;;;
-
-(define game-fps 0)
-
-(define accumulate-fps!
-  (let* ((elapsed-time 0)
-         (fps 0))
-    (lambda (dt)
-      "Increment the frames-per-second counter. Resets to 0 every
-second."
-      (let ((new-time (+ elapsed-time dt))
-            (new-fps (1+ fps)))
-        (if (>= new-time 1000)
-            (begin
-              (set! game-fps new-fps)
-              (set! fps 0)
-              (set! elapsed-time 0))
-            (begin
-              (set! fps new-fps)
-              (set! elapsed-time new-time)))))))
-
-(define (current-fps)
-  "Return the current FPS value."
-  game-fps)
 
 ;;;
 ;;; REPL
