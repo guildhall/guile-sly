@@ -22,7 +22,6 @@
 ;;; Code:
 
 (define-module (2d game)
-  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-9)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (figl gl)
@@ -30,8 +29,6 @@
   #:use-module (2d coroutine)
   #:use-module (2d game)
   #:use-module (2d mvars)
-  #:use-module (2d repl server)
-  #:use-module (2d repl repl)
   #:use-module (2d signals)
   #:use-module (2d vector2)
   #:export (ticks-per-second
@@ -64,8 +61,6 @@
   (parameterize ((game-loop-status 'running)
                  (tick-interval (floor (/ 1000 ticks-per-second)))
                  (accumulator 0))
-    (resume-game)
-    (spawn-server)
     (game-loop (SDL:get-ticks))))
 
 (define (draw dt alpha)
@@ -90,14 +85,12 @@ is the unused accumulator time."
 
 (define (update-and-render dt)
   (update)
-  (run-repl)
   (draw dt (alpha)))
 
 (define (tick dt)
   "Advance the game by one frame."
   (if (game-paused?)
       (begin
-        (run-repl)
         (SDL:delay (tick-interval))
         accumulator)
       (catch #t
@@ -165,27 +158,3 @@ milliseconds of the last iteration of the loop."
   (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
     (when handle
       ((car handle) e))))
-
-;;;
-;;; REPL
-;;;
-
-(define (run-repl-thunk thunk input output error stack)
-  "Run THUNK with the given REPL STACK. I/O is redirected to the given
-INPUT, OUTPUT, and ERROR ports."
-  (put-mvar
-   repl-output-mvar
-   (with-input-from-port input
-     (lambda ()
-       (with-output-to-port output
-         (lambda ()
-           (with-error-to-port error
-             (lambda ()
-               (with-fluids ((*repl-stack* stack))
-                 (thunk))))))))))
-
-(define (run-repl)
-  "Execute a thunk from the REPL is there is one."
-  (unless (mvar-empty? repl-input-mvar)
-    (and-let* ((vals (try-take-mvar repl-input-mvar)))
-              (apply run-repl-thunk vals))))

@@ -29,9 +29,14 @@
   #:use-module (system repl common)
   #:use-module (system repl command)
   #:use-module (ice-9 control)
-  #:use-module (2d mvars)
+  #:use-module (srfi srfi-2)
+  #:use-module (2d agenda)
   #:use-module (2d game)
-  #:export (repl-input-mvar repl-output-mvar start-repl run-repl))
+  #:use-module (2d mvars)
+  #:export (repl-input-mvar
+            repl-output-mvar
+            start-repl
+            run-repl))
 
 
 ;;;
@@ -127,11 +132,37 @@
 
 
 ;;;
-;;; The repl
+;;; guile-2d REPL stuff
 ;;;
 
 (define repl-input-mvar  (new-empty-mvar))
 (define repl-output-mvar (new-empty-mvar))
+
+(define (run-repl-thunk thunk input output error stack)
+  "Run THUNK with the given REPL STACK. I/O is redirected to the given
+INPUT, OUTPUT, and ERROR ports."
+  (put-mvar
+   repl-output-mvar
+   (with-input-from-port input
+     (lambda ()
+       (with-output-to-port output
+         (lambda ()
+           (with-error-to-port error
+             (lambda ()
+               (with-fluids ((*repl-stack* stack))
+                 (thunk))))))))))
+
+(define (flush-repl)
+  "Execute a thunk from the REPL is there is one."
+  (unless (mvar-empty? repl-input-mvar)
+    (and-let* ((vals (try-take-mvar repl-input-mvar)))
+              (apply run-repl-thunk vals))))
+
+(schedule-interval flush-repl 5)
+
+;;;
+;;; The repl
+;;;
 
 (define* (start-repl #:optional (lang (current-language)) #:key debug)
   ;; ,language at the REPL will update the current-language.  Make
