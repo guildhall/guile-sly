@@ -26,13 +26,19 @@
   #:use-module (2d game)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (mouse-x
+  #:export (mouse-move-hook
+            mouse-press-hook
+            mouse-click-hook
+            mouse-x
             mouse-y
             mouse-position
             mouse-last-down
             mouse-last-up
             mouse-down?))
 
+(define mouse-move-hook (make-hook 2))
+(define mouse-press-hook (make-hook 3))
+(define mouse-click-hook (make-hook 3))
 (define mouse-last-down (make-root-signal 'none))
 (define mouse-last-up (make-root-signal 'none))
 (define mouse-x (make-root-signal 0))
@@ -54,15 +60,26 @@ button is pressed or #f otherwise."
 (register-event-handler
  'mouse-motion
  (lambda (e)
+   (run-hook mouse-move-hook
+             (SDL:event:motion:x e)
+             (SDL:event:motion:y e))
    (signal-set! mouse-x (SDL:event:motion:x e))
    (signal-set! mouse-y (SDL:event:motion:y e))))
 
 (register-event-handler
- 'mouse-down
+ 'mouse-button-down
  (lambda (e)
+   (run-hook mouse-press-hook
+             (SDL:event:button:button e)
+             (SDL:event:button:x e)
+             (SDL:event:button:y e))
    (signal-set! mouse-last-down (SDL:event:button:button e))))
 
 (register-event-handler
- 'mouse-up
+ 'mouse-button-up
  (lambda (e)
+   (run-hook mouse-click-hook
+             (SDL:event:button:button e)
+             (SDL:event:button:x e)
+             (SDL:event:button:y e))
    (signal-set! mouse-last-up (SDL:event:button:button e))))
