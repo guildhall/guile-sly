@@ -81,7 +81,7 @@ many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
   (while (>= (accumulator) (tick-interval))
       (read-input)
-      (tick-agenda!)
+      (tick-agenda! *global-agenda*)
       (accumulator (- (accumulator) (tick-interval)))))
 
 (define (alpha)
@@ -95,8 +95,7 @@ is the unused accumulator time."
   "Advance the game by one frame."
   (if (game-paused?)
       (begin
-        (with-agenda paused-agenda
-          (tick-agenda!))
+        (tick-agenda! paused-agenda)
         (SDL:delay (tick-interval))
         accumulator)
       (catch #t
