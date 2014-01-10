@@ -163,4 +163,4 @@ milliseconds of the last iteration of the loop."
   "Run the relevant hook for the event E."
   (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
     (when handle
-      ((car handle) e))))
+      ((cdr handle) e))))
