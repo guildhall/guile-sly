@@ -1,11 +1,11 @@
 (use-modules (2d animation)
              (2d game)
-             (2d scene)
              (2d sprite)
-             (2d stage)
              (2d tileset)
              (2d vector2)
              (2d window))
+
+(load "common.scm")
 
 (define (make-demo-animation)
   "Load a texture, split it into 64x64 tiles, and build an animated
@@ -21,17 +21,10 @@ sprite out of it."
                          (tileset-ref tiles 26))))
     (make-animation frames 6 #t)))
 
-(define animation-scene
-  (make-scene
-   "Animation"
-   #:init (lambda ()
-            (make-sprite (make-demo-animation)
-                         #:position (vector2 320 240)))
-   #:draw draw-sprite))
+(define sprite (make-sprite (make-demo-animation)
+                            #:position (vector2 320 240)))
 
-(define animation-demo
-  (make-game
-   #:title "Animation"
-   #:first-scene animation-scene))
+(add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
-(run-game animation-demo)
+(with-window (make-window #:title "Animation")
+  (run-game-loop))
