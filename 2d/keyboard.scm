@@ -26,13 +26,17 @@
   #:use-module (2d game)
   #:use-module (2d signals)
   #:use-module (2d vector2)
-  #:export (key-last-down
+  #:export (key-press-hook
+            key-release-hook
+            key-last-down
             key-last-up
             key-down?
             key-directions
             key-arrows
             key-wasd))
 
+(define key-press-hook (make-hook 2))
+(define key-release-hook (make-hook 2))
 (define key-last-down (make-root-signal 'none))
 (define key-last-up (make-root-signal 'none))
 
@@ -67,9 +71,15 @@ KEY is pressed or #f otherwise."
 (register-event-handler
  'key-down
  (lambda (e)
+   (run-hook key-press-hook
+             (SDL:event:key:keysym:sym e)
+             (SDL:event:key:keysym:unicode e))
    (signal-set! key-last-down (SDL:event:key:keysym:sym e))))
 
 (register-event-handler
  'key-up
  (lambda (e)
+   (run-hook key-release-hook
+             (SDL:event:key:keysym:sym e)
+             (SDL:event:key:keysym:unicode e))
    (signal-set! key-last-up (SDL:event:key:keysym:sym e))))
