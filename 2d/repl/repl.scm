@@ -152,13 +152,26 @@ INPUT, OUTPUT, and ERROR ports."
                (with-fluids ((*repl-stack* stack))
                  (thunk))))))))))
 
+(define (add-to-repl-mvar thunk-ports-and-stack)
+  ;; Insert thunk into repl-mvar.  The game loop will schedule it and
+  ;; run it on the next tick.  We also pass along the
+  ;; input/output/error ports and the REPL stack.
+  (put-mvar repl-input-mvar thunk-ports-and-stack)
+  ;; Read the results back from game-mvar.  Will block until results
+  ;; are available.
+  (take-mvar repl-output-mvar))
+
 (define (flush-repl)
   "Execute a thunk from the REPL is there is one."
   (unless (mvar-empty? repl-input-mvar)
     (and-let* ((vals (try-take-mvar repl-input-mvar)))
               (apply run-repl-thunk vals))))
 
-(schedule-interval flush-repl 5)
+(define poll-interval 5)
+
+(schedule-interval flush-repl poll-interval)
+(with-agenda paused-agenda
+  (schedule-interval flush-repl poll-interval))
 
 ;;;
 ;;; The repl
@@ -224,27 +237,17 @@ INPUT, OUTPUT, and ERROR ports."
                                        (abort-on-error "parsing expression"
                                          (repl-parse repl exp))))))
                                (run-hook before-eval-hook exp)
-                               ;; Insert thunk into repl-mvar. The
-                               ;; game loop will schedule it and run
-                               ;; it on the next tick. We also pass
-                               ;; along the input/output/error ports
-                               ;; and the REPL stack.
-                               (put-mvar
-                                repl-input-mvar
+                               (add-to-repl-mvar
                                 (list
                                  (lambda ()
-                                  (call-with-error-handling
-                                   (lambda ()
-                                     (with-stack-and-prompt thunk))
-                                   #:on-error (repl-option-ref repl 'on-error)))
+                                   (call-with-error-handling
+                                    (lambda ()
+                                      (with-stack-and-prompt thunk))
+                                    #:on-error (repl-option-ref repl 'on-error)))
                                  (current-input-port)
                                  (current-output-port)
                                  (current-error-port)
-                                 (fluid-ref *repl-stack*)))
-                               ;; Read the results back from
-                               ;; game-mvar. Will block until results
-                               ;; are available.
-                               (take-mvar repl-output-mvar))
+                                 (fluid-ref *repl-stack*))))
                              (lambda (k) (values))))
                       (lambda l
                         (for-each (lambda (v)
