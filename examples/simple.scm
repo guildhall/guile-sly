@@ -1,21 +1,14 @@
 (use-modules (2d game)
-             (2d scene)
              (2d sprite)
-             (2d vector2))
+             (2d vector2)
+             (2d window))
 
-(define (make-demo-sprite)
-  (load-sprite "images/ghost.png"
-               #:position (vector2 320 240)))
+(load "common.scm")
 
-(define simple-scene
-  (make-scene
-   "Simple"
-   #:init make-demo-sprite
-   #:draw draw-sprite))
+(define sprite (load-sprite "images/p1_front.png"
+                            #:position (vector2 320 240)))
 
-(define simple-demo
-  (make-game
-   #:title "Simple Demo"
-   #:first-scene simple-scene))
+(add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
-(run-game simple-demo)
+(with-window (make-window #:title "Simple Sprite Demo")
+  (run-game-loop))

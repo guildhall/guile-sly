@@ -1,35 +1,31 @@
 (use-modules (2d agenda)
              (2d coroutine)
              (2d game)
-             (2d scene)
              (2d sprite)
-             (2d stage)
-             (2d vector2))
+             (2d vector2)
+             (2d window))
 
-(define (enter sprite)
-  ;; Simple script that moves the sprite to a random location every
-  ;; second.
-  (agenda-schedule
-   (colambda ()
-     (while #t
-       (set-sprite-position!
-        sprite
-        (vector2 (random (vx (game-resolution coroutine-demo)))
-                 (random (vy (game-resolution coroutine-demo)))))
-       (wait 60)))))
+(load "common.scm")
 
-(define coroutine-scene
-  (make-scene
-   "Coroutine"
-   #:init (lambda ()
-            (load-sprite "images/ghost.png"
-                         #:position (vector2 320 240)))
-   #:enter enter
-   #:draw draw-sprite))
+(define window-width 640)
+(define window-height 480)
 
-(define coroutine-demo
-  (make-game
-   #:title "Coroutines"
-   #:first-scene coroutine-scene))
+(define sprite (load-sprite "images/p1_front.png"
+                            #:position (vector2 320 240)))
 
-(run-game coroutine-demo)
+;; Simple script that moves the sprite to a random location every
+;; second.
+(schedule-interval
+ (lambda ()
+   (set-sprite-position!
+    sprite
+    (vector2 (random window-width)
+             (random window-height))))
+ 60)
+
+(add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
+
+(with-window (make-window #:title "Coroutines"
+                          #:resolution (vector2 window-width
+                                                window-height))
+  (run-game-loop))

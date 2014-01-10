@@ -2,11 +2,13 @@
              (srfi srfi-9)
              (srfi srfi-42)
              (2d game)
-             (2d scene)
              (2d sprite)
              (2d texture)
              (2d tileset)
-             (2d vector2))
+             (2d vector2)
+             (2d window))
+
+(load "common.scm")
 
 ;;;
 ;;; Orthogonal tile map example
@@ -82,15 +84,9 @@
                                     tileset
                                     map-tiles))))
 
-(define tilemap-scene
-  (make-scene
-   "Tilemap"
-   #:init build-map
-   #:draw draw-map-layer))
+(define layer (build-map))
 
-(define tilemap
-  (make-game
-   #:title "Tilemap"
-   #:first-scene tilemap-scene))
+(add-hook! draw-hook (lambda (dt alpha) (draw-map-layer layer)))
 
-(run-game tilemap)
+(with-window (make-window #:title "Tilemap")
+  (run-game-loop))
