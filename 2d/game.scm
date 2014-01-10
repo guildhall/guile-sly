@@ -28,11 +28,11 @@
   #:use-module (2d agenda)
   #:use-module (2d coroutine)
   #:use-module (2d game)
-  #:use-module (2d mvars)
   #:use-module (2d signals)
   #:use-module (2d vector2)
   #:export (ticks-per-second
             tick-interval
+            paused-agenda
             draw-hook
             run-game-loop
             quit-game
@@ -55,6 +55,10 @@
 (define tick-interval (make-parameter 0))
 (define draw-hook (make-hook 2))
 (define accumulator (make-parameter 0))
+;; This agenda is only ticked when the game loop is in the paused
+;; state.  Useful for things like the REPL that should be run even
+;; though the game is paused.
+(define paused-agenda (make-agenda))
 
 (define (run-game-loop)
   "Start the game loop."
@@ -91,6 +95,8 @@ is the unused accumulator time."
   "Advance the game by one frame."
   (if (game-paused?)
       (begin
+        (with-agenda paused-agenda
+          (tick-agenda!))
         (SDL:delay (tick-interval))
         accumulator)
       (catch #t
