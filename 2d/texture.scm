@@ -25,9 +25,10 @@
 (define-module (2d texture)
   #:use-module (srfi srfi-9)
   #:use-module (figl gl)
+  #:use-module (2d color)
+  #:use-module (2d helpers)
   #:use-module (2d wrappers gl)
   #:use-module (2d wrappers freeimage)
-  #:use-module (2d helpers)
   #:export (make-texture
             make-texture-region
             load-texture
@@ -151,6 +152,10 @@ that will be rendered, in pixels."
     (freeimage-flip-vertical 32bit-bitmap)
     32bit-bitmap))
 
+;; (define b (load-bitmap "images/p1_front.png"))
+;; (define t (bitmap->texture b))
+;; (define tid (gl-generate-texture))
+
 (define (load-texture filename)
   "Load a texture from an image file at FILENAME."
   (let* ((bitmap (load-bitmap filename))
@@ -158,11 +163,10 @@ that will be rendered, in pixels."
     (freeimage-unload bitmap)
     texture))
 
-(define* (draw-texture texture x y #:optional (color #xffffffff))
+(define* (draw-texture texture x y #:optional (color white))
   "Render a textured quad in GL immediate mode."
   (let* ((x2 (+ x (texture-width texture)))
         (y2 (+ y (texture-height texture)))
-        (color (rgba->gl-color color))
         (r (vector-ref color 0))
         (g (vector-ref color 1))
         (b (vector-ref color 2))
@@ -172,8 +176,8 @@ that will be rendered, in pixels."
         (s2 (texture-s2 texture))
         (t2 (texture-t2 texture)))
     (with-gl-bind-texture (texture-target texture-2d) (texture-id texture)
+      (use-color color)
       (gl-begin (begin-mode quads)
-        (gl-color r g b a)
         (gl-texture-coordinates s1 t1)
         (gl-vertex x y)
         (gl-texture-coordinates s1 t2)
