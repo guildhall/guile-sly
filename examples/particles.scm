@@ -1,13 +1,19 @@
 ;; load the SDL module and some useful srfi's
 (use-modules (srfi srfi-1)
              (srfi srfi-9)
+             (2d agenda)
              (2d game)
-             (2d scene)
              (2d sprite)
              (2d texture)
-             (2d vector2))
+             (2d vector2)
+             (2d window))
+
+(load "common.scm")
 
 (set! *random-state* (random-state-from-platform))
+
+(define window-width 640)
+(define window-height 480)
 
 ;;;
 ;;; Particles
@@ -25,28 +31,20 @@
                           (v+ (particle-position particle)
                               (particle-velocity particle))))
 
-;;;
-;;; Demo
-;;;
-
-(define-record-type <demo-state>
-  (make-demo-state stars particles)
-  demo-state?
-  (stars demo-stars)
-  (particles demo-particles))
-
 (define (generate-particles n)
-  (let ((particle-image (load-texture "images/bullet.png"))
-        (game-size (game-resolution particles)))
+  (let ((particle-image (load-texture "images/bullet.png")))
     (list-tabulate n (lambda (n)
                        (make-particle (make-sprite particle-image)
-                                      (vector2 (random (vx game-size))
-                                               (random (vy game-size)))
+                                      (vector2 (random window-width)
+                                               (random window-height))
                                       (vector2 (* (random:normal) 1)
                                                (* (random:normal) 1)))))))
 
 (define particle-count 500)
 (define batch (make-sprite-batch (* particle-count 4)))
+(define background (load-sprite "images/stars.png"
+                                #:anchor null-vector2))
+(define particles (generate-particles particle-count))
 
 (define (draw-particles particles)
   (with-sprite-batch batch
@@ -57,28 +55,17 @@
          (draw-sprite sprite)))
      particles)))
 
-(define (draw state)
-  (draw-sprite (demo-stars state))
-  (draw-particles (demo-particles state)))
+(define (draw dt alpha)
+  (draw-sprite background)
+  (draw-particles particles))
 
-(define (update state)
-  (for-each update-particle! (demo-particles state)))
+(define (update)
+  (for-each update-particle! particles))
 
-(define (init)
-  (make-demo-state (load-sprite "images/stars.png"
-                                #:anchor null-vector2)
-                   (generate-particles particle-count)))
+(schedule-every update)
+(add-hook! draw-hook draw)
 
-(define particles-scene
-  (make-scene
-   "Particles"
-   #:draw draw
-   #:update update
-   #:init init))
-
-(define particles
-  (make-game
-   #:title "Particles"
-   #:first-scene particles-scene))
-
-(run-game particles)
+(with-window (make-window #:title "Particles"
+                          #:resolution (vector2 window-width
+                                                window-height))
+  (run-game-loop))
