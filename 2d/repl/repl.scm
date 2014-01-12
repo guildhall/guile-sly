@@ -33,9 +33,7 @@
   #:use-module (2d agenda)
   #:use-module (2d game)
   #:use-module (2d mvars)
-  #:export (repl-input-mvar
-            repl-output-mvar
-            start-repl
+  #:export (start-repl
             run-repl))
 
 
@@ -152,11 +150,11 @@ INPUT, OUTPUT, and ERROR ports."
                (with-fluids ((*repl-stack* stack))
                  (thunk))))))))))
 
-(define (add-to-repl-mvar thunk-ports-and-stack)
+(define (add-to-repl-mvar thunk input output error stack)
   ;; Insert thunk into repl-mvar.  The game loop will schedule it and
   ;; run it on the next tick.  We also pass along the
   ;; input/output/error ports and the REPL stack.
-  (put-mvar repl-input-mvar thunk-ports-and-stack)
+  (put-mvar repl-input-mvar (list thunk input output error stack))
   ;; Read the results back from game-mvar.  Will block until results
   ;; are available.
   (take-mvar repl-output-mvar))
@@ -238,16 +236,15 @@ INPUT, OUTPUT, and ERROR ports."
                                          (repl-parse repl exp))))))
                                (run-hook before-eval-hook exp)
                                (add-to-repl-mvar
-                                (list
-                                 (lambda ()
-                                   (call-with-error-handling
-                                    (lambda ()
-                                      (with-stack-and-prompt thunk))
-                                    #:on-error (repl-option-ref repl 'on-error)))
-                                 (current-input-port)
-                                 (current-output-port)
-                                 (current-error-port)
-                                 (fluid-ref *repl-stack*))))
+                                (lambda ()
+                                  (call-with-error-handling
+                                   (lambda ()
+                                     (with-stack-and-prompt thunk))
+                                   #:on-error (repl-option-ref repl 'on-error)))
+                                (current-input-port)
+                                (current-output-port)
+                                (current-error-port)
+                                (fluid-ref *repl-stack*)))
                              (lambda (k) (values))))
                       (lambda l
                         (for-each (lambda (v)
