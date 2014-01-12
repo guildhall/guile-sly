@@ -25,8 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
   #:export (any-equal?
-            logand?
-            rgba->gl-color))
+            logand?))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
