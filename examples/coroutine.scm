@@ -15,13 +15,17 @@
 
 ;; Simple script that moves the sprite to a random location every
 ;; second.
-(schedule-interval
- (lambda ()
-   (set-sprite-position!
-    sprite
-    (vector2 (random window-width)
-             (random window-height))))
- 60)
+(codefine (script)
+  (set-sprite-position!
+   sprite
+   (vector2 (random window-width)
+            (random window-height)))
+  (wait 15)
+  (set-sprite-rotation! sprite (random 360))
+  (wait 15)
+  (script))
+
+(schedule-next script)
 
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
