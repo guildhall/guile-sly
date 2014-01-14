@@ -22,77 +22,41 @@
 
    #+BEGIN_SRC scheme
      (use-modules (2d game)
-                  (2d scene)
                   (2d sprite)
-                  (2d vector2))
+                  (2d vector2)
+                  (2d window))
 
-     (define (make-demo-sprite)
-       (load-sprite "images/ghost.png"
+     (define sprite
+       (load-sprite "images/p1_front.png"
                     #:position (vector2 320 240)))
 
-     (define simple-scene
-       (make-scene
-        "Simple"
-        #:init make-demo-sprite
-        #:draw draw-sprite))
+     (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
-     (define simple-demo
-       (make-game
-        #:title "Simple Demo"
-        #:first-scene simple-scene))
-
-     (run-game simple-demo)
+     (with-window (make-window #:title "Simple Sprite Demo")
+       (run-game-loop))
    #+END_SRC
 
 ** Features
 
-*** Scenes
-    Game objects are used to define the basic aspects of a Guile-2D
-    game such as the window title, resolution, whether or not it
-    is fullscreen, and what the first scene is.
+*** The Game Loop
+    Guile-2d's game loop doesn't tie drawing and updating
+    together. Instead, updates happen on a fixed timestep (60 ticks
+    per second by default) while drawing happens as many times as
+    possible. A framerate indepedent loop mitigates slow down that the
+    user might experience when updating the game takes longer than
+    drawing a frame at the desired rate. Instead of slowing to a
+    crawl, some frames are dropped and the loop tries to catch up on
+    updates. Additionally, a fixed timestep allows for a more
+    deterministic simulation than a variable timestep.
+
+    To start up the game loop, simply call =(run-game-loop)=. It's a
+    good idea to set up the game window prior to starting the loop via
+    the =with-window= form.
 
     #+BEGIN_SRC scheme
-      (define my-game
-        (make-game
-         #:title "Simple Demo"
-         #:resolution (vector2 640 480)
-         #:fullscreen? #f
-         #:first-scene main-menu))
-    #+END_SRC
-
-    Games can be divided into several smaller pieces, called scenes. A
-    scene describes how a particular part of a game is initialized,
-    drawn, updated, etc.
-
-    #+BEGIN_SRC scheme
-      (define main-menu
-        (make-scene
-         "Main Menu"
-         #:init create-menu
-         #:enter menu-enter
-         #:exit menu-exit
-         #:draw draw-menu
-         #:update update-menu
-         #:events `((key-down . ,menu-key-down))))
-    #+END_SRC
-
-    In addition to the essential callbacks (draw, update, enter,
-    exit), scenes can specify an alist of additional arbitrary event
-    handlers. Some events such as =key-down= are emitted by the game
-    loop when input events are received.
-
-    Scenes live in a place called the stage. There can be many stages,
-    but only one is active at any given time. When a stage enters
-    focus, the scene's enter procedure is applied. When a stage loses
-    focus, the exit procedure is applied. Stages are stored in a
-    stack, and they can pushed and popped as needed. To change the
-    current scene, and thus the current stage, use =push-scene=,
-    =pop-scene=, or =replace-scene=.
-
-    #+BEGIN_SRC scheme
-      (push-scene tetris-clone)
-      (pop-scene)
-      (replace-scene high-scores)
+      (with-window (make-window #:title "Best Game Ever"
+                                #:resolution (vector2 640 480))
+        (run-game-loop))
     #+END_SRC
 
 *** Sprites
@@ -110,9 +74,9 @@
     #+BEGIN_SRC scheme
       (define sprite
         (load-sprite "cirno.png"
-                     #:position #(0 0)
+                     #:position (vector2 320 240)
                      #:scale (1 1)
-                     #:rotation (0)
+                     #:rotation 45
                      #:color white
                      #:anchor 'center))
     #+END_SRC
@@ -127,7 +91,7 @@
     Position, scale, rotation, color, and anchor are mutable.
 
     #+BEGIN_SRC scheme
-      (set-sprite-position! sprite #(100 100))
+      (set-sprite-position! sprite (vector2 100 100))
     #+END_SRC
 
     Drawing a sprite is simple.
@@ -153,6 +117,29 @@
       (with-sprite-batch batch
         (for-each draw-sprite sprites))
     #+END_SRC
+
+*** Keyboard and Mouse Input
+    There are hooks within the =(2d keyboard)= and =(2d mouse)=
+    modules that can be used to respond to user input.
+
+    #+BEGIN_SRC scheme
+      (use-modules (2d keyboard)
+                   (2d mouse))
+
+      ;; Quit when ESC is pressed.
+      (add-hook! key-press-hook
+                 (lambda (key unicode)
+                   (when (eq? key 'escape)
+                     (quit-game))))
+
+      ;; Print coordinates when the mouse is moved.
+      (add-hook! mouse-move-hook
+                 (lambda (x y)
+                   (format #t "pos: (~d, ~d)\n" x y)))
+    #+END_SRC
+
+    In the future, there will be more convenient ways to respond to
+    user input similar to how keymaps work in Emacs.
 
 *** Coroutines and Agendas
     The ability to write scripts is very important for most games. A
@@ -183,7 +170,7 @@
     such that it does not halt further program execution.
 
     #+BEGIN_SRC scheme
-      (agenda-schedule
+      (schedule-next
        (colambda ()
          (while #t
            (walk 'up)
@@ -194,60 +181,15 @@
     #+END_SRC
 
     =colambda= is a useful macro that is syntactic sugar for a lambda
-    expression executed as a coroutine. =agenda-schedule= accepts a
+    expression executed as a coroutine. =schedule-next= accepts a
     thunk (a procedure that takes 0 arguments) and schedules it to be
-    executed later. In this example we do not provide a second
-    argument to =agenda-schedule=, which means that the thunk will be
-    executed upon the next game update.
+    executed the next time the agenda is ticked. There are other ways
+    to schedule procedures such as =schedule=, =schedule-interval=,
+    and =schedule-every=.
 
     Since guile-2d enforces a fixed timestep and updates 60 times per
-    second, waiting for 60 updates means that the NPC will wait one
-    second in between each step.
-
-*** Actions
-    Actions encapsulate a procedure that operates over a certain
-    period of time. Action objects have two properties: an arbitrary
-    procedure and a duration in game ticks. Action procedures accept
-    one argument: a time delta in the range [0, 1]. Use actions in
-    combination with coroutines for things that are a function of
-    time, such as moving a sprite across the screen.
-
-    #+BEGIN_SRC scheme
-      (schedule-action
-       ;; Move horizontally across the screen, starting at x=0 and moving to
-       ;; x=800, in 60 ticks.
-        (lerp (lambda (x)
-                (set-sprite-position! sprite (vector2 x (/ window-height 2))))
-              0 800 60))
-    #+END_SRC
-
-    =schedule-action= is used to schedule a coroutine that will
-    perform the given action in the current agenda. =lerp= is a type
-    of action, short for linear interpolation. =lerp= takes an
-    arbitrary procedure to apply at each tick, a start value, an end
-    value, and like all other actions, a duration. The code above
-    interpolates from 0 to 800 over 60 ticks. The result of this
-    action is a sprite moving across the screen from left to right.
-
-    Actions can be combined to run in a sequence or in parallel.
-
-    #+BEGIN_SRC scheme
-      (schedule-action
-       (action-parallel
-        (lerp (lambda (x)
-                (set-sprite-position! sprite (vector2 x (/ window-height 2))))
-              0 800 60)
-        ;; Rotate sprite 1080 degrees in 120 ticks.
-        (lerp (lambda (angle)
-                (set-sprite-rotation! sprite angle))
-              0 1080 120)))
-    #+END_SRC
-
-    =action-parallel= will combine many actions into one action that
-    does everything at the same time. In the example above, the sprite
-    will still move across the screen from left to right, but while
-    it's doing so (and for 60 ticks after), it will be rotating from 0
-    to 1080 degrees.
+    second by default, waiting for 60 updates means that the NPC will
+    wait one second in between each step.
 
 ** REPL Driven Development
 
@@ -275,7 +217,7 @@
    #+END_SRC
 
 ** Building
-   guile-2d uses the typical GNU build system. First run `autogen.sh`
+   Guile-2d uses the typical GNU build system. First run `autogen.sh`
    and then do the usual incantations.
 
    #+BEGIN_SRC sh
@@ -295,8 +237,8 @@
      guile simple.scm
    #+END_SRC
 
-   To run an example using the not-yet-installed files (useful when
-   developing):
+   To run an example using the modules in the source directory (useful
+   when developing):
 
    #+BEGIN_SRC sh
      cd examples
@@ -305,7 +247,7 @@
 
    To quit an example:
    - Close the window
-   - Press the =ESCAPE= or =Q= key
+   - Press the =ESCAPE= key
 
 ** Platforms
 
