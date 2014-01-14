@@ -155,8 +155,8 @@ INPUT, OUTPUT, and ERROR ports."
   ;; run it on the next tick.  We also pass along the
   ;; input/output/error ports and the REPL stack.
   (put-mvar repl-input-mvar (list thunk input output error stack))
-  ;; Read the results back from game-mvar.  Will block until results
-  ;; are available.
+  ;; Read the results back from repl-output-mvar.  Will block until
+  ;; results are available.
   (take-mvar repl-output-mvar))
 
 (define (flush-repl)
