@@ -18,7 +18,7 @@
    libraries/frameworks such as [[http://love2d.org/][LÖVE]], [[http://pygame.org/][Pygame]], and [[http://pyglet.org/][Pyglet]].
 
 ** Example
-   Here is the simplest Guile-2d application (so far).
+   Here is the simplest guile-2d application (so far).
 
    #+BEGIN_SRC scheme
      (use-modules (2d game)
@@ -72,6 +72,8 @@
     supported formats.
 
     #+BEGIN_SRC scheme
+      (use-modules (2d sprite))
+
       (define sprite
         (load-sprite "cirno.png"
                      #:position (vector2 320 240)
@@ -170,6 +172,9 @@
     such that it does not halt further program execution.
 
     #+BEGIN_SRC scheme
+      (use-modules (2d agenda)
+                   (2d coroutine))
+
       (schedule-next
        (colambda ()
          (while #t
@@ -217,7 +222,7 @@
    #+END_SRC
 
 ** Building
-   Guile-2d uses the typical GNU build system. First run `autogen.sh`
+   Guile-2d uses the typical GNU build system. First run =autogen.sh=
    and then do the usual incantations.
 
    #+BEGIN_SRC sh
