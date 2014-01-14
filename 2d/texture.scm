@@ -152,10 +152,6 @@ that will be rendered, in pixels."
     (freeimage-flip-vertical 32bit-bitmap)
     32bit-bitmap))
 
-;; (define b (load-bitmap "images/p1_front.png"))
-;; (define t (bitmap->texture b))
-;; (define tid (gl-generate-texture))
-
 (define (load-texture filename)
   "Load a texture from an image file at FILENAME."
   (let* ((bitmap (load-bitmap filename))
