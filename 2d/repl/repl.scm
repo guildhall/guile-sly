@@ -208,7 +208,13 @@ INPUT, OUTPUT, and ERROR ports."
             ((eq? exp meta-command-token)
              (catch #t
                (lambda ()
-                 (meta-command repl))
+                 (add-to-repl-mvar
+                  (lambda ()
+                    (meta-command repl))
+                  (current-input-port)
+                  (current-output-port)
+                  (current-error-port)
+                  (fluid-ref *repl-stack*)))
                (lambda (k . args)
                  (if (eq? k 'quit)
                      (abort args)
