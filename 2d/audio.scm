@@ -35,31 +35,31 @@
   (audio sample-audio))
 
 (define (load-sample filename)
-  "Load audio sample from FILENAME. Return #f on failure."
+  "Load audio sample from FILENAME or return #f if the file cannot be
+loaded"
   (let ((audio (SDL:load-wave filename)))
-    (if audio
-        (make-sample audio)
-        #f)))
-
-(define (sample-play sample)
-  "Play audio SAMPLE."
-  (SDL:play-channel (sample-audio sample)))
+    (if audio (make-sample audio) #f)))
 
 (define (sample-volume)
-  "Return volume that samples are played at."
+  "Return the volume that all samples are played at."
   (SDL:volume))
 
 (define (set-sample-volume volume)
-  "Set the volume that samples are played at to VOLUME."
-  (SDL:volume volume))
+  "Set the volume that all samples are played at to VOLUME."
+  (SDL:volume volume)
+  *unspecified*)
 
-(export make-sample
-        load-sample
+(define (play-sample sample)
+  "Play the given audio SAMPLE."
+  (SDL:play-channel (sample-audio sample))
+  *unspecified*)
+
+(export load-sample
         sample?
         sample-audio
-        sample-play
         sample-volume
-        set-sample-volume)
+        set-sample-volume
+        play-sample)
 
 ;; Wrapper over SDL music objects.
 (define-record-type <music>
@@ -68,15 +68,10 @@
   (audio music-audio))
 
 (define (load-music filename)
-  "Load music from FILENAME. Return #f on failure."
+  "Load music from FILENAME or return #f if the file cannot be
+loaded."
   (let ((audio (SDL:load-music filename)))
-    (if audio
-        (make-music audio)
-        #f)))
-
-(define (music-play music)
-  "Play MUSIC."
-  (SDL:play-music (music-audio music)))
+    (if audio (make-music audio) #f)))
 
 (define (music-volume)
   "Return the volume that music is played at."
@@ -84,19 +79,24 @@
 
 (define (set-music-volume volume)
   "Set the volume that music is played at."
-  (SDL:volume volume))
+  (SDL:volume volume)
+  *unspecified*)
 
-(export make-music
-        load-music
+(define (play-music music)
+  "Play the given MUSIC."
+  (SDL:play-music (music-audio music))
+  *unspecified*)
+
+(export load-music
         music?
         music-audio
-        music-play
         music-volume
+        play-music
         set-music-volume)
 
-(re-export (SDL:pause-music . music-pause)
-           (SDL:resume-music . music-resume)
-           (SDL:rewind-music . music-rewind)
-           (SDL:halt-music . music-stop)
+(re-export (SDL:pause-music . pause-music)
+           (SDL:resume-music . resume-music)
+           (SDL:rewind-music . rewind-music)
+           (SDL:halt-music . stop-music)
            (SDL:paused-music? . music-paused?)
            (SDL:playing-music? . music-playing?))
