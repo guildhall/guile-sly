@@ -73,7 +73,6 @@
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)
-    (SDL:open-audio)
     ;; Open SDL window in OpenGL mode.
     (SDL:set-video-mode width height 24 flags)
     (SDL:set-caption (window-title window))
@@ -92,7 +91,6 @@
 
 (define (close-window)
   "Close the currently open window and audio."
-  (SDL:close-audio)
   (SDL:quit))
 
 (define-syntax-rule (with-window window body ...)

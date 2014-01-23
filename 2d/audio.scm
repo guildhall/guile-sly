@@ -26,6 +26,8 @@
   #:use-module (srfi srfi-2)
   #:use-module ((sdl mixer) #:prefix SDL:))
 
+(SDL:open-audio)
+
 ;; Wrapper over SDL audio objects.
 (define-record-type <sample>
   (make-sample audio)
