@@ -5,15 +5,6 @@
    updates the game state, renders the scene. Use a fixed update
    timestep and cap the maximum FPS.
 
-** DONE Game scenes
-   Games can be broken up into many chunks, called scenes. Examples
-   would be a main menu, a world map, a battle screen, etc.
-
-   - [X] Create a <scene> type that encapsulates input/render/update
-     callbacks
-   - [X] Macro for declaratively defining a scene
-   - [X] Scene switching
-
 ** TODO Input
    Provide hooks to respond to keyboard, mouse, and joystick events.
    Wrap SDL keycode, mouse button, etc. constants in our own
@@ -109,23 +100,11 @@
    referenced.
 
    - [ ] Create asset cache
-   - [ ] Investigate automatic asset reloading.
-
-** TODO Actions
-   Provide a library of coroutines that perform commonly used
-   time-based actions such as linear interpolation. It would be nice
-   to have a way to make these easily composable as well.
-
-   - [X] Make actions composable
-   - [X] Linear interpolation (lerp)
-   - [ ] Move to/move by
+   - [ ] Investigate automatic asset reloading
 
 ** TODO Keymaps
    Provide an Emacs-like way of defining key combinations so that
    multi-button input is easy for users.
-
-   The more I think about what I want, the more I realize that I am
-   describing a system that uses functional reactive programming.
 
    - [ ] Abstract away input methods
      Controls can be bound to keys, mouse, whatever
@@ -145,16 +124,20 @@
    Provide a set of common graphical widgets such as buttons, scroll
    bars, and sliders.
 
-** TODO REPL
+** DONE REPL
    Provide a REPL that plays nice with the game loop. Easier said than
    done.
 
    - [X] Modify Guile's REPL to work with the game loop
      - Short-term solution that *mostly* works
-   - [ ] Write a new REPL that runs in the current thread
+   - [X] Write a new REPL that runs in the current thread
      - Use coroutines
      - Read user input from a separate thread so as to not block the
        main thread
+     - Will be available in Guile 2.0.10!
+
+** TODO Entity/Component system
+   This may or may not be a good idea.  Investigate it.
 
 ** DONE 0.1 Release
    An official 0.1 alpha release with basic, minimal functionality
@@ -169,8 +152,10 @@
    - [X] Fix animation bug
 
 ** TODO 0.2 Release
-   - [ ] New REPL server
+   - [X] New REPL server
+     Use the (system repl coop-server) module in Guile 2.0.10.
    - [ ] Screencast
-   - [ ] Keymaps
-   - [X] Better scene management
-   - [ ] More documentation
+   - [ ] Relatively complete documentation
+   - [ ] Clean up font module
+   - [ ] Finish FRP module
+   - [ ] Make basic webpage with HTML docs
