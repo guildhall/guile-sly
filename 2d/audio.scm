@@ -24,9 +24,34 @@
 (define-module (2d audio)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-2)
-  #:use-module ((sdl mixer) #:prefix SDL:))
+  #:use-module ((sdl mixer) #:prefix SDL:)
+  #:export (load-sample
+            sample?
+            sample-audio
+            sample-volume
+            set-sample-volume
+            play-sample
+            load-music
+            music?
+            music-audio
+            music-volume
+            play-music
+            set-music-volume
+            pause-music
+            resume-music
+            rewind-music
+            stop-music
+            music-paused?
+            music-playing?))
 
 (SDL:open-audio)
+
+;; Used to wrap SDL audio functions whose return values should be
+;; ignored.
+(define-syntax-rule (ignore-value body ...)
+  (begin
+    body ...
+    *unspecified*))
 
 ;; Wrapper over SDL audio objects.
 (define-record-type <sample>
@@ -46,20 +71,11 @@ loaded"
 
 (define (set-sample-volume volume)
   "Set the volume that all samples are played at to VOLUME."
-  (SDL:volume volume)
-  *unspecified*)
+  (ignore-value (SDL:volume volume)))
 
 (define (play-sample sample)
   "Play the given audio SAMPLE."
-  (SDL:play-channel (sample-audio sample))
-  *unspecified*)
-
-(export load-sample
-        sample?
-        sample-audio
-        sample-volume
-        set-sample-volume
-        play-sample)
+  (ignore-value (SDL:play-channel (sample-audio sample))))
 
 ;; Wrapper over SDL music objects.
 (define-record-type <music>
@@ -78,25 +94,33 @@ loaded."
   (SDL:music-volume))
 
 (define (set-music-volume volume)
-  "Set the volume that music is played at."
-  (SDL:volume volume)
-  *unspecified*)
+  "Set the volume that music is played at to VOLUME."
+  (ignore-value (SDL:volume volume)))
 
 (define (play-music music)
   "Play the given MUSIC."
-  (SDL:play-music (music-audio music))
-  *unspecified*)
+  (ignore-value (SDL:play-music (music-audio music))))
 
-(export load-music
-        music?
-        music-audio
-        music-volume
-        play-music
-        set-music-volume)
+(define (pause-music)
+  "Pause the current music track."
+  (ignore-value (SDL:pause-music)))
 
-(re-export (SDL:pause-music . pause-music)
-           (SDL:resume-music . resume-music)
-           (SDL:rewind-music . rewind-music)
-           (SDL:halt-music . stop-music)
-           (SDL:paused-music? . music-paused?)
-           (SDL:playing-music? . music-playing?))
+(define (resume-music)
+  "Resume the current music track."
+  (ignore-value (SDL:resume-music)))
+
+(define (rewind-music)
+  "Restart the current music track."
+  (ignore-value (SDL:rewind-music)))
+
+(define (stop-music)
+  "Stop playing the current music track."
+  (ignore-value (SDL:halt-music)))
+
+(define (music-playing?)
+  "Return #t if music is currently playing, otherwise return #f."
+  (SDL:playing-music?))
+
+(define (music-paused?)
+  "Return #t if music is currently paused, otherwise return #f."
+  (SDL:paused-music?))
