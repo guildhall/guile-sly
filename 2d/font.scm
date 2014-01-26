@@ -66,7 +66,6 @@ upper-left corner rather than the bottom-left."
 (export <font>
         make-font
         font?
-        font-ftgl-font
         font-size
         load-font
         draw-font)
