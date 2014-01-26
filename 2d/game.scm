@@ -31,6 +31,7 @@
   #:use-module (2d game)
   #:use-module (2d signals)
   #:use-module (2d vector2)
+  #:use-module (2d window)
   #:export (ticks-per-second
             tick-interval
             paused-agenda
@@ -69,6 +70,12 @@
 
 (define (draw dt alpha)
   "Render a frame."
+  (let ((width (signal-ref window-width))
+        (height (signal-ref window-height)))
+    (gl-viewport 0 0 width height)
+    (set-gl-matrix-mode (matrix-mode projection))
+    (gl-load-identity)
+    (gl-ortho 0 width height 0 -1 1))
   (set-gl-matrix-mode (matrix-mode modelview))
   (gl-load-identity)
   (gl-clear (clear-buffer-mask color-buffer depth-buffer))

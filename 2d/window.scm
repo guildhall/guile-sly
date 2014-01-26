@@ -75,19 +75,14 @@
   (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
         (width (vx (window-resolution window)))
         (height (vy (window-resolution window))))
+    (signal-set! window-width width)
+    (signal-set! window-height height)
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)
     ;; Open SDL window in OpenGL mode.
     (SDL:set-video-mode width height 24 flags)
     (SDL:set-caption (window-title window))
-    ;; Initialize OpenGL orthographic view
-    (gl-viewport 0 0 width height)
-    (set-gl-matrix-mode (matrix-mode projection))
-    (gl-load-identity)
-    (gl-ortho 0 width height 0 -1 1)
-    (set-gl-matrix-mode (matrix-mode modelview))
-    (gl-load-identity)
     ;; Enable texturing and alpha blending
     (gl-enable (enable-cap texture-2d))
     (gl-enable (enable-cap blend))
