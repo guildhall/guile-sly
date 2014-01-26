@@ -40,7 +40,8 @@
             window-size
             open-window
             close-window
-            with-window))
+            with-window
+            window-resize-hook))
 
 (define-record-type <window>
   (%make-window title resolution fullscreen?)
@@ -58,10 +59,14 @@
 (define window-width (make-root-signal 0))
 (define window-height (make-root-signal 0))
 (define window-size (signal-map vector2 window-width window-height))
+(define window-resize-hook (make-hook 2))
 
 (register-event-handler
  'video-resize
  (lambda (e)
+   (run-hook window-resize-hook
+             (SDL:event:resize:w e)
+             (SDL:event:resize:h e))
    (signal-set! window-width (SDL:event:resize:w e))
    (signal-set! window-height (SDL:event:resize:h e))))
 
