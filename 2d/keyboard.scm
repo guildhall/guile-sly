@@ -23,7 +23,7 @@
 
 (define-module (2d keyboard)
   #:use-module ((sdl sdl) #:prefix SDL:)
-  #:use-module (2d game)
+  #:use-module (2d event)
   #:use-module (2d signals)
   #:use-module (2d vector2)
   #:export (key-press-hook

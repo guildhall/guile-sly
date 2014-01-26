@@ -27,6 +27,7 @@
   #:use-module (figl gl)
   #:use-module (2d agenda)
   #:use-module (2d coroutine)
+  #:use-module (2d event)
   #:use-module (2d game)
   #:use-module (2d signals)
   #:use-module (2d vector2)
@@ -39,8 +40,7 @@
             pause-game
             resume-game
             game-running?
-            game-paused?
-            register-event-handler))
+            game-paused?))
 
 ;;;
 ;;; Game Loop
@@ -80,7 +80,7 @@
 many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
   (while (>= (accumulator) (tick-interval))
-      (read-input)
+      (process-events)
       (tick-agenda! *global-agenda*)
       (accumulator (- (accumulator) (tick-interval)))))
 
@@ -141,25 +141,3 @@ milliseconds of the last iteration of the loop."
 (define (quit-game)
   "Finish the current frame and terminate the game loop."
   (game-loop-status 'stopped))
-
-;;;
-;;; Event Handling
-;;;
-
-(define read-input
-  (let ((e (SDL:make-event)))
-    (lambda ()
-      "Process all events in the input event queue."
-      (while (SDL:poll-event e)
-        (handle-event e)))))
-
-(define event-handlers (make-hash-table))
-
-(define (register-event-handler event-type proc)
-  (hashq-set! event-handlers event-type proc))
-
-(define (handle-event e)
-  "Run the relevant hook for the event E."
-  (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
-    (when handle
-      ((cdr handle) e))))
