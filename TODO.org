@@ -158,4 +158,4 @@
    - [ ] Relatively complete documentation
    - [ ] Clean up font module
    - [ ] Finish FRP module
-   - [ ] Make basic webpage with HTML docs
+   - [X] Make basic webpage with HTML docs
