@@ -41,7 +41,8 @@
             open-window
             close-window
             with-window
-            window-resize-hook))
+            window-resize-hook
+            window-close-hook))
 
 (define-record-type <window>
   (%make-window title resolution fullscreen?)
@@ -59,7 +60,9 @@
 (define window-width (make-root-signal 0))
 (define window-height (make-root-signal 0))
 (define window-size (signal-map vector2 window-width window-height))
+
 (define window-resize-hook (make-hook 2))
+(define window-close-hook (make-hook))
 
 (register-event-handler
  'video-resize
@@ -69,6 +72,11 @@
              (SDL:event:resize:h e))
    (signal-set! window-width (SDL:event:resize:w e))
    (signal-set! window-height (SDL:event:resize:h e))))
+
+(register-event-handler
+ 'quit
+ (lambda (e)
+   (run-hook window-close-hook)))
 
 (define* (open-window window)
   "Open the game window using the settings in WINDOW."
