@@ -26,11 +26,9 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (figl gl)
   #:use-module (2d agenda)
-  #:use-module (2d coroutine)
   #:use-module (2d event)
   #:use-module (2d game)
   #:use-module (2d signals)
-  #:use-module (2d vector2)
   #:use-module (2d window)
   #:export (ticks-per-second
             tick-interval
