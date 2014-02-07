@@ -29,27 +29,26 @@
             time-each
             time-delay))
 
-(define (time-every ticks value)
-  "Create a new signal that emits VALUE every TICKS agenda updates.  VALUE may
-be a signal, in which case the stored value of the signal will be
-emitted."
+(define (time-every agenda delay value)
+  "Create a new signal that emits VALUE every DELAY ticks of AGENDA.
+VALUE may be a signal, in which case the stored value of the signal
+will be emitted."
   (let ((ticker (make-root-signal (signal-ref-maybe value))))
-    (schedule-interval
-     (lambda ()
-       (signal-set! ticker (signal-ref-maybe value)))
-     ticks)
+    (define (tick)
+      (signal-set! ticker (signal-ref-maybe value)))
+    (schedule-interval agenda tick delay)
     ticker))
 
-(define (time-each value)
+(define (time-each agenda value)
   "Create a new signal that emits VALUE every agenda update."
-  (time-every 1 value))
+  (time-every agenda 1 value))
 
-(define (time-delay ticks signal)
+(define (time-delay agenda delay signal)
   "Create a new signal that delays propagation of values received from
-SIGNAL by TICKS agenda updates."
+SIGNAL by DELAY ticks of AGENDA."
   (make-signal (signal-ref signal)
                (colambda (self from)
                  (let ((value (signal-ref from)))
-                   (wait ticks)
+                   (wait agenda delay)
                    (signal-set! self value)))
                (list signal)))

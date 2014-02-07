@@ -28,15 +28,13 @@
   #:use-module (srfi srfi-26)
   #:use-module (2d coroutine)
   #:export (make-agenda
-            *global-agenda*
-            current-agenda
-            with-agenda
-            schedule
-            schedule-interval
-            schedule-next
-            schedule-every
+            agenda?
+            agenda-time
             tick-agenda!
             clear-agenda!
+            schedule
+            schedule-interval
+            schedule-each
             wait))
 
 ;; This code is a modified version of the agenda implementation in
@@ -113,32 +111,6 @@ and enqueue CALLBACK."
   "Return the sum of the time delta, DT, and the current time of AGENDA."
   (+ (agenda-time agenda) (inexact->exact (round dt))))
 
-(define (%agenda-schedule agenda callback dt)
-  "Schedule the procedure CALLBACK in AGENDA to be run DT updates from now."
-  (let ((time (agenda-time-delay agenda dt)))
-    (define (belongs-before? segments)
-      (or (null? segments)
-          (< time (segment-time (car segments)))))
-
-    (define (add-to-segments segments)
-      ;; Add to existing time segment if the times match
-      (if (= (segment-time (car segments)) time)
-          (segment-enq (car segments) callback)
-          ;; Continue searching
-          (if (belongs-before? (cdr segments))
-              ;; Create new time segment and insert it where it belongs
-              (insert-segment segments time callback)
-              ;; Continue searching
-              (add-to-segments (cdr segments)))))
-
-    ;; Handle the case of inserting a new time segment at the
-    ;; beginning of the segment list.
-    (if (belongs-before? (agenda-segments agenda))
-        ;; Add segment if it belongs at the beginning of the list...
-        (agenda-add-segment agenda time callback)
-        ;; ... Otherwise, search for the right place
-        (add-to-segments (agenda-segments agenda)))))
-
 (define (flush-queue! q)
   "Dequeue and execute every member of Q."
   (unless (q-empty? q)
@@ -162,43 +134,41 @@ and enqueue CALLBACK."
   "Remove all scheduled procedures from AGENDA."
   (set-agenda-segments! agenda '()))
 
-;; The global agenda that will be used when schedule is called outside
-;; of a with-agenda form.
-(define *global-agenda* (make-agenda))
+(define* (schedule agenda thunk #:optional (delay 1))
+  "Schedule the procedure THUNK in AGENDA to be run DELAY ticks from
+now.  DELAY defaults to 1 if not specified."
+  (let ((time (agenda-time-delay agenda delay)))
+    (define (belongs-before? segments)
+      (or (null? segments)
+          (< time (segment-time (car segments)))))
 
-(define current-agenda (make-parameter *global-agenda*))
+    (define (add-to-segments segments)
+      ;; Add to existing time segment if the times match
+      (if (= (segment-time (car segments)) time)
+          (segment-enq (car segments) thunk)
+          ;; Continue searching
+          (if (belongs-before? (cdr segments))
+              ;; Create new time segment and insert it where it belongs
+              (insert-segment segments time thunk)
+              ;; Continue searching
+              (add-to-segments (cdr segments)))))
 
-;; emacs: (put 'with-agenda 'scheme-indent-function 1)
-(define-syntax-rule (with-agenda agenda body ...)
-  (parameterize ((current-agenda agenda))
-    body ...))
+    (if (belongs-before? (agenda-segments agenda))
+        (agenda-add-segment agenda time thunk)
+        (add-to-segments (agenda-segments agenda)))))
 
-(define (schedule thunk delay)
-  "Schedule THUNK within the current agenda to be applied after DELAY
-ticks."
-  (%agenda-schedule (current-agenda) thunk delay))
+(define (schedule-interval agenda thunk delay)
+  "Schedule THUNK within AGENDA to be applied every DELAY ticks."
+  (schedule agenda
+            (lambda ()
+              (thunk)
+              (schedule-interval agenda thunk delay))))
 
-(define* (schedule-interval thunk interval #:optional (delay 1))
-  "Schedule THUNK within the current agenda to be applied after DELAY
-ticks and then to be applied every INTERVAL ticks thereafter.  DELAY
-is 1 by default."
-  (%agenda-schedule (current-agenda)
-                    (lambda ()
-                      (thunk)
-                      (schedule-interval thunk interval interval))
-                    delay))
+(define (schedule-each agenda thunk)
+  "Schedule THUNK within AGENDA to be applied every tick."
+  (schedule-interval agenda thunk 1))
 
-(define (schedule-next thunk)
-  "Schedule THUNK within the current agenda to be applied upon the
-next tick."
-  (schedule thunk 1))
-
-(define (schedule-every thunk)
-  "Schedule THUNK within the current agenda to be applied upon every
-tick."
-  (schedule-interval thunk 1))
-
-(define* (wait #:optional (delay 1))
+(define (wait agenda delay)
   "Yield coroutine and schedule the continuation to be run after DELAY
-ticks.  DELAY is 1 by default."
-  (yield (cut schedule <> delay)))
+ticks."
+  (yield (cut schedule agenda <> delay)))

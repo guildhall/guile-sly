@@ -32,6 +32,7 @@
   #:use-module (2d window)
   #:export (ticks-per-second
             tick-interval
+            game-agenda
             paused-agenda
             draw-hook
             run-game-loop
@@ -54,6 +55,7 @@
 (define tick-interval (make-parameter 0))
 (define draw-hook (make-hook 2))
 (define accumulator (make-parameter 0))
+(define game-agenda (make-agenda))
 ;; This agenda is only ticked when the game loop is in the paused
 ;; state.  Useful for things like the REPL that should be run even
 ;; though the game is paused.
@@ -86,7 +88,7 @@ many times as `tick-interval` can divide ACCUMULATOR. The return value
 is the unused accumulator time."
   (while (>= (accumulator) (tick-interval))
       (process-events)
-      (tick-agenda! *global-agenda*)
+      (tick-agenda! game-agenda)
       (accumulator (- (accumulator) (tick-interval)))))
 
 (define (alpha)

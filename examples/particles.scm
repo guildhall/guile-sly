@@ -62,7 +62,7 @@
 (define (update)
   (for-each update-particle! particles))
 
-(schedule-every update)
+(schedule-each game-agenda update)
 (add-hook! draw-hook draw)
 
 (with-window (make-window #:title "Particles"

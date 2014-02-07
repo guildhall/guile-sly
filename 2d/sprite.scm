@@ -31,6 +31,7 @@
   #:use-module (2d agenda)
   #:use-module (2d animation)
   #:use-module (2d color)
+  #:use-module (2d game)
   #:use-module (2d helpers)
   #:use-module (2d math)
   #:use-module (2d signals)
@@ -302,7 +303,7 @@ currently bound."
   (hash-clear! animated-sprites))
 
 ;; Update animated sprites upon every update.
-(schedule-every update-animated-sprites!)
+(schedule-each game-agenda update-animated-sprites!)
 
 (export make-sprite
         sprite?

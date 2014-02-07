@@ -167,9 +167,8 @@ INPUT, OUTPUT, and ERROR ports."
 
 (define poll-interval 5)
 
-(schedule-interval flush-repl poll-interval)
-(with-agenda paused-agenda
-  (schedule-interval flush-repl poll-interval))
+(schedule-interval game-agenda flush-repl poll-interval)
+(schedule-interval paused-agenda flush-repl poll-interval)
 
 ;;;
 ;;; The repl
