@@ -22,14 +22,15 @@
 ;;; Code:
 
 (define-module (2d coroutine)
-  #:export (coroutine
+  #:export (call-with-coroutine
+            coroutine
             colambda
             codefine
             codefine*)
   #:replace (yield))
 
-(define (coroutine thunk)
-  "Calls a procedure that can yield a continuation."
+(define (call-with-coroutine thunk)
+  "Apply THUNK with a coroutine prompt."
   (define (handler cont callback . args)
     (define (resume . args)
       ;; Call continuation that resumes the procedure.
@@ -42,11 +43,16 @@
   ;; Call procedure.
   (call-with-prompt 'coroutine-prompt thunk handler))
 
+;; emacs: (put 'coroutine 'scheme-indent-function 0)
+(define-syntax-rule (coroutine body ...)
+  "Evaluate BODY as a coroutine."
+  (call-with-coroutine (lambda () body ...)))
+
 ;; emacs: (put 'colambda 'scheme-indent-function 1)
 (define-syntax-rule (colambda args body ...)
   "Syntacic sugar for a lambda that is run as a coroutine."
   (lambda args
-    (coroutine
+    (call-with-coroutine
      (lambda () body ...))))
 
 ;; emacs: (put 'codefine 'scheme-indent-function 1)
@@ -57,7 +63,7 @@ coroutine."
     ;; Create an inner procedure with the same signature so that a
     ;; recursive procedure call does not create a new prompt.
     (define (name ...) . body)
-    (coroutine
+    (call-with-coroutine
       (lambda () (name ...)))))
 
 ;; emacs: (put 'codefine* 'scheme-indent-function 1)
@@ -68,7 +74,7 @@ coroutine."
     ;; Create an inner procedure with the same signature so that a
     ;; recursive procedure call does not create a new prompt.
     (define* (name . formals) . body)
-    (coroutine
+    (call-with-coroutine
      (lambda () (apply name args)))))
 
 (define (yield callback)

@@ -168,33 +168,48 @@
     exists a =wait= procedure to pause a coroutine and schedule it to
     be resumed later.
 
-    Using a coroutine and the agenda, the NPC script can be rewritten
+    Using a coroutine and an agenda, the NPC script can be rewritten
     such that it does not halt further program execution.
 
     #+BEGIN_SRC scheme
       (use-modules (2d agenda)
-                   (2d coroutine))
+                   (2d coroutine)
+                   (2d game))
 
-      (schedule-next
-       (colambda ()
-         (while #t
-           (walk 'up)
-           (wait 60)
-           (walk 'down)
-           (wait 60))))
+      (coroutine
+       (while #t
+         (walk 'up)
+         (wait game-agenda 60)
+         (walk 'down)
+         (wait game-agenda 60)))
 
     #+END_SRC
 
-    =colambda= is a useful macro that is syntactic sugar for a lambda
-    expression executed as a coroutine. =schedule-next= accepts a
-    thunk (a procedure that takes 0 arguments) and schedules it to be
-    executed the next time the agenda is ticked. There are other ways
-    to schedule procedures such as =schedule=, =schedule-interval=,
-    and =schedule-every=.
+    =coroutine= is a useful macro that evaluates a block of code as a
+    coroutine.  =wait= aborts the procedure and schedules the
+    continuation inside of an agenda.  =game-agenda= is the main
+    agenda that is ticked at each iteration of the game update loop.
+    In this example, the script is paused for 1 second after each
+    step.  Since guile-2d enforces a fixed timestep and updates 60
+    times per second by default, 60 ticks is equivalent to 1 second.
 
-    Since guile-2d enforces a fixed timestep and updates 60 times per
-    second by default, waiting for 60 updates means that the NPC will
-    wait one second in between each step.
+    You can also use the agenda to schedule the evaluation of any
+    thunk even if it isn't a coroutine.
+
+    #+BEGIN_SRC scheme
+      (define (hello)
+        (display "Hello, world!  Sorry I'm late!\n"))
+
+      (schedule game-agenda hello 600)
+    #+END_SRC
+
+    =schedule= accepts a thunk (a procedure that takes no arguments)
+    and schedules it to be applied after a certain number of ticks, or
+    after 1 tick by default.  In this example, the text "Hello, world!
+    Sorry I'm late!" is displayed after 10 seconds.  There are other
+    ways to schedule procedures, too.  =schedule-interval= applies a
+    thunk periodically, and =schedule-each= applies a thunk upon every
+    tick.
 
 ** REPL Driven Development
 
