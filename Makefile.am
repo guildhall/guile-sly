@@ -18,6 +18,7 @@ SOURCES = 					\
   2d/mouse.scm					\
   2d/mvars.scm					\
   2d/rect.scm					\
+  2d/shader.scm					\
   2d/signals.scm				\
   2d/sprite.scm					\
   2d/texture.scm				\
