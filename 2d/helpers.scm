@@ -24,8 +24,11 @@
 (define-module (2d helpers)
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
+  #:use-module (2d agenda)
+  #:use-module (2d game)
   #:export (any-equal?
-            logand?))
+            logand?
+            define-guardian))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
@@ -35,3 +38,21 @@
   "Return #t if the result of a bitwise AND of the integers in list
 ARGS is non-zero."
   (not (zero? (apply logand args))))
+
+(define-syntax-rule (define-guardian name reaper)
+  "Define a new guardian called NAME and call REAPER when an object
+within the guardian is GC'd.  Reaping is ensured to happen from the
+same thread that is running the game loop."
+  (begin
+    (define name (make-guardian))
+    (add-hook! after-gc-hook
+               (lambda ()
+                 (define (reap)
+                   (let ((obj (name)))
+                     (when obj
+                       (reaper obj)
+                       (reap))))
+                 ;; Scheduling the reaping procedure in the game
+                 ;; loop's agenda ensures that the reaping will be
+                 ;; done in the main thread.
+                 (schedule game-agenda reap)))))

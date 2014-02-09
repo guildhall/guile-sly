@@ -93,22 +93,14 @@ that will be rendered, in pixels."
 
 ;; Use a guardian and an after GC hook that ensures that OpenGL
 ;; textures are deleted when texture objects are GC'd.
-(define texture-guardian (make-guardian))
-
-(define (reap-textures)
-  (let loop ((texture (texture-guardian)))
-    (when texture
-      ;; Do not reap texture regions
-      (unless (texture-region? texture)
-        ;; When attempting to reap structures upon guile exit, the
-        ;; dynamic pointer to gl-delete-textures becomes invalid. So, we
-        ;; ignore the error and move on.
-        (catch 'misc-error
-          (lambda () (gl-delete-texture (texture-id texture)))
-          (lambda (key . args) #f)))
-      (loop (texture-guardian)))))
-
-(add-hook! after-gc-hook reap-textures)
+(define-guardian texture-guardian
+  (lambda (texture)
+    ;; Do not reap texture regions
+    (unless (texture-region? texture)
+      ;; When attempting to reap structures upon guile exit, the
+      ;; dynamic pointer to gl-delete-textures becomes invalid. So, we
+      ;; ignore the error and move on.
+      (false-if-exception (gl-delete-texture (texture-id texture))))))
 
 (define (bitmap->texture bitmap)
   "Translates a freeimage bitmap into an OpenGL texture."
