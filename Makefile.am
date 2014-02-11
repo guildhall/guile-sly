@@ -8,6 +8,7 @@ SOURCES = 					\
   2d/animation.scm				\
   2d/audio.scm					\
   2d/color.scm					\
+  2d/config.scm					\
   2d/coroutine.scm				\
   2d/font.scm					\
   2d/fps.scm					\
@@ -38,6 +39,9 @@ WRAPPER_SOURCES =				\
   2d/wrappers/ftgl.scm				\
   2d/wrappers/gl.scm				\
   2d/wrappers/util.scm
+
+2d/config.scm: Makefile
+	sed -e "s|@pkgdatadir\@|$(pkgdatadir)|" $@.in > $@
 
 EXTRA_DIST += env.in
 
