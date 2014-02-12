@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = gnu
-
 examplesdir = $(pkgdatadir)/examples
 examples_DATA =					\
 	animation.scm				\
