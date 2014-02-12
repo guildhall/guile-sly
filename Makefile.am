@@ -46,5 +46,6 @@ WRAPPER_SOURCES =				\
 EXTRA_DIST += env.in
 
 SUBDIRS =					\
+	data					\
 	doc					\
 	examples

@@ -27,6 +27,7 @@
   #:use-module (system foreign)
   #:use-module (2d wrappers ftgl)
   #:use-module (2d color)
+  #:use-module (2d config)
   #:use-module (2d vector2))
 
 ;;;
@@ -63,12 +64,16 @@ upper-left corner rather than the bottom-left."
                       text
                       (ftgl-render-mode all))))
 
+(define default-font
+  (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") 12))
+
 (export <font>
         make-font
         font?
         font-size
         load-font
-        draw-font)
+        draw-font
+        default-font)
 
 ;;;
 ;;; Textbox
