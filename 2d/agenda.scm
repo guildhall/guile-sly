@@ -162,7 +162,8 @@ now.  DELAY defaults to 1 if not specified."
   (schedule agenda
             (lambda ()
               (thunk)
-              (schedule-interval agenda thunk delay))))
+              (schedule-interval agenda thunk delay))
+            delay))
 
 (define (schedule-each agenda thunk)
   "Schedule THUNK within AGENDA to be applied every tick."
