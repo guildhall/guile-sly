@@ -71,12 +71,7 @@
   "Render a frame."
   (let ((width (signal-ref window-width))
         (height (signal-ref window-height)))
-    (gl-viewport 0 0 width height)
-    (set-gl-matrix-mode (matrix-mode projection))
-    (gl-load-identity)
-    (gl-ortho 0 width height 0 -1 1))
-  (set-gl-matrix-mode (matrix-mode modelview))
-  (gl-load-identity)
+    (gl-viewport 0 0 width height))
   (gl-clear (clear-buffer-mask color-buffer depth-buffer))
   (run-hook draw-hook dt alpha)
   (SDL:gl-swap-buffers))
