@@ -123,7 +123,9 @@ contained in the string SOURCE."
 (define (load-shader type filename)
   "Create a new GLSL shader of the given TYPE (vertex or fragment) and
 compile the GLSL program stored in the file FILENAME."
-  (make-shader type (call-with-input-file filename read-string)))
+  (if (file-exists? filename)
+      (make-shader type (call-with-input-file filename read-string))
+      (error "File not found!" filename)))
 
 (define (load-vertex-shader filename)
   "Create a new GLSL vertex shader and compile the GLSL program stored
