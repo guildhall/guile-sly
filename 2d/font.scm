@@ -64,8 +64,8 @@ upper-left corner rather than the bottom-left."
                       text
                       (ftgl-render-mode all))))
 
-(define default-font
-  (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") 12))
+(define* (load-default-font #:optional (size 12))
+  (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") size))
 
 (export <font>
         make-font
@@ -73,7 +73,7 @@ upper-left corner rather than the bottom-left."
         font-size
         load-font
         draw-font
-        default-font)
+        load-default-font)
 
 ;;;
 ;;; Textbox
