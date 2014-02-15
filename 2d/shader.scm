@@ -220,10 +220,7 @@ location."
 
 (register-uniform-setter! vector2?
                           (lambda (location v)
-                            ;; Use a vec4 instead of vec2 because it
-                            ;; seems to be a lot easier to deal with
-                            ;; vec4s.
-                            (glUniform4f location (vx v) (vy v) 0 0)))
+                            (glUniform2f location (vx v) (vy v))))
 
 (register-uniform-setter! transform?
                           (lambda (location t)
