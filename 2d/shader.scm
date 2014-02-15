@@ -8,6 +8,7 @@
   #:use-module (figl gl)
   #:use-module (figl gl low-level)
   #:use-module (2d helpers)
+  #:use-module (2d transform)
   #:use-module (2d vector2)
   #:use-module (2d color)
   #:export (make-shader
@@ -223,6 +224,14 @@ location."
                             ;; seems to be a lot easier to deal with
                             ;; vec4s.
                             (glUniform4f location (vx v) (vy v) 0 0)))
+
+(register-uniform-setter! transform?
+                          (lambda (location t)
+                            (let ((pointer
+                                   (bytevector->pointer
+                                    (array-contents (transform-matrix t)))))
+                              (glUniformMatrix4fv location 1 #f
+                                                  pointer))))
 
 (register-uniform-setter! color?
                           (lambda (location c)

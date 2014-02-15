@@ -25,6 +25,7 @@ SOURCES = 					\
   2d/texture.scm				\
   2d/tileset.scm				\
   2d/time.scm					\
+  2d/transform.scm				\
   2d/vector2.scm				\
   2d/window.scm					\
   $(REPL_SOURCES)				\
