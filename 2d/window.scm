@@ -28,6 +28,7 @@
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (2d event)
   #:use-module (2d signals)
+  #:use-module (2d transform)
   #:use-module (2d vector2)
   #:export (<window>
             make-window
@@ -38,6 +39,7 @@
             window-width
             window-height
             window-size
+            window-projection
             open-window
             close-window
             with-window
@@ -60,6 +62,12 @@
 (define window-width (make-root-signal 0))
 (define window-height (make-root-signal 0))
 (define window-size (signal-map vector2 window-width window-height))
+(define window-projection
+  (signal-map (lambda (size)
+                (if (or (zero? (vx size)) (zero? (vy size)))
+                    identity-transform
+                    (orthographic-projection 0 (vx size) 0 (vy size) -1 1)))
+              window-size))
 
 (define window-resize-hook (make-hook 2))
 (define window-close-hook (make-hook))
