@@ -1,5 +1,7 @@
-(use-modules (2d keyboard)
+(use-modules (2d agenda)
+             (2d fps)
              (2d game)
+             (2d keyboard)
              (2d window)
              (2d repl server))
 
@@ -10,3 +12,9 @@
                               (quit-game))))
 
 (add-hook! window-close-hook quit-game)
+
+(schedule-interval game-agenda
+                   (lambda ()
+                     (display (fps))
+                     (newline))
+                   60)
