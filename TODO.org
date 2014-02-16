@@ -156,6 +156,7 @@
      Use the (system repl coop-server) module in Guile 2.0.10.
    - [ ] Screencast
    - [ ] Relatively complete documentation
-   - [ ] Clean up font module
+   - [X] Clean up font module
+   - [X] Add GLSL shaders
    - [ ] Finish FRP module
    - [X] Make basic webpage with HTML docs
