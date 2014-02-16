@@ -41,19 +41,17 @@
                                                (* (random:normal) 1)))))))
 
 (define particle-count 500)
-(define batch (make-sprite-batch (* particle-count 4)))
 (define background (load-sprite "images/stars.png"
                                 #:anchor null-vector2))
 (define particles (generate-particles particle-count))
 
 (define (draw-particles particles)
-  (with-sprite-batch batch
-    (for-each
-     (lambda (p)
-       (let* ((sprite (particle-sprite p)))
-         (set-sprite-position! sprite (particle-position p))
-         (draw-sprite sprite)))
-     particles)))
+  (for-each
+   (lambda (p)
+     (let* ((sprite (particle-sprite p)))
+       (set-sprite-position! sprite (particle-position p))
+       (draw-sprite sprite)))
+   particles))
 
 (define (draw dt alpha)
   (draw-sprite background)
