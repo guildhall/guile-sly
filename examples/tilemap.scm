@@ -29,13 +29,11 @@
   (tiles map-layer-tiles))
 
 (define draw-map-layer
-  (let ((batch (make-sprite-batch 2000)))
-    (lambda (layer)
-      (with-sprite-batch batch
-        (do-ec (: y (map-layer-height layer))
-               (: x (map-layer-width layer))
-               (let ((tile (array-ref (map-layer-tiles layer) y x)))
-                 (draw-sprite tile)))))))
+  (lambda (layer)
+    (do-ec (: y (map-layer-height layer))
+           (: x (map-layer-width layer))
+           (let ((tile (array-ref (map-layer-tiles layer) y x)))
+             (draw-sprite tile)))))
 
 ;; A small 8x8 array of tile indices.
 (define map-width 8)
