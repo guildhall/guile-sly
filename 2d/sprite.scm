@@ -60,49 +60,6 @@
             draw-sprite))
 
 ;;;
-;;; Sprite Vertices
-;;;
-
-;; Used to build OpenGL vertex array for a sprite.
-(define-packed-struct sprite-vertex
-  ;; Position
-  (x float)
-  (y float)
-  ;; Texture Coordinates
-  (s float)
-  (t float))
-
-(define sprite-vertex-size (packed-struct-size sprite-vertex))
-(define x-offset (packed-struct-offset sprite-vertex x))
-(define s-offset (packed-struct-offset sprite-vertex s))
-
-(define (pack-sprite-vertices vertices offset width height s1 t1 s2 t2)
-  ;; Vertices go counter clockwise, starting from the top-left
-  ;; corner.
-  (pack vertices offset sprite-vertex 0 0 s1 t1)
-  (pack vertices (+ offset 1) sprite-vertex 0 height s1 t2)
-  (pack vertices (+ offset 2) sprite-vertex width height s2 t2)
-  (pack vertices (+ offset 3) sprite-vertex width 0 s2 t1))
-
-(define (draw-sprite-vertices texture vertices size)
-  (let ((pointer-type (tex-coord-pointer-type float)))
-    (gl-enable-client-state (enable-cap vertex-array))
-    (gl-enable-client-state (enable-cap texture-coord-array))
-    (with-gl-bind-texture (texture-target texture-2d) (texture-id texture)
-      (set-gl-vertex-array pointer-type
-                           vertices
-                           2
-                           #:stride sprite-vertex-size
-                           #:offset x-offset)
-      (set-gl-texture-coordinates-array pointer-type
-                                        vertices
-                                        #:stride sprite-vertex-size
-                                        #:offset s-offset)
-      (gl-draw-arrays (begin-mode quads) 0 (* size 4)))
-    (gl-disable-client-state (enable-cap texture-coord-array))
-    (gl-disable-client-state (enable-cap vertex-array))))
-
-;;;
 ;;; Sprites
 ;;;
 
@@ -142,7 +99,7 @@ sprite."
 
 (define (update-sprite-vertices! sprite)
   (let ((texture (sprite-texture sprite)))
-    (pack-sprite-vertices (sprite-vertices sprite)
+    (pack-texture-vertices (sprite-vertices sprite)
                           0
                           (texture-width texture)
                           (texture-height texture)
@@ -163,7 +120,7 @@ with a default of 0.  COLOR is a color object with a default of white.
 ANCHOR is either a vector2 that represents the center point of the
 sprite, or 'center which will place the anchor at the center of
 DRAWABLE.  Sprites are centered by default."
-  (let* ((vertices (make-packed-array sprite-vertex 4))
+  (let* ((vertices (make-packed-array texture-vertex 4))
         (animator (if (animation? drawable)
                       (make-animator drawable)
                       #f))
@@ -219,7 +176,7 @@ currently bound."
                (rotation (sprite-rotation sprite))
                (color (sprite-color sprite))
                (projection (signal-ref window-projection)))
-      (draw-sprite-vertices (sprite-texture sprite)
+      (draw-texture-vertices (sprite-texture sprite)
                             (sprite-vertices sprite)
                             1))))
 

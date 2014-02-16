@@ -25,6 +25,7 @@
 (define-module (2d texture)
   #:use-module (srfi srfi-9)
   #:use-module (figl gl)
+  #:use-module (figl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d helpers)
   #:use-module (2d wrappers gl)
@@ -42,7 +43,9 @@
             texture-s2
             texture-t2
             surface->texture
-            draw-texture))
+            texture-vertex
+            pack-texture-vertices
+            draw-texture-vertices))
 
 ;;;
 ;;; Textures
@@ -150,3 +153,45 @@ that will be rendered, in pixels."
          (texture (bitmap->texture bitmap)))
     (freeimage-unload bitmap)
     texture))
+
+;;;
+;;; Texture Vertices
+;;;
+
+(define-packed-struct texture-vertex
+  ;; Position
+  (x float)
+  (y float)
+  ;; Texture Coordinates
+  (s float)
+  (t float))
+
+(define texture-vertex-size (packed-struct-size texture-vertex))
+(define x-offset (packed-struct-offset texture-vertex x))
+(define s-offset (packed-struct-offset texture-vertex s))
+
+(define (pack-texture-vertices vertices offset width height s1 t1 s2 t2)
+  ;; Vertices go counter clockwise, starting from the top-left
+  ;; corner.
+  (pack vertices offset texture-vertex 0 0 s1 t1)
+  (pack vertices (+ offset 1) texture-vertex 0 height s1 t2)
+  (pack vertices (+ offset 2) texture-vertex width height s2 t2)
+  (pack vertices (+ offset 3) texture-vertex width 0 s2 t1))
+
+(define (draw-texture-vertices texture vertices size)
+  (let ((pointer-type (tex-coord-pointer-type float)))
+    (gl-enable-client-state (enable-cap vertex-array))
+    (gl-enable-client-state (enable-cap texture-coord-array))
+    (with-gl-bind-texture (texture-target texture-2d) (texture-id texture)
+      (set-gl-vertex-array pointer-type
+                           vertices
+                           2
+                           #:stride texture-vertex-size
+                           #:offset x-offset)
+      (set-gl-texture-coordinates-array pointer-type
+                                        vertices
+                                        #:stride texture-vertex-size
+                                        #:offset s-offset)
+      (gl-draw-arrays (begin-mode quads) 0 (* size 4)))
+    (gl-disable-client-state (enable-cap texture-coord-array))
+    (gl-disable-client-state (enable-cap vertex-array))))
