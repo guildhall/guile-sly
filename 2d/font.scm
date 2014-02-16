@@ -25,102 +25,126 @@
   #:use-module (figl gl)
   #:use-module (srfi srfi-9)
   #:use-module (system foreign)
-  #:use-module (2d wrappers ftgl)
+  #:use-module ((sdl sdl) #:prefix SDL:)
+  #:use-module ((sdl ttf) #:prefix SDL:)
+  #:use-module (figl gl)
+  #:use-module (figl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d config)
-  #:use-module (2d vector2))
+  #:use-module (2d shader)
+  #:use-module (2d signals)
+  #:use-module (2d texture)
+  #:use-module (2d vector2)
+  #:use-module (2d window)
+  #:use-module (2d wrappers gl)
+  #:export (load-font
+            load-default-font
+            font?
+            font-point-size
+            make-label
+            label?
+            label-font
+            label-text
+            label-position
+            label-color
+            draw-label))
+
+(SDL:ttf-init)
 
 ;;;
 ;;; Font
 ;;;
 
-;; Font objects represent an FTGL texture font at a given size.
 (define-record-type <font>
-  (make-font ftgl-font size)
+  (make-font ttf point-size)
   font?
-  (ftgl-font font-ftgl-font)
-  (size font-size))
+  (ttf font-ttf)
+  (point-size font-point-size))
 
-(define (load-font filename size)
-  "Load a font from FILENAME with the given SIZE in points."
-  (let ((ftgl-font (ftgl-create-texture-font filename)))
-    ;; Hardcoded 72 dpi for now.
-    (ftgl-set-font-face-size ftgl-font size 72)
-    (make-font ftgl-font size)))
+(define (load-font filename point-size)
+  "Load the TTF font in FILENAME with the given POINT-SIZE."
+  (if (file-exists? filename)
+      (make-font (SDL:load-font filename point-size) point-size)
+      (error "File not found!" filename)))
 
-(define (flip-text font)
-  "Flip current GL matrix about the x-axis and translates by the
-negative font ascender value. This is necessary before rendering text
-because guile-2d flips the y-axis so that the origin is in the
-upper-left corner rather than the bottom-left."
-  (gl-scale 1 -1 1)
-  (gl-translate 0 (- (ftgl-get-font-ascender (font-ftgl-font font))) 0))
+(define* (load-default-font #:optional (point-size 12))
+  "Load the guile-2d default TTF font.  POINT-SIZE is an optional
+argument with a default value of 12."
+  (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") point-size))
 
-(define (draw-font font text)
-  "Renders the string text using the given font."
-  (with-gl-push-matrix
-    (flip-text font)
-    (ftgl-render-font (font-ftgl-font font)
-                      text
-                      (ftgl-render-mode all))))
+(define (render-text font text)
+  "Return a new texture with TEXT rendered using FONT."
+  (let* ((surface (SDL:render-utf8 (font-ttf font) text
+                                   (SDL:make-color 255 255 255) #t))
+         (pixels (SDL:surface-pixels surface))
+         (texture-id (gl-generate-texture)))
+    (with-gl-bind-texture (texture-target texture-2d) texture-id
+      (gl-texture-parameter (texture-target texture-2d)
+                            (texture-parameter-name texture-min-filter)
+                            (texture-min-filter nearest))
+      (gl-texture-parameter (texture-target texture-2d)
+                            (texture-parameter-name texture-mag-filter)
+                            (texture-mag-filter nearest))
+      (gl-texture-image-2d (texture-target texture-2d)
+                           0
+                           (pixel-format rgba)
+                           (SDL:surface:w surface)
+                           (SDL:surface:h surface)
+                           0
+                           (version-1-2 bgra)
+                           (color-pointer-type unsigned-byte)
+                           pixels))
+    (make-texture texture-id #f
+                  (SDL:surface:w surface)
+                  (SDL:surface:h surface)
+                  0 0 1 1)))
 
-(define* (load-default-font #:optional (size 12))
-  (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") size))
+(define-record-type <label>
+  (%make-label font text position anchor color texture vertices)
+  label?
+  (font label-font)
+  (text label-text)
+  (position label-position)
+  (anchor label-anchor)
+  (color label-color)
+  (texture label-texture)
+  (vertices label-vertices))
 
-(export <font>
-        make-font
-        font?
-        font-size
-        load-font
-        draw-font
-        load-default-font)
+(define (make-label-vertices texture)
+  "Return a packed array of vertices for TEXTURE."
+  (let ((vertices (make-packed-array texture-vertex 4)))
+    (pack-texture-vertices vertices 0
+                           (texture-width texture)
+                           (texture-height texture)
+                           (texture-s1 texture)
+                           (texture-t1 texture)
+                           (texture-s2 texture)
+                           (texture-t2 texture))
+    vertices))
 
-;;;
-;;; Textbox
-;;;
+(define* (make-label font text position #:optional #:key
+                     (color white) (anchor 'top-left))
+  "Return a new label containing the string TEXT rendered with FONT at
+the given position.  Optional arguments are COLOR with a default of
+white and ANCHOR with a default of 'top-left."
+  (let* ((texture (render-text font text))
+         (vertices (make-label-vertices texture))
+         (anchor (anchor-texture texture anchor)))
+    (%make-label font text position anchor color texture vertices)))
 
-;; A textbox is a string of word-wrapped text
-(define-record-type <textbox>
-  (%make-textbox font text position color alignment line-length layout)
-  textbox?
-  (font textbox-font)
-  (text textbox-text set-textbox-text!)
-  (position textbox-position set-textbox-position!)
-  (color textbox-color set-textbox-color!)
-  (alignment textbox-alignment)
-  (line-length textbox-line-length)
-  (layout textbox-layout))
+(define font-shader
+  (make-shader-program
+   (load-vertex-shader (string-append %pkgdatadir
+                                      "/shaders/font-vertex.glsl"))
+   (load-fragment-shader (string-append %pkgdatadir
+                                        "/shaders/font-fragment.glsl"))))
 
-(define (make-textbox font text position color alignment line-length)
-  "Create a textbox that will draw TEXT with the given FONT, at vector
-POSITION, with ALIGNMENT, and a maximum LINE-LENGTH."
-  (let ((layout (ftgl-create-layout)))
-    (ftgl-set-layout-font layout (font-ftgl-font font))
-    ;; (ftgl-set-layout-alignment layout (ftgl-text-alignment alignment))
-    (ftgl-set-layout-line-length layout line-length)
-    (%make-textbox font text position color alignment line-length layout)))
-
-(define (draw-textbox textbox)
-  "Draw TEXTBOX."
-  (with-gl-push-matrix
-    (vector2-translate (textbox-position textbox))
-    (flip-text (textbox-font textbox))
-    (use-color (textbox-color textbox))
-    (ftgl-render-layout (textbox-layout textbox)
-                        (textbox-text textbox)
-                        (ftgl-render-mode all))))
-
-(export <textbox>
-        make-textbox
-        textbox?
-        textbox-font
-        textbox-text
-        set-textbox-text!
-        textbox-position
-        set-textbox-position!
-        textbox-color
-        set-textbox-color!
-        textbox-alignment
-        textbox-line-length
-        textbox-layout
-        draw-textbox)
+(define (draw-label label)
+  "Draw LABEL on the screen."
+  (with-shader-program font-shader
+    (uniforms ((projection (signal-ref window-projection))
+               (position (label-position label))
+               (anchor (label-anchor label))
+               (color (label-color label)))
+      (draw-texture-vertices (label-texture label) (label-vertices label) 1)))
+  *unspecified*)
