@@ -100,13 +100,13 @@ sprite."
 (define (update-sprite-vertices! sprite)
   (let ((texture (sprite-texture sprite)))
     (pack-texture-vertices (sprite-vertices sprite)
-                          0
-                          (texture-width texture)
-                          (texture-height texture)
-                          (texture-s1 texture)
-                          (texture-t1 texture)
-                          (texture-s2 texture)
-                          (texture-t2 texture))))
+                           0
+                           (texture-width texture)
+                           (texture-height texture)
+                           (texture-s1 texture)
+                           (texture-t1 texture)
+                           (texture-s2 texture)
+                           (texture-t2 texture))))
 
 (define* (make-sprite drawable #:optional #:key
                       (position (vector2 0 0)) (scale (vector2 1 1))
@@ -121,12 +121,12 @@ ANCHOR is either a vector2 that represents the center point of the
 sprite, or 'center which will place the anchor at the center of
 DRAWABLE.  Sprites are centered by default."
   (let* ((vertices (make-packed-array texture-vertex 4))
-        (animator (if (animation? drawable)
-                      (make-animator drawable)
-                      #f))
-        (anchor (make-anchor anchor (drawable-texture drawable animator)))
-        (sprite (%make-sprite drawable position scale rotation color
-                              anchor vertices animator)))
+         (animator (if (animation? drawable)
+                       (make-animator drawable)
+                       #f))
+         (anchor (make-anchor anchor (drawable-texture drawable animator)))
+         (sprite (%make-sprite drawable position scale rotation color
+                               anchor vertices animator)))
     (update-sprite-vertices! sprite)
     sprite))
 
@@ -177,8 +177,8 @@ currently bound."
                (color (sprite-color sprite))
                (projection (signal-ref window-projection)))
       (draw-texture-vertices (sprite-texture sprite)
-                            (sprite-vertices sprite)
-                            1))))
+                             (sprite-vertices sprite)
+                             1))))
 
 ;; A hash table for all of the animated sprites that have been drawn
 ;; since the last game update.  It is cleared after every game-agenda
