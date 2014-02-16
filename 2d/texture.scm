@@ -28,6 +28,7 @@
   #:use-module (figl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d helpers)
+  #:use-module (2d vector2)
   #:use-module (2d wrappers gl)
   #:use-module (2d wrappers freeimage)
   #:export (make-texture
@@ -42,7 +43,7 @@
             texture-t1
             texture-s2
             texture-t2
-            surface->texture
+            anchor-texture
             texture-vertex
             pack-texture-vertices
             draw-texture-vertices))
@@ -153,6 +154,18 @@ that will be rendered, in pixels."
          (texture (bitmap->texture bitmap)))
     (freeimage-unload bitmap)
     texture))
+
+(define (anchor-texture texture anchor)
+  "Return a vector2 of the coordinates for the center point of a
+texture."
+  (cond
+   ((vector2? anchor)
+    anchor)
+   ((eq? anchor 'center)
+    (vector2 (/ (texture-width texture) 2)
+             (/ (texture-height texture) 2)))
+   (else
+    (error "Invalid anchor type!" anchor))))
 
 ;;;
 ;;; Texture Vertices

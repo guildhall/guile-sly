@@ -85,18 +85,6 @@
   (vertices sprite-vertices)
   (animator sprite-animator))
 
-(define (make-anchor anchor texture)
-  "Return a vector2 of the coordinates for the center point of a
-sprite."
-  (cond
-   ((vector2? anchor)
-    anchor)
-   ((eq? anchor 'center)
-    (vector2 (/ (texture-width texture) 2)
-             (/ (texture-height texture) 2)))
-   (else
-    (error "Invalid sprite anchor!" anchor))))
-
 (define (update-sprite-vertices! sprite)
   (let ((texture (sprite-texture sprite)))
     (pack-texture-vertices (sprite-vertices sprite)
@@ -124,7 +112,7 @@ DRAWABLE.  Sprites are centered by default."
          (animator (if (animation? drawable)
                        (make-animator drawable)
                        #f))
-         (anchor (make-anchor anchor (drawable-texture drawable animator)))
+         (anchor (anchor-texture (drawable-texture drawable animator) anchor))
          (sprite (%make-sprite drawable position scale rotation color
                                anchor vertices animator)))
     (update-sprite-vertices! sprite)
@@ -159,7 +147,7 @@ optional keyword arguments."
                       (sprite-animator sprite))))
 
 (define (set-sprite-anchor! sprite anchor)
-  (%set-sprite-anchor! sprite (make-anchor anchor (sprite-texture sprite))))
+  (%set-sprite-anchor! sprite (anchor-texture (sprite-texture sprite) anchor)))
 
 (define (update-sprite-animator! sprite)
   (animator-update! (sprite-animator sprite))
