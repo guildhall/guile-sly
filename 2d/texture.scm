@@ -161,6 +161,8 @@ texture."
   (cond
    ((vector2? anchor)
     anchor)
+   ((eq? anchor 'top-left)
+    null-vector2)
    ((eq? anchor 'center)
     (vector2 (/ (texture-width texture) 2)
              (/ (texture-height texture) 2)))
