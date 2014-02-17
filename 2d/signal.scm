@@ -103,7 +103,7 @@ simply returns OBJECT otherwise."
 (define (signal-propagate! signal)
   "Notify all output signals about the current value of SIGNAL."
   (hash-for-each (lambda (output unused)
-                   ((signal-proc output) output (%signal-ref output)))
+                   ((signal-proc output) output (%signal-ref signal)))
                  (signal-outputs signal)))
 
 (define (%signal-set! signal value)
