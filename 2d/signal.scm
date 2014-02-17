@@ -27,7 +27,6 @@
   #:use-module (srfi srfi-26)
   #:use-module (2d agenda)
   #:export (signal?
-            signal-box?
             make-signal
             define-signal
             hook->signal
@@ -59,7 +58,7 @@
 ;; declarative interface is exposed.
 (define-record-type <signal>
   (%%make-signal value proc inputs outputs)
-  signal?
+  %signal?
   (value %signal-ref %%signal-set!)
   (proc signal-proc)
   (inputs signal-inputs)
@@ -69,6 +68,9 @@
   (make-signal-box signal)
   signal-box?
   (signal signal-unbox signal-box-set!))
+
+;; Alternate spelling of signal-box? for the public API.
+(define signal? signal-box?)
 
 (define (%make-signal init proc inputs)
   "Create a new signal with initial value INIT."
