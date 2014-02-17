@@ -56,10 +56,11 @@
 ;; programming. State mutation is hidden away and a functional,
 ;; declarative interface is exposed.
 (define-record-type <signal>
-  (%%make-signal value proc outputs)
+  (%%make-signal value proc inputs outputs)
   signal?
   (value %signal-ref %%signal-set!)
   (proc signal-proc)
+  (inputs signal-inputs)
   (outputs signal-outputs))
 
 (define-record-type <signal-box>
@@ -69,7 +70,7 @@
 
 (define (%make-signal init proc inputs)
   "Create a new signal with initial value INIT."
-  (let ((signal (%%make-signal init proc (make-weak-key-hash-table))))
+  (let ((signal (%%make-signal init proc inputs (make-weak-key-hash-table))))
     (for-each (cut signal-connect! signal <>) inputs)
     signal))
 
