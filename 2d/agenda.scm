@@ -23,6 +23,7 @@
 
 (define-module (2d agenda)
   #:use-module (ice-9 q)
+  #:use-module (ice-9 threads)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
@@ -67,14 +68,15 @@ list CALLBACKS."
 ;;;
 
 (define-record-type <agenda>
-  (%make-agenda time segments)
+  (%make-agenda time mutex segments)
   agenda?
   (time agenda-time set-agenda-time!)
+  (mutex agenda-mutex)
   (segments agenda-segments set-agenda-segments!))
 
 (define (make-agenda)
   "Create a new, empty agenda."
-  (%make-agenda 0 '()))
+  (%make-agenda 0 (make-mutex 'recursive) '()))
 
 (define (agenda-empty? agenda)
   "Return #t if AGENDA has no scheduled procedures."
@@ -119,43 +121,46 @@ and enqueue CALLBACK."
 
 (define (tick-agenda! agenda)
   "Move AGENDA forward in time and run scheduled procedures."
-  (set-agenda-time! agenda (1+ (agenda-time agenda)))
-  (let next-segment ()
-    (unless (agenda-empty? agenda)
-      (let ((segment (first-segment agenda)))
-        ;; Process time segment if it is scheduled before or at the
-        ;; current agenda time.
-        (when (>= (agenda-time agenda) (segment-time segment))
-          (flush-queue! (segment-queue segment))
-          (set-agenda-segments! agenda (rest-segments agenda))
-          (next-segment))))))
+  (with-mutex (agenda-mutex agenda)
+    (set-agenda-time! agenda (1+ (agenda-time agenda)))
+    (let next-segment ()
+      (unless (agenda-empty? agenda)
+        (let ((segment (first-segment agenda)))
+          ;; Process time segment if it is scheduled before or at the
+          ;; current agenda time.
+          (when (>= (agenda-time agenda) (segment-time segment))
+            (flush-queue! (segment-queue segment))
+            (set-agenda-segments! agenda (rest-segments agenda))
+            (next-segment)))))))
 
 (define (clear-agenda! agenda)
   "Remove all scheduled procedures from AGENDA."
-  (set-agenda-segments! agenda '()))
+  (with-mutex (agenda-mutex agenda)
+    (set-agenda-segments! agenda '())))
 
 (define* (schedule agenda thunk #:optional (delay 1))
   "Schedule the procedure THUNK in AGENDA to be run DELAY ticks from
 now.  DELAY defaults to 1 if not specified."
-  (let ((time (agenda-time-delay agenda delay)))
-    (define (belongs-before? segments)
-      (or (null? segments)
-          (< time (segment-time (car segments)))))
+  (with-mutex (agenda-mutex agenda)
+    (let ((time (agenda-time-delay agenda delay)))
+      (define (belongs-before? segments)
+        (or (null? segments)
+            (< time (segment-time (car segments)))))
 
-    (define (add-to-segments segments)
-      ;; Add to existing time segment if the times match
-      (if (= (segment-time (car segments)) time)
-          (segment-enq (car segments) thunk)
-          ;; Continue searching
-          (if (belongs-before? (cdr segments))
-              ;; Create new time segment and insert it where it belongs
-              (insert-segment segments time thunk)
-              ;; Continue searching
-              (add-to-segments (cdr segments)))))
+      (define (add-to-segments segments)
+        ;; Add to existing time segment if the times match
+        (if (= (segment-time (car segments)) time)
+            (segment-enq (car segments) thunk)
+            ;; Continue searching
+            (if (belongs-before? (cdr segments))
+                ;; Create new time segment and insert it where it belongs
+                (insert-segment segments time thunk)
+                ;; Continue searching
+                (add-to-segments (cdr segments)))))
 
-    (if (belongs-before? (agenda-segments agenda))
-        (agenda-add-segment agenda time thunk)
-        (add-to-segments (agenda-segments agenda)))))
+      (if (belongs-before? (agenda-segments agenda))
+          (agenda-add-segment agenda time thunk)
+          (add-to-segments (agenda-segments agenda))))))
 
 (define (schedule-interval agenda thunk delay)
   "Schedule THUNK within AGENDA to be applied every DELAY ticks."
