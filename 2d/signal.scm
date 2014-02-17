@@ -30,6 +30,7 @@
             signal-box?
             make-signal
             define-signal
+            hook->signal
             signal-ref
             signal-ref-maybe
             signal-set!
@@ -147,6 +148,16 @@ be spliced into the new signal."
 ;;;
 ;;; Higher Order Signals
 ;;;
+
+(define (hook->signal hook init proc)
+  "Return a new signal whose initial value is INIT and has future
+values calculated by applying PROC to the arguments sent when HOOK is
+run."
+  (let ((signal (make-signal init)))
+    (add-hook! hook
+               (lambda args
+                 (signal-set! signal (apply proc args))))
+    signal))
 
 (define (signal-merge signal1 signal2 . rest)
   "Create a new signal whose value is the that of the most recently
