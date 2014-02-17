@@ -25,15 +25,13 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
+  #:use-module (2d agenda)
   #:export (signal?
             signal-box?
             make-signal
-            make-boxed-signal
             define-signal
-            %signal-ref
             signal-ref
             signal-ref-maybe
-            %signal-set!
             signal-set!
             signal-proc
             signal-merge
@@ -44,7 +42,10 @@
             signal-reject
             signal-constant
             signal-count
-            signal-do))
+            signal-do
+            signal-sample
+            signal-delay
+            signal-throttle))
 
 ;;;
 ;;; Signals
@@ -227,3 +228,34 @@ from SIGNAL.  The value of the new signal will always be the value of
 SIGNAL.  This signal is a convenient way to sneak a procedure that has
 a side-effect into a signal chain."
   (signal-map (lambda (x) (proc x) x) signal))
+
+(define (signal-sample agenda delay signal)
+  "Create a new signal that emits the value contained within SIGNAL
+every DELAY ticks of AGENDA."
+  (let ((sampler (%make-signal (signal-ref signal) #f '())))
+    (define (tick)
+      (%signal-set! sampler (signal-ref signal)))
+    (schedule-interval agenda tick delay)
+    (make-signal-box sampler)))
+
+(define (signal-delay agenda delay signal)
+  "Create a new signal that delays propagation of SIGNAL by DELAY
+ticks of AGENDA."
+  (make-boxed-signal (signal-ref signal)
+                     (lambda (self value)
+                       (schedule agenda
+                                 (lambda ()
+                                   (%signal-set! self value))
+                                 delay))
+                     (list signal)))
+
+(define (signal-throttle agenda delay signal)
+  "Return a new signal that propagates SIGNAL at most once every DELAY
+ticks of AGENDA."
+  (make-boxed-signal (signal-ref signal)
+                     (let ((last-time (agenda-time agenda)))
+                       (lambda (self value)
+                         (when (>= (- (agenda-time agenda) last-time) delay)
+                           (%signal-set! self value)
+                           (set! last-time (agenda-time agenda)))))
+                     (list signal)))
