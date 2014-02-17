@@ -16,9 +16,6 @@ image_DATA = 					\
 	images/stars.png			\
 	images/tiles.png
 
-fontdir = $(pkgdatadir)/examples/fonts
-font_DATA = fonts/Boxy-Bold.ttf
-
 shaderdir = $(pkgdatadir)/examples/shaders
 shader_DATA = 					\
 	shaders/vertex-shader.glsl		\
