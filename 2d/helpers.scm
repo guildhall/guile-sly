@@ -45,14 +45,10 @@ within the guardian is GC'd.  Reaping is ensured to happen from the
 same thread that is running the game loop."
   (begin
     (define name (make-guardian))
-    (add-hook! after-gc-hook
-               (lambda ()
-                 (define (reap)
-                   (let ((obj (name)))
-                     (when obj
-                       (reaper obj)
-                       (reap))))
-                 ;; Scheduling the reaping procedure in the game
-                 ;; loop's agenda ensures that the reaping will be
-                 ;; done in the main thread.
-                 (schedule game-agenda reap)))))
+    (schedule-interval game-agenda
+                       (lambda ()
+                         (let reap ((obj (name)))
+                           (when obj
+                             (reaper obj)
+                             (reap (name)))))
+                       1)))
