@@ -37,7 +37,6 @@ REPL_SOURCES = 					\
 
 WRAPPER_SOURCES =				\
   2d/wrappers/freeimage.scm			\
-  2d/wrappers/ftgl.scm				\
   2d/wrappers/gl.scm				\
   2d/wrappers/util.scm
 
