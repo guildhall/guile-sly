@@ -23,22 +23,21 @@
 
 (define-module (2d fps)
   #:use-module (2d game)
+  #:use-module (2d signal)
   #:export (fps))
 
 ;; Current frames per second
-(define fps (make-parameter 0))
+(define-signal fps (make-signal 0))
 
 (define accumulate-fps!
   (let* ((elapsed-time 0)
          (fps-counter 0))
     (lambda (dt alpha)
-      "Increment the frames-per-second counter. Resets to 0 every
-second."
       (let ((new-time (+ elapsed-time dt))
             (new-fps (1+ fps-counter)))
         (if (>= new-time 1000)
             (begin
-              (fps new-fps)
+              (signal-set! fps new-fps)
               (set! fps-counter 0)
               (set! elapsed-time 0))
             (begin
