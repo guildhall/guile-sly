@@ -27,11 +27,10 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (2d event)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d transform)
   #:use-module (2d vector2)
-  #:export (<window>
-            make-window
+  #:export (make-window
             window?
             window-title
             window-resolution
@@ -59,27 +58,31 @@
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
 
-(define window-width (make-root-signal 0))
-(define window-height (make-root-signal 0))
-(define window-size (signal-map vector2 window-width window-height))
-(define window-projection
-  (signal-map (lambda (size)
-                (if (or (zero? (vx size)) (zero? (vy size)))
-                    identity-transform
-                    (orthographic-projection 0 (vx size) 0 (vy size) -1 1)))
-              window-size))
-
 (define window-resize-hook (make-hook 2))
-(define window-close-hook (make-hook))
 
 (register-event-handler
  'video-resize
  (lambda (e)
    (run-hook window-resize-hook
              (SDL:event:resize:w e)
-             (SDL:event:resize:h e))
-   (signal-set! window-width (SDL:event:resize:w e))
-   (signal-set! window-height (SDL:event:resize:h e))))
+             (SDL:event:resize:h e))))
+
+(define-signal window-size
+  (hook->signal window-resize-hook
+                null-vector2
+                (lambda (width height)
+                  (vector2 width height))))
+(define-signal window-width (signal-map vx window-size))
+(define-signal window-height (signal-map vy window-size))
+
+(define-signal window-projection
+  (signal-map (lambda (size)
+                (if (or (zero? (vx size)) (zero? (vy size)))
+                    identity-transform
+                    (orthographic-projection 0 (vx size) 0 (vy size) -1 1)))
+              window-size))
+
+(define window-close-hook (make-hook))
 
 (register-event-handler
  'quit
@@ -91,8 +94,7 @@
   (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
         (width (vx (window-resolution window)))
         (height (vy (window-resolution window))))
-    (signal-set! window-width width)
-    (signal-set! window-height height)
+    (signal-set! window-size (vector2 width height))
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)
