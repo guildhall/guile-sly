@@ -24,7 +24,7 @@
 (define-module (2d mouse)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (2d event)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d vector2)
   #:export (mouse-move-hook
             mouse-press-hook
@@ -37,13 +37,54 @@
             mouse-down?))
 
 (define mouse-move-hook (make-hook 2))
+
+(register-event-handler
+ 'mouse-motion
+ (lambda (e)
+   (run-hook mouse-move-hook
+             (SDL:event:motion:x e)
+             (SDL:event:motion:y e))))
+
+(define-signal mouse-position
+  (hook->signal mouse-move-hook
+                null-vector2
+                (lambda (x y)
+                  (vector2 x y))))
+
+(define-signal mouse-x (signal-map vx mouse-position))
+(define-signal mouse-y (signal-map vy mouse-position))
+
 (define mouse-press-hook (make-hook 3))
+
+(register-event-handler
+ 'mouse-button-down
+ (lambda (e)
+   (run-hook mouse-press-hook
+             (SDL:event:button:button e)
+             (SDL:event:button:x e)
+             (SDL:event:button:y e))))
+
+(define-signal mouse-last-down
+  (hook->signal mouse-press-hook
+                'none
+                (lambda (button x y)
+                  button)))
+
 (define mouse-click-hook (make-hook 3))
-(define mouse-last-down (make-root-signal 'none))
-(define mouse-last-up (make-root-signal 'none))
-(define mouse-x (make-root-signal 0))
-(define mouse-y (make-root-signal 0))
-(define mouse-position (signal-map vector2 mouse-x mouse-y))
+
+(register-event-handler
+ 'mouse-button-up
+ (lambda (e)
+   (run-hook mouse-click-hook
+             (SDL:event:button:button e)
+             (SDL:event:button:x e)
+             (SDL:event:button:y e))))
+
+(define-signal mouse-last-up
+  (hook->signal mouse-click-hook
+                'none
+                (lambda (button x y)
+                  button)))
 
 (define (mouse-down? button)
   "Create a signal for the state of BUTTON. Value is #t when mouse
@@ -56,30 +97,3 @@ button is pressed or #f otherwise."
 
   (signal-merge (button-filter #f mouse-last-up)
                 (button-filter #t mouse-last-down)))
-
-(register-event-handler
- 'mouse-motion
- (lambda (e)
-   (run-hook mouse-move-hook
-             (SDL:event:motion:x e)
-             (SDL:event:motion:y e))
-   (signal-set! mouse-x (SDL:event:motion:x e))
-   (signal-set! mouse-y (SDL:event:motion:y e))))
-
-(register-event-handler
- 'mouse-button-down
- (lambda (e)
-   (run-hook mouse-press-hook
-             (SDL:event:button:button e)
-             (SDL:event:button:x e)
-             (SDL:event:button:y e))
-   (signal-set! mouse-last-down (SDL:event:button:button e))))
-
-(register-event-handler
- 'mouse-button-up
- (lambda (e)
-   (run-hook mouse-click-hook
-             (SDL:event:button:button e)
-             (SDL:event:button:x e)
-             (SDL:event:button:y e))
-   (signal-set! mouse-last-up (SDL:event:button:button e))))
