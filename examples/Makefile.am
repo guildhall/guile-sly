@@ -4,7 +4,6 @@ examples_DATA =					\
 	coroutine.scm				\
 	font.scm				\
 	particles.scm				\
-	shader.scm				\
 	simple.scm				\
 	tilemap.scm
 
@@ -15,8 +14,3 @@ image_DATA = 					\
 	images/princess.png			\
 	images/stars.png			\
 	images/tiles.png
-
-shaderdir = $(pkgdatadir)/examples/shaders
-shader_DATA = 					\
-	shaders/vertex-shader.glsl		\
-	shaders/fragment-shader.glsl
