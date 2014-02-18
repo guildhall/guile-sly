@@ -158,5 +158,5 @@
    - [ ] Relatively complete documentation
    - [X] Clean up font module
    - [X] Add GLSL shaders
-   - [ ] Finish FRP module
+   - [X] Finish FRP module
    - [X] Make basic webpage with HTML docs
