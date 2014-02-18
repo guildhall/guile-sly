@@ -24,7 +24,7 @@
 (define-module (2d keyboard)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (2d event)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d vector2)
   #:export (key-press-hook
             key-release-hook
@@ -36,26 +36,45 @@
             key-wasd))
 
 (define key-press-hook (make-hook 2))
+
+(register-event-handler
+ 'key-down
+ (lambda (e)
+   (run-hook key-press-hook
+             (SDL:event:key:keysym:sym e)
+             (SDL:event:key:keysym:unicode e))))
+
+(define-signal key-last-down
+  (hook->signal key-press-hook 'none
+                (lambda (key unicode)
+                  key)))
+
 (define key-release-hook (make-hook 2))
-(define key-last-down (make-root-signal 'none))
-(define key-last-up (make-root-signal 'none))
+
+(register-event-handler
+ 'key-up
+ (lambda (e)
+   (run-hook key-release-hook
+             (SDL:event:key:keysym:sym e)
+             (SDL:event:key:keysym:unicode e))))
+
+(define-signal key-last-up
+  (hook->signal key-release-hook 'none
+                (lambda (key unicode)
+                  key)))
 
 (define (key-down? key)
   "Create a signal for the state of KEY. The signal value is #t when
 KEY is pressed or #f otherwise."
   (define (same-key? other-key)
     (eq? key other-key))
-
   (define (key-filter value signal)
     (signal-constant value (signal-filter same-key? #f signal)))
-
   (signal-merge (key-filter #f key-last-up)
                 (key-filter #t key-last-down)))
 
 (define (key-directions up down left right)
   (signal-map (lambda (up? down? left? right?)
-                ;; (display (list up? down? left? right?))
-                ;; (newline)
                 (vector2 (+ (if left? -1 0)
                             (if right? 1 0))
                          (+ (if up? -1 0)
@@ -65,21 +84,5 @@ KEY is pressed or #f otherwise."
               (key-down? left)
               (key-down? right)))
 
-(define key-arrows (key-directions 'up 'down 'left 'right))
-(define key-wasd (key-directions 'w 's 'a 'd))
-
-(register-event-handler
- 'key-down
- (lambda (e)
-   (run-hook key-press-hook
-             (SDL:event:key:keysym:sym e)
-             (SDL:event:key:keysym:unicode e))
-   (signal-set! key-last-down (SDL:event:key:keysym:sym e))))
-
-(register-event-handler
- 'key-up
- (lambda (e)
-   (run-hook key-release-hook
-             (SDL:event:key:keysym:sym e)
-             (SDL:event:key:keysym:unicode e))
-   (signal-set! key-last-up (SDL:event:key:keysym:sym e))))
+(define-signal key-arrows (key-directions 'up 'down 'left 'right))
+(define-signal key-wasd (key-directions 'w 's 'a 'd))
