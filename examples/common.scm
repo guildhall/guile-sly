@@ -15,6 +15,5 @@
 
 (schedule-interval game-agenda
                    (lambda ()
-                     (display (fps))
-                     (newline))
+                     (format #t "FPS: ~d\n" (signal-ref fps)))
                    60)
