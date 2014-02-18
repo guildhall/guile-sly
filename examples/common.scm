@@ -2,6 +2,7 @@
              (2d fps)
              (2d game)
              (2d keyboard)
+             (2d signal)
              (2d window)
              (2d repl server))
 
