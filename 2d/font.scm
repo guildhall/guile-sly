@@ -32,7 +32,7 @@
   #:use-module (2d color)
   #:use-module (2d config)
   #:use-module (2d shader)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d texture)
   #:use-module (2d vector2)
   #:use-module (2d window)

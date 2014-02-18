@@ -27,7 +27,7 @@
   #:use-module (figl gl)
   #:use-module (2d agenda)
   #:use-module (2d event)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d window)
   #:export (ticks-per-second
             tick-interval

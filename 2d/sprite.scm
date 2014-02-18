@@ -36,7 +36,7 @@
   #:use-module (2d helpers)
   #:use-module (2d math)
   #:use-module (2d shader)
-  #:use-module (2d signals)
+  #:use-module (2d signal)
   #:use-module (2d texture)
   #:use-module (2d vector2)
   #:use-module (2d window)
