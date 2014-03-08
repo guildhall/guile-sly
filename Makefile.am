@@ -19,6 +19,7 @@ SOURCES = 					\
   2d/mouse.scm					\
   2d/mvars.scm					\
   2d/rect.scm					\
+  2d/repl.scm					\
   2d/shader.scm					\
   2d/signal.scm					\
   2d/sprite.scm					\
@@ -27,12 +28,7 @@ SOURCES = 					\
   2d/transform.scm				\
   2d/vector2.scm				\
   2d/window.scm					\
-  $(REPL_SOURCES)				\
   $(WRAPPER_SOURCES)
-
-REPL_SOURCES = 					\
-  2d/repl/repl.scm				\
-  2d/repl/server.scm
 
 WRAPPER_SOURCES =				\
   2d/wrappers/freeimage.scm			\

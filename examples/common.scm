@@ -2,11 +2,9 @@
              (2d fps)
              (2d game)
              (2d keyboard)
+             (2d repl)
              (2d signal)
-             (2d window)
-             (2d repl server))
-
-(spawn-server)
+             (2d window))
 
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)
