@@ -10,6 +10,7 @@ SOURCES = 					\
   2d/color.scm					\
   2d/config.scm					\
   2d/coroutine.scm				\
+  2d/event.scm					\
   2d/font.scm					\
   2d/fps.scm					\
   2d/game.scm					\
