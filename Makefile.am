@@ -18,7 +18,6 @@ SOURCES = 					\
   2d/keyboard.scm				\
   2d/math.scm					\
   2d/mouse.scm					\
-  2d/mvars.scm					\
   2d/rect.scm					\
   2d/repl.scm					\
   2d/shader.scm					\
