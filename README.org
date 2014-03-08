@@ -286,4 +286,4 @@
 
 ** License
 
-   GNU LGPL v3+
+   GNU GPL v3+
