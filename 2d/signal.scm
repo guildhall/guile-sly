@@ -42,7 +42,7 @@
             signal-reject
             signal-constant
             signal-count
-            signal-do
+            signal-tap
             signal-sample
             signal-delay
             signal-throttle))
@@ -235,7 +235,7 @@ what the value received from SIGNAL."
 value from SIGNAL is received."
   (signal-fold + 0 (signal-constant 1 signal)))
 
-(define (signal-do proc signal)
+(define (signal-tap proc signal)
   "Create a new signal that applies PROC when a new values is received
 from SIGNAL.  The value of the new signal will always be the value of
 SIGNAL.  This signal is a convenient way to sneak a procedure that has
