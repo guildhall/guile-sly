@@ -1,0 +1,48 @@
+#! /usr/bin/guile \
+-L . -s
+!#
+
+;;; guile-2d
+;;; Copyright (C) 2014 David Thompson <dthompson2@worcester.edu>
+;;;
+;;; This program is free software: you can redistribute it and/or
+;;; modify it under the terms of the GNU General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program.  If not, see
+;;; <http://www.gnu.org/licenses/>.
+
+;; Include almost every guile-2d module for convenience.
+(use-modules (2d agenda)
+             (2d audio)
+             (2d color)
+             (2d coroutine)
+             (2d font)
+             (2d fps)
+             (2d game)
+             (2d keyboard)
+             (2d mouse)
+             (2d rect)
+             (2d signal)
+             (2d sprite)
+             (2d texture)
+             (2d transform)
+             (2d vector2)
+             (2d window)
+             (2d repl))
+
+(display "Welcome to the guile-2d sandbox.  Happy hacking!\n")
+
+(add-hook! window-close-hook quit-game)
+
+(with-window (make-window #:title "Guile-2D Sandbox")
+  (run-game-loop))
+
+(display "Bye!\n")
