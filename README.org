@@ -1,8 +1,8 @@
 * guile-2d
 
-  Guile-2d is a 2D game programming library for GNU Guile. It is a
-  layer above SDL and OpenGL that provides abstractions for common 2D
-  game programming requirements such as:
+  Guile-2d is a free software 2D game engine written in GNU Guile
+  Scheme.  It provides an abstraction layer above SDL and OpenGL for
+  common 2D game programming requirements such as:
 
   - Sprites
   - Animation
@@ -14,8 +14,8 @@
 
 ** Inspiration
    Every programming language should have a fun, easy to use 2D game
-   library. Guile-2d draws its inspiration from great
-   libraries/frameworks such as [[http://love2d.org/][LÖVE]], [[http://pygame.org/][Pygame]], and [[http://pyglet.org/][Pyglet]].
+   library.  Guile-2d draws its inspiration from great
+   libraries/engines such as [[http://love2d.org/][LÖVE]], [[http://pygame.org/][Pygame]], and [[http://pyglet.org/][Pyglet]].
 
 ** Example
    Here is the simplest guile-2d application (so far).
@@ -30,7 +30,9 @@
        (load-sprite "images/p1_front.png"
                     #:position (vector2 320 240)))
 
-     (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
+     (add-hook! draw-hook
+                (lambda (dt alpha)
+                  (draw-sprite sprite)))
 
      (with-window (make-window #:title "Simple Sprite Demo")
        (run-game-loop))
@@ -100,24 +102,6 @@
 
     #+BEGIN_SRC scheme
       (draw-sprite sprite)
-    #+END_SRC
-
-*** Sprite Batches
-    When drawing many sprites, it is inefficient to send them to the
-    GPU individually. Sprite batches resolve this issue by sending
-    sprites to the GPU in large chunks.
-
-    To take advantage of this, create a sprite batch and use
-    =with-sprite-batch=. All calls to =draw-sprite= will use the
-    sprite batch within this form.
-
-    #+BEGIN_SRC scheme
-      (define sprites (make-a-ton-of-sprites))
-
-      (define batch (make-sprite-batch))
-
-      (with-sprite-batch batch
-        (for-each draw-sprite sprites))
     #+END_SRC
 
 *** Keyboard and Mouse Input
@@ -211,16 +195,63 @@
     thunk periodically, and =schedule-each= applies a thunk upon every
     tick.
 
-** REPL Driven Development
+*** Functional Reactive Programming
+    Games are composed of values that evolve as time passes.  The
+    player's score, the current stage, an enemy's hit points, etc. all
+    change in response to events that happen at discrete points in
+    time.  Typically, this means that a number of callback procedures
+    are registered to react to events which mutate data structures
+    and/or assign to variables.  However, this approach, while simple
+    and effective, comes at the price of readability and
+    comprehension.  Instead of explicitly mutating data and entering
+    "callback hell", guile-2d abstracts and formalizes the process
+    using a functional reactive programming style.
+
+    Time-varying values are called "signals", and they are created in
+    a declarative and functional manner.  Rather than describing the
+    process of mutation procedurally, one describes the relationship
+    between signals instead.  Signal relationships are described in a
+    functional style using =signal-map=, =signal-fold=,
+    =signal-filter=, and others.
+
+    Example:
+    #+BEGIN_SRC scheme
+      (define-signal position
+        (signal-fold v+ (vector2 320 240)
+                     (signal-map (lambda (v)
+                                   (vscale v 4))
+                                 (signal-sample game-agenda 1 key-arrows))))
+    #+END_SRC
+
+    This signal describes a relationship between the arrow keys on the
+    keyboard and the position of the player.  =signal-sample= is used
+    to trigger a signal update upon every game tick that provides the
+    current state of the arrow keys.  =key-arrows= is a vector2 that
+    maps to the current state of the arrow keys, allowing for 8
+    direction movement.  This vector2 is then scaled 4x to make the
+    player move faster.  Finally, the scaled vector is added to the
+    previous player position via =signal-fold=.  The player's position
+    is at (320, 240) initially.  As you can see, there are no
+    callbacks and explicit mutation needed.  Those details have been
+    abstracted away, freeing the programmer to focus on more important
+    things.
+
+    As an added bonus, signals adapt to changes in their environment
+    when defined using the =define-signal= form.  This means that a
+    signal can be re-defined at the REPL and other dependent signals
+    will take notice and re-evaluate themselves automagically.
+
+*** REPL Driven Development
 
    The read-eval-print-loop present in Guile allows you to develop
    your game while it is running! This allows you to see in real time
    what your changes do to the game without having to restart the
    program every time.
 
-   Guile-2d uses a modified REPL server that is integrated with the
-   game loop. A REPL server is started when the game loop starts. To
-   connect to it, use the [[http://www.nongnu.org/geiser/][Geiser]] extension for GNU Emacs or telnet.
+   Guile-2d integrates Guile's cooperative REPL server with the game
+   loop.  To activate this feature, import the =(2d repl)= module.  To
+   connect to the REPL server, use the [[http://www.nongnu.org/geiser/][Geiser]] extension for GNU Emacs
+   or telnet.
 
    *Geiser*
 
@@ -269,6 +300,12 @@
    - Close the window
    - Press the =ESCAPE= key
 
+** Using the Sandbox
+   If you want to quickly create a guile-2d environment and start
+   experimenting, run the =sandbox= script.  It will import many
+   useful modules, start a REPL server, open a window, and start the
+   game loop.  Simply connect to the REPL server and start hacking!
+
 ** Platforms
 
    Guile-2d supports GNU/Linux currently. OS X support is in the
@@ -287,3 +324,5 @@
 ** License
 
    GNU GPL v3+
+
+   See =COPYING= for the full license text.
