@@ -38,9 +38,11 @@
              (2d window)
              (2d repl))
 
-(display "Welcome to the guile-2d sandbox.  Happy hacking!\n")
+(start-2d-repl)
 
 (add-hook! window-close-hook quit-game)
+
+(display "Welcome to the guile-2d sandbox.  Happy hacking!\n")
 
 (with-window (make-window #:title "Guile-2D Sandbox")
   (run-game-loop))

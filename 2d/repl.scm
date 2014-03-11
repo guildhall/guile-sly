@@ -23,12 +23,16 @@
 
 (define-module (2d repl)
   #:use-module (system repl coop-server)
+  #:use-module (system repl server)
   #:use-module (2d agenda)
-  #:use-module (2d game))
+  #:use-module (2d game)
+  #:export (start-2d-repl))
 
-(define server (spawn-coop-repl-server))
-
-(define (poll-server)
-  (poll-coop-repl-server server))
-
-(schedule-interval game-agenda poll-server 2)
+(define* (start-2d-repl #:optional (port (make-tcp-server-socket #:port 37146)))
+  "Start a cooperative REPL server that listens on the given PORT.  By
+default, this port is 37146.  Additionally, a process is scheduled to
+poll the REPL server upon every tick of the game loop."
+  (let ((server (spawn-coop-repl-server port)))
+    (schedule-each game-agenda
+                   (lambda ()
+                     (poll-coop-repl-server server)))))

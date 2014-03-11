@@ -33,3 +33,5 @@
                    (lambda ()
                      (format #t "FPS: ~d\n" (signal-ref fps)))
                    60)
+
+(start-2d-repl)
