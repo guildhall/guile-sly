@@ -22,13 +22,12 @@
 ;;; Code:
 
 (define-module (2d font)
-  #:use-module (figl gl)
   #:use-module (srfi srfi-9)
   #:use-module (system foreign)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl ttf) #:prefix SDL:)
-  #:use-module (figl gl)
-  #:use-module (figl contrib packed-struct)
+  #:use-module (gl)
+  #:use-module (gl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d config)
   #:use-module (2d shader)

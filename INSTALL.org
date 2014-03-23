@@ -63,39 +63,21 @@
     for more information:
     https://github.com/davexunit/guile-2d/issues/2
 
-*** guile-figl
+*** guile-opengl
 
     *Source*
 
-    FIGL is an unreleased library. You can find an unofficial
-    source tarball that is compatible with guile-2d here:
-    http://dthompson.us/static/src/guile-figl.tar.gz
+    guile-opengl is the GNU Guile wrapper for OpenGL.
+
+    Grab the latest release tarball from http://ftp.gnu.org/gnu/guile-opengl/.
 
     #+BEGIN_SRC sh
-      tar -xvf guile-figl.tar.gz
-      cd guile-figl/
+      tar -xvf guile-opengl-<version>.tar.gz
+      cd guile-opengl/
       ./configure --prefix=/usr
       make
       sudo make install
     #+END_SRC
-
-    *Git*
-
-    #+BEGIN_SRC sh
-      git clone https://gitorious.org/guile-figl/guile-figl.git
-      cd guile-figl
-      autoreconf -vif
-      ./configure --prefix=/usr
-      make
-      sudo make install
-    #+END_SRC
-
-    You will probably encounter a syntax error in the
-    /low-level-gl.texi/ file. To fix it, you will need to join the
-    lines 19152 and 19153 together. There are a lot of warnings that
-    get output, but only one fatal error. The documentation is
-    auto-generated from the OpenGL docs and it seems that there are
-    still a few bugs in the generator.
 
 ** Install guile-2d
 

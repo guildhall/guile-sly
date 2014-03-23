@@ -18,12 +18,12 @@
 ;;; Commentary:
 ;;
 ;; Custom wrappers over low level OpenGL commands that aren't part of
-;; FIGL.
+;; guile-opengl.
 ;;
 ;;; Code:
 
 (define-module (2d wrappers gl)
-  #:use-module ((figl gl low-level) #:renamer (symbol-prefix-proc '%)))
+  #:use-module ((gl low-level) #:renamer (symbol-prefix-proc '%)))
 
 ;;;
 ;;; 3.8.1 Texture Image Specification

@@ -24,8 +24,8 @@
 
 (define-module (2d texture)
   #:use-module (srfi srfi-9)
-  #:use-module (figl gl)
-  #:use-module (figl contrib packed-struct)
+  #:use-module (gl)
+  #:use-module (gl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d helpers)
   #:use-module (2d vector2)

@@ -24,7 +24,7 @@
 (define-module (2d wrappers util)
   #:export (define-enumeration))
 
-;; Borrowed from guile-figl
+;; Borrowed from guile-opengl
 (define-syntax-rule (define-enumeration enumerator (name value) ...)
   (define-syntax enumerator
     (lambda (x)

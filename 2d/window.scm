@@ -23,7 +23,7 @@
 
 (define-module (2d window)
   #:use-module (srfi srfi-9)
-  #:use-module (figl gl)
+  #:use-module (gl)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (2d event)

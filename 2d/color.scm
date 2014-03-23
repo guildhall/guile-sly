@@ -22,7 +22,7 @@
 ;;; Code:
 
 (define-module (2d color)
-  #:use-module (figl gl)
+  #:use-module (gl)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-1)
   #:export (<color>

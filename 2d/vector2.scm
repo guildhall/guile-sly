@@ -22,7 +22,6 @@
 ;;; Code:
 
 (define-module (2d vector2)
-  #:use-module (figl gl)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:export (<vector2>

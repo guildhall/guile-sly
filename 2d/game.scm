@@ -24,7 +24,7 @@
 (define-module (2d game)
   #:use-module (srfi srfi-9)
   #:use-module ((sdl sdl) #:prefix SDL:)
-  #:use-module (figl gl)
+  #:use-module (gl)
   #:use-module (2d agenda)
   #:use-module (2d event)
   #:use-module (2d signal)
