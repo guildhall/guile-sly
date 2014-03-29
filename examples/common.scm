@@ -23,6 +23,7 @@
              (2d signal)
              (2d window))
 
+(open-window)
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)
                               (quit-game))))

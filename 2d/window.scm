@@ -89,7 +89,7 @@
  (lambda (e)
    (run-hook window-close-hook)))
 
-(define* (open-window window)
+(define* (open-window #:optional (window (make-window #:title "")))
   "Open the game window using the settings in WINDOW."
   (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
         (width (vx (window-resolution window)))
@@ -116,10 +116,3 @@
     (lambda () (open-window window))
     (lambda () body ...)
     (lambda () (close-window))))
-
-;; Open a window immediately to create an OpenGL context. This allows
-;; for textures to be loaded before the program explicitly sets the
-;; window settings.
-;;
-;; TODO: Hide the window initially. This will require SDL 2.0.
-(open-window (make-window #:title ""))
