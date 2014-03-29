@@ -38,9 +38,7 @@
             vmag
             vnorm
             vdot
-            vcross
-            vector2-translate
-            vector2-scale))
+            vcross))
 
 (define-record-type <vector2>
   (vector2 x y)
@@ -108,11 +106,3 @@ returns the Z coordinate of the cross product as if the vectors were
 in 3D space."
   (- (* (vx v1) (vy v2))
      (* (vy v1) (vx v2))))
-
-(define (vector2-translate v)
-  "Perform an OpenGL translate operation with the vector V."
-  (gl-translate (vx v) (vy v) 0))
-
-(define (vector2-scale v)
-  "Perform an OpenGL scale operation with the vector V."
-  (gl-scale (vx v) (vy v) 1))
