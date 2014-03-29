@@ -21,9 +21,12 @@
              (2d keyboard)
              (2d repl)
              (2d signal)
+             (2d sprite)
              (2d window))
 
 (open-window)
+(enable-sprites)
+
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)
                               (quit-game))))

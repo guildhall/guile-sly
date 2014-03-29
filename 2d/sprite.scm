@@ -41,7 +41,8 @@
   #:use-module (2d vector2)
   #:use-module (2d window)
   #:use-module (2d wrappers gl)
-  #:export (make-sprite
+  #:export (enable-sprites
+            make-sprite
             sprite?
             animated-sprite?
             sprite-drawable
@@ -63,12 +64,17 @@
 ;;; Sprites
 ;;;
 
-(define sprite-shader
-  (make-shader-program
-   (load-vertex-shader (string-append %pkgdatadir
-                                      "/shaders/sprite-vertex.glsl"))
-   (load-fragment-shader (string-append %pkgdatadir
-                                        "/shaders/sprite-fragment.glsl"))))
+(define sprite-shader #f)
+
+(define (enable-sprites)
+  (set! sprite-shader
+        (make-shader-program
+         (load-vertex-shader
+          (string-append %pkgdatadir
+                         "/shaders/sprite-vertex.glsl"))
+         (load-fragment-shader
+          (string-append %pkgdatadir
+                         "/shaders/sprite-fragment.glsl")))))
 
 ;; The <sprite> type represents a drawable object (texture,
 ;; texture-region, animation, etc.) with a given position, scale,
