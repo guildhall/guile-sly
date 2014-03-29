@@ -25,7 +25,8 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-2)
   #:use-module ((sdl mixer) #:prefix SDL:)
-  #:export (load-sample
+  #:export (enable-audio
+            load-sample
             sample?
             sample-audio
             sample-volume
@@ -44,7 +45,8 @@
             music-paused?
             music-playing?))
 
-(SDL:open-audio)
+(define (enable-audio)
+  (SDL:open-audio))
 
 ;; Used to wrap SDL audio functions whose return values should be
 ;; ignored.
