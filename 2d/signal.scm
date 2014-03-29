@@ -121,31 +121,49 @@ all output signals."
   "Change the current value contained within SIGNAL-BOX to VALUE."
   (%signal-set! (signal-unbox signal-box) value))
 
-(define (splice-signals! box-to box-from)
-  "Replace the contents of BOX-TO with the contents of BOX-FROM and
-transfer all output signals."
-  (when (signal-box? box-to)
-    (let ((outputs (signal-outputs (signal-unbox box-to))))
-      (hash-for-each (lambda (signal unused)
-                       (signal-connect! signal box-from))
-                     outputs))
-    (signal-box-set! box-to (signal-unbox box-from))))
+(define (splice-signals! to from)
+  "Replace the contents of the signal TO with the contents of the
+signal FROM and transfer all output signals."
+  (let ((outputs (signal-outputs (signal-unbox to))))
+    (hash-for-each (lambda (signal unused)
+                     (signal-connect! signal from))
+                   outputs)
+    (signal-box-set! to (signal-unbox from))))
+
+(define (make-signal-maybe value)
+  "Coerce VALUE into a signal.  Return VALUE unmodified if it is
+already a signal."
+  (if (signal? value)
+      value
+      (make-signal value)))
 
 (define-syntax define-signal
   (lambda (x)
-    "Define a variable that contains a signal, with the added bonus
-that if the variable already contains a signal then its outputs will
-be spliced into the new signal."
+    "Create a top-level signal variable.  If the named variable
+already exists and has a signal value then its outputs will be spliced
+into the new signal.  If the given value is not a signal then it will
+be coerced into one."
     (syntax-case x ()
       ((_ name (signal ...))
        (defined? (syntax->datum #'name))
-       #'(begin
-           (splice-signals! name (signal ...))
-           (signal-propagate! (signal-unbox name))))
-      ((_ name (signal ...))
-       #'(define name (signal ...)))
+       #'(let ((s (make-signal-maybe (signal ...))))
+           (if (signal? name)
+               (begin
+                 (splice-signals! name s)
+                 (signal-propagate! (signal-unbox name)))
+               (set! name s))))
       ((_ name value)
-       #'(define name value)))))
+       (defined? (syntax->datum #'name))
+       #'(let ((s (make-signal-maybe value)))
+           (if (signal? name)
+               (begin
+                 (splice-signals! name s)
+                 (signal-propagate! (signal-unbox name)))
+               (set! name s))))
+      ((_ name (signal ...))
+       #'(define name (make-signal-maybe (signal ...))))
+      ((_ name value)
+       #'(define name (make-signal-maybe value))))))
 
 ;;;
 ;;; Higher Order Signals
