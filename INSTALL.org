@@ -19,7 +19,13 @@
     #+END_SRC
 
     This assumes that the version of Debian you are running has Guile
-    2.0.9.
+    2.0.11.
+
+    *Gentoo*
+
+    #+BEGIN_SRC sh
+      sudo emerge ">=dev-scheme/guile-2.0.11"
+    #+END_SRC
 
     Check the versions available to you with =sudo apt-cache show guile-2.0-dev=.
 
@@ -32,6 +38,12 @@
        sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
      #+END_SRC
 
+    *Gentoo*
+
+    #+BEGIN_SRC sh
+      sudo emerge libsdl sdl-image sdl-mixer
+    #+END_SRC
+
 *** Freeimage
 
     Freeimage is to used to load textures. Make sure that your distro
@@ -41,6 +53,12 @@
 
     #+BEGIN_SRC sh
       sudo apt-get install libfreeimage-dev
+    #+END_SRC
+
+    *Gentoo*
+
+    #+BEGIN_SRC sh
+      sudo emerge freeimage
     #+END_SRC
 
 *** guile-sdl
@@ -84,7 +102,7 @@
    Once the dependencies have been installed, installing guile-2d is
    pretty straightforward.
 
-   *Debian*
+   *GNU/Linux*
 
    #+BEGIN_SRC sh
      git clone https://github.com/davexunit/guile-2d.git
@@ -93,4 +111,20 @@
      ./configure --prefix=/usr
      make
      sudo make install
+   #+END_SRC
+
+*** Install to /usr/local
+
+   If you want to avoid installing to /usr, you can build like this:
+
+   #+BEGIN_SRC sh
+     ./configure
+     GUILE_LOAD_PATH=/usr/local/share/guile/site/2.0/:/usr/local/share/guile/site/ make
+     sudo make install
+   #+END_SRC
+
+   Then use the same call to run guile:
+
+   #+BEGIN_SRC
+     GUILE_LOAD_PATH=/usr/local/share/guile/site/2.0/:/usr/local/share/guile/site/ guile
    #+END_SRC
