@@ -36,7 +36,8 @@
   #:use-module (2d vector2)
   #:use-module (2d window)
   #:use-module (2d wrappers gl)
-  #:export (load-font
+  #:export (enable-fonts
+            load-font
             load-default-font
             font?
             font-point-size
@@ -48,11 +49,22 @@
             label-color
             draw-label))
 
-(SDL:ttf-init)
-
 ;;;
 ;;; Font
 ;;;
+
+(define font-shader #f)
+
+(define (enable-fonts)
+  (SDL:ttf-init)
+  (set! font-shader
+        (make-shader-program
+         (load-vertex-shader
+          (string-append %pkgdatadir
+                         "/shaders/font-vertex.glsl"))
+         (load-fragment-shader
+          (string-append %pkgdatadir
+                         "/shaders/font-fragment.glsl")))))
 
 (define-record-type <font>
   (make-font ttf point-size)
@@ -130,13 +142,6 @@ white and ANCHOR with a default of 'top-left."
          (vertices (make-label-vertices texture))
          (anchor (anchor-texture texture anchor)))
     (%make-label font text position anchor color texture vertices)))
-
-(define font-shader
-  (make-shader-program
-   (load-vertex-shader (string-append %pkgdatadir
-                                      "/shaders/font-vertex.glsl"))
-   (load-fragment-shader (string-append %pkgdatadir
-                                        "/shaders/font-fragment.glsl"))))
 
 (define (draw-label label)
   "Draw LABEL on the screen."

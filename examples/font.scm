@@ -27,6 +27,8 @@
 
 (load "common.scm")
 
+(enable-fonts)
+
 (define font (load-default-font 18))
 (define label
   (make-label font "The quick brown fox jumped over the lazy dog."
