@@ -41,7 +41,7 @@
     *Gentoo*
 
     #+BEGIN_SRC sh
-      sudo emerge libsdl sdl-image sdl-mixer
+      sudo emerge libsdl sdl-image sdl-mixer sdl-ttf
     #+END_SRC
 
 *** Freeimage
