@@ -29,11 +29,6 @@
    context when necessary. For example, don't change texture when
    rendering several sprites in a row that use the same one.
 
-   - [X] Add basic batching for non-scaled, non-rotated sprites
-   - [X] Add transformation logic for scaling and rotating
-   - [X] Add support for colors
-   - [ ] Add support for different blending modes
-
 ** DONE Tilesets
    Break an image up into many small pieces. Useful for creating maps.
 
@@ -90,8 +85,8 @@
 ** TODO Particle systems
    Provide a highly configurible particle simulation system.
 
-   - [ ] Investigate ways to make it fast. Might have to resort to a C
-     shared library to avoid GC overhead.
+   - [ ] Investigate ways to make it fast.  Use guile-compost for
+     performance reasons.
 
 ** TODO Asset Management
    Provide a generic system for loading assets (images, sounds, fonts,
@@ -160,3 +155,4 @@
    - [X] Add GLSL shaders
    - [X] Finish FRP module
    - [X] Make basic webpage with HTML docs
+   - [ ] Make sprites cheaper (cache coords in texture)
