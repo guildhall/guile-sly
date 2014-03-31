@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (2d font)
+  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-9)
   #:use-module (system foreign)
   #:use-module ((sdl sdl) #:prefix SDL:)
@@ -85,10 +86,12 @@ argument with a default value of 12."
 
 (define (render-text font text)
   "Return a new texture with TEXT rendered using FONT."
-  (let* ((surface (SDL:render-utf8 (font-ttf font) text
-                                   (SDL:make-color 255 255 255) #t))
-         (pixels (SDL:surface-pixels surface))
-         (texture-id (gl-generate-texture)))
+  ;; An empty string will result in a surface value of #f, in which we
+  ;; want to abort the texture creation process.
+  (and-let* ((surface (SDL:render-utf8 (font-ttf font) text
+                                       (SDL:make-color 255 255 255) #t))
+             (pixels (SDL:surface-pixels surface))
+             (texture-id (gl-generate-texture)))
     (with-gl-bind-texture (texture-target texture-2d) texture-id
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-min-filter)
@@ -139,16 +142,17 @@ argument with a default value of 12."
 the given position.  Optional arguments are COLOR with a default of
 white and ANCHOR with a default of 'top-left."
   (let* ((texture (render-text font text))
-         (vertices (make-label-vertices texture))
+         (vertices (and texture (make-label-vertices texture)))
          (anchor (anchor-texture texture anchor)))
     (%make-label font text position anchor color texture vertices)))
 
 (define (draw-label label)
   "Draw LABEL on the screen."
-  (with-shader-program font-shader
-    (uniforms ((projection (signal-ref window-projection))
-               (position (label-position label))
-               (anchor (label-anchor label))
-               (color (label-color label)))
-      (draw-texture-vertices (label-texture label) (label-vertices label) 1)))
+  (when (label-texture label)
+    (with-shader-program font-shader
+      (uniforms ((projection (signal-ref window-projection))
+                 (position (label-position label))
+                 (anchor (label-anchor label))
+                 (color (label-color label)))
+        (draw-texture-vertices (label-texture label) (label-vertices label) 1))))
   *unspecified*)
