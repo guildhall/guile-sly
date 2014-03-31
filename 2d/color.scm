@@ -25,6 +25,7 @@
   #:use-module (gl)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-1)
+  #:use-module (2d math)
   #:export (<color>
             make-color
             color?
