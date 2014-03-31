@@ -44,7 +44,36 @@
             red
             green
             blue
-            magenta))
+            yellow
+            magenta
+            cyan
+            tango-light-butter
+            tango-butter
+            tango-dark-butter
+            tango-light-orange
+            tango-orange
+            tango-dark-orange
+            tango-light-chocolate
+            tango-chocolate
+            tango-dark-chocolate
+            tango-light-chameleon
+            tango-chameleon
+            tango-dark-chameleon
+            tango-light-sky-blue
+            tango-sky-blue
+            tango-dark-sky-blue
+            tango-light-plum
+            tango-plum
+            tango-dark-plum
+            tango-light-scarlet-red
+            tango-scarlet-red
+            tango-dark-scarlet-red
+            tango-aluminium-1
+            tango-aluminium-2
+            tango-aluminium-3
+            tango-aluminium-4
+            tango-aluminium-5
+            tango-aluminium-6))
 
 (define-record-type <color>
   (%make-color r g b a)
@@ -129,10 +158,46 @@ is left unchanged."
               (- 1 (color-b color))
               (color-a color)))
 
-;; Pre-defined colors.
+;;;
+;;; Pre-defined Colors
+;;;
+
+;; Basic
 (define white (rgb #xffffff))
 (define black (rgb #x000000))
 (define red (rgb #xff0000))
 (define green (rgb #x00ff00))
 (define blue (rgb #x0000ff))
+(define yellow (rgb #xffff00))
 (define magenta (rgb #xff00ff))
+(define cyan (rgb #x00ffff))
+
+;; Tango color pallete
+;; http://tango.freedesktop.org
+(define tango-light-butter (rgb #xfce94f))
+(define tango-butter (rgb #xedd400))
+(define tango-dark-butter (rgb #xc4a000))
+(define tango-light-orange (rgb #xfcaf3e))
+(define tango-orange (rgb #xf57900))
+(define tango-dark-orange (rgb #xce5c00))
+(define tango-light-chocolate (rgb #xe9b96e))
+(define tango-chocolate (rgb #xc17d11))
+(define tango-dark-chocolate (rgb #x8f5902))
+(define tango-light-chameleon (rgb #x8ae234))
+(define tango-chameleon (rgb #x73d216))
+(define tango-dark-chameleon (rgb #x4e9a06))
+(define tango-light-sky-blue (rgb #x729fcf))
+(define tango-sky-blue (rgb #x3465a4))
+(define tango-dark-sky-blue (rgb #x204a87))
+(define tango-light-plum (rgb #xad7fa8))
+(define tango-plum (rgb #x75507b))
+(define tango-dark-plum (rgb #x5c3566))
+(define tango-light-scarlet-red (rgb #xef2929))
+(define tango-scarlet-red (rgb #xcc0000))
+(define tango-dark-scarlet-red (rgb #xa40000))
+(define tango-aluminium-1 (rgb #xeeeeec))
+(define tango-aluminium-2 (rgb #xd3d7cf))
+(define tango-aluminium-3 (rgb #xbabdb6))
+(define tango-aluminium-4 (rgb #x888a85))
+(define tango-aluminium-5 (rgb #x555753))
+(define tango-aluminium-6 (rgb #x2e3436))
