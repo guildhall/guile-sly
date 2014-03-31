@@ -158,16 +158,28 @@ that will be rendered, in pixels."
 (define (anchor-texture texture anchor)
   "Return a vector2 of the coordinates for the center point of a
 texture."
-  (cond
-   ((vector2? anchor)
-    anchor)
-   ((eq? anchor 'top-left)
-    null-vector2)
-   ((eq? anchor 'center)
-    (vector2 (/ (texture-width texture) 2)
-             (/ (texture-height texture) 2)))
-   (else
-    (error "Invalid anchor type!" anchor))))
+  (let ((w (texture-width texture))
+        (h (texture-height texture)))
+    (cond
+     ((vector2? anchor)
+      anchor)
+     ((eq? anchor 'center)
+      (vector2 (/ w 2)
+               (/ h 2)))
+     ((eq? anchor 'top-left)
+      null-vector2)
+     ((eq? anchor 'top-right)
+      (vector2 w 0))
+     ((eq? anchor 'bottom-left)
+      (vector2 0 h))
+     ((eq? anchor 'bottom-right)
+      (vector2 w h))
+     ((eq? anchor 'top-center)
+      (vector2 (/ w 2) 0))
+     ((eq? anchor 'bottom-center)
+      (vector2 (/ w 2) h))
+     (else
+      (error "Invalid anchor type!" anchor)))))
 
 ;;;
 ;;; Texture Vertices

@@ -143,7 +143,7 @@ the given position.  Optional arguments are COLOR with a default of
 white and ANCHOR with a default of 'top-left."
   (let* ((texture (render-text font text))
          (vertices (and texture (make-label-vertices texture)))
-         (anchor (anchor-texture texture anchor)))
+         (anchor (if texture (anchor-texture texture anchor) null-vector2)))
     (%make-label font text position anchor color texture vertices)))
 
 (define (draw-label label)
