@@ -35,7 +35,7 @@
             signal-set!
             signal-proc
             signal-merge
-            signal-combine
+            signal-zip
             signal-map
             signal-fold
             signal-filter
@@ -189,7 +189,7 @@ signal in SIGNALS."
                          (%signal-set! self value))
                        inputs)))
 
-(define (signal-combine . signals)
+(define (signal-zip . signals)
   "Create a new signal whose value is a list of the values stored in
 the given signals."
   (define (current-value)
