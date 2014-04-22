@@ -39,6 +39,7 @@
             shader-type
             shader-id
             make-shader-program
+            shader-program-id
             shader-program?
             shader-program-linked?
             with-shader-program
