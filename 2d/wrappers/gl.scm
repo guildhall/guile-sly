@@ -23,7 +23,9 @@
 ;;; Code:
 
 (define-module (2d wrappers gl)
-  #:use-module ((gl low-level) #:renamer (symbol-prefix-proc '%)))
+  #:use-module ((gl low-level) #:renamer (symbol-prefix-proc '%))
+  #:use-module (gl runtime)
+  #:use-module (gl types))
 
 ;;;
 ;;; 3.8.1 Texture Image Specification
@@ -72,3 +74,23 @@
     (%glBindTexture target 0)))
 
 (export with-gl-bind-texture)
+
+;;;
+;;; Instancing extension
+;;;
+
+(define-gl-procedure (glDrawArraysInstanced (mode GLenum)
+                                            (first GLint)
+                                            (count GLsizei)
+                                            (primcount GLsizei)
+                                            -> GLboolean)
+  "Draw multiple instances of a set of arrays.")
+
+(define-gl-procedure (glVertexAttribDivisor (index GLuint)
+                                            (divisor GLuint)
+                                            -> void)
+  "Modify the rate at which generic vertex attributes advance during
+instanced rendering.")
+
+(export glDrawArraysInstanced
+        glVertexAttribDivisor)
