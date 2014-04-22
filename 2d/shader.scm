@@ -28,6 +28,7 @@
   #:use-module (2d transform)
   #:use-module (2d vector2)
   #:use-module (2d color)
+  #:use-module (2d wrappers gl)
   #:export (make-shader
             make-vertex-shader
             make-fragment-shader
@@ -42,6 +43,7 @@
             shader-program-id
             shader-program?
             shader-program-linked?
+            shader-program-attribute-location
             with-shader-program
             %uniform-setters
             register-uniform-setter!
@@ -210,6 +212,10 @@ SHADERS."
       (let ((return-value (begin body ...)))
         (glUseProgram 0)
         return-value))))
+
+(define (shader-program-attribute-location program name)
+  "Get the location of the attribute NAME within the shader PROGRAM."
+  (glGetAttribLocation (shader-program-id program) name))
 
 (define-record-type <uniform-setter>
   (make-uniform-setter predicate proc)
