@@ -53,7 +53,6 @@
 (define ticks-per-second 60)
 (define tick-interval (make-parameter 0))
 (define draw-hook (make-hook 2))
-(define accumulator (make-parameter 0))
 (define game-agenda (make-agenda))
 ;; This agenda is only ticked when the game loop is in the paused
 ;; state.  Useful for things like the REPL that should be run even
@@ -63,9 +62,8 @@
 (define (run-game-loop)
   "Start the game loop."
   (parameterize ((game-loop-status 'running)
-                 (tick-interval (floor (/ 1000 ticks-per-second)))
-                 (accumulator 0))
-    (game-loop (SDL:get-ticks))))
+                 (tick-interval (floor (/ 1000 ticks-per-second))))
+    (game-loop (SDL:get-ticks) 0)))
 
 (define (draw dt alpha)
   "Render a frame."
@@ -76,48 +74,29 @@
   (run-hook draw-hook dt alpha)
   (SDL:gl-swap-buffers))
 
-(define (update)
+(define (update lag)
   "Call the update callback. The update callback will be called as
-many times as `tick-interval` can divide ACCUMULATOR. The return value
+many times as tick-interval can divide LAG. The return value
 is the unused accumulator time."
-  (while (>= (accumulator) (tick-interval))
-      (process-events)
-      (tick-agenda! game-agenda)
-      (accumulator (- (accumulator) (tick-interval)))))
-
-(define (alpha)
-  (/ (accumulator) (tick-interval)))
-
-(define (update-and-render dt)
-  (update)
-  (draw dt (alpha)))
-
-(define (tick dt)
-  "Advance the game by one frame."
-  (if (game-paused?)
+  (if (>= lag (tick-interval))
       (begin
-        (tick-agenda! paused-agenda)
-        (SDL:delay (tick-interval))
-        accumulator)
-      (catch #t
-        (lambda ()
-          (update-and-render dt))
-        (lambda (key . args)
-          (pause-game)
-          accumulator)
-        (lambda (key . args)
-          (display-backtrace (make-stack #t)
-                             (current-output-port))))))
+        (tick-agenda! game-agenda)
+        (update (- lag (tick-interval))))
+      lag))
 
-(define (game-loop last-time)
-  "Update game state, and render. LAST-TIME is the time in
-milliseconds of the last iteration of the loop."
+(define (alpha lag)
+  (/ lag (tick-interval)))
+
+(define (game-loop previous-time lag)
+  "Update game state, and render.  PREVIOUS-TIME is the time in
+milliseconds of the last iteration of the game loop."
   (when (game-running?)
     (let* ((current-time (SDL:get-ticks))
-           (dt (- current-time last-time)))
-      (accumulator (+ (accumulator) dt))
-      (tick dt)
-      (game-loop current-time))))
+           (dt (- current-time previous-time)))
+      (process-events)
+      (let ((lag (update (+ lag dt))))
+        (draw dt (alpha lag))
+        (game-loop current-time lag)))))
 
 ;;;
 ;;; State management
