@@ -44,4 +44,4 @@ sprite out of it."
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
 (with-window (make-window #:title "Animation")
-  (run-game-loop))
+  (start-game-loop))

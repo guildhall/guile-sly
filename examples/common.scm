@@ -29,9 +29,9 @@
 
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)
-                              (quit-game))))
+                              (stop-game-loop))))
 
-(add-hook! window-close-hook quit-game)
+(add-hook! window-close-hook stop-game-loop)
 
 (schedule-interval game-agenda
                    (lambda ()

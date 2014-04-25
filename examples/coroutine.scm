@@ -47,4 +47,4 @@
 (with-window (make-window #:title "Coroutines"
                           #:resolution (vector2 window-width
                                                 window-height))
-  (run-game-loop))
+  (start-game-loop))

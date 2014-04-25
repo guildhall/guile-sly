@@ -475,8 +475,8 @@
 
 (start-2d-repl)
 
-(add-hook! window-close-hook quit-game)
+(add-hook! window-close-hook stop-game-loop)
 (add-hook! draw-hook (lambda (dt alpha) (render)))
 
 (with-window (make-window #:title "2048")
-  (run-game-loop))
+  (start-game-loop))

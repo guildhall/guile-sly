@@ -82,4 +82,4 @@
 (with-window (make-window #:title "Particles"
                           #:resolution (vector2 window-width
                                                 window-height))
-  (run-game-loop))
+  (start-game-loop))

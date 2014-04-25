@@ -104,4 +104,4 @@
 (add-hook! draw-hook (lambda (dt alpha) (draw-map-layer layer)))
 
 (with-window (make-window #:title "Tilemap")
-  (run-game-loop))
+  (start-game-loop))

@@ -52,4 +52,4 @@
                        (draw-label (signal-ref mouse-label))))
 
 (with-window (make-window #:title "Fonts")
-  (run-game-loop))
+  (start-game-loop))

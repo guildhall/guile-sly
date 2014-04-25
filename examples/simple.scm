@@ -28,4 +28,4 @@
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
 (with-window (make-window #:title "Simple Sprite Demo")
-  (run-game-loop))
+  (start-game-loop))

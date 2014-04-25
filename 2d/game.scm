@@ -29,32 +29,20 @@
   #:use-module (2d event)
   #:use-module (2d signal)
   #:use-module (2d window)
-  #:export (ticks-per-second
-            tick-interval
+  #:export (tick-interval
             game-agenda
             draw-hook
-            run-game-loop
-            quit-game))
+            start-game-loop
+            stop-game-loop))
 
 ;;;
 ;;; Game Loop
 ;;;
 
-(define ticks-per-second 60)
-(define tick-interval (make-parameter 0))
+;; Update 60 times per second by default.
+(define tick-interval (floor (/ 1000 60)))
 (define draw-hook (make-hook 2))
 (define game-agenda (make-agenda))
-
-(define (run-game-loop)
-  "Start the game loop."
-  (parameterize ((tick-interval (floor (/ 1000 ticks-per-second))))
-    (call-with-prompt
-     'game-loop-prompt
-     (lambda ()
-       (game-loop (SDL:get-ticks) 0))
-     (lambda (cont callback)
-       (when (procedure? callback)
-         (callback cont))))))
 
 (define (draw dt alpha)
   "Render a frame."
@@ -69,20 +57,20 @@
   "Call the update callback. The update callback will be called as
 many times as tick-interval can divide LAG. The return value
 is the unused accumulator time."
-  (if (>= lag (tick-interval))
+  (if (>= lag tick-interval)
       (begin
         (tick-agenda! game-agenda)
-        (update (- lag (tick-interval))))
+        (update (- lag tick-interval)))
       lag))
 
 (define (alpha lag)
   "Calculate interpolation factor in the range [0, 1] for the
 leftover frame time LAG."
-  (/ lag (tick-interval)))
+  (/ lag tick-interval))
 
 (define (frame-sleep time)
   "Sleep for the remainder of the frame that started at TIME."
-  (let ((t (- (+ time (tick-interval))
+  (let ((t (- (+ time tick-interval)
               (SDL:get-ticks))))
     (usleep (max 0 (* t 1000)))))
 
@@ -97,5 +85,16 @@ milliseconds of the last iteration of the game loop."
       (frame-sleep current-time)
       (game-loop current-time lag))))
 
-(define (quit-game)
+(define (start-game-loop)
+  "Start the game loop."
+  (call-with-prompt
+   'game-loop-prompt
+   (lambda ()
+     (game-loop (SDL:get-ticks) 0))
+   (lambda (cont callback)
+     (when (procedure? callback)
+       (callback cont)))))
+
+(define (stop-game-loop)
+  "Abort the game loop."
   (abort-to-prompt 'game-loop-prompt #f))
