@@ -76,7 +76,15 @@ is the unused accumulator time."
       lag))
 
 (define (alpha lag)
+  "Calculate interpolation factor in the range [0, 1] for the
+leftover frame time LAG."
   (/ lag (tick-interval)))
+
+(define (frame-sleep time)
+  "Sleep for the remainder of the frame that started at TIME."
+  (let ((t (- (+ time (tick-interval))
+              (SDL:get-ticks))))
+    (usleep (max 0 (* t 1000)))))
 
 (define (game-loop previous-time lag)
   "Update game state, and render.  PREVIOUS-TIME is the time in
@@ -86,6 +94,7 @@ milliseconds of the last iteration of the game loop."
     (process-events)
     (let ((lag (update (+ lag dt))))
       (draw dt (alpha lag))
+      (frame-sleep current-time)
       (game-loop current-time lag))))
 
 (define (quit-game)
