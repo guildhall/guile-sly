@@ -17,7 +17,7 @@
 
 ;;; Commentary:
 ;;
-;; Game data structure.
+;; The game loop.
 ;;
 ;;; Code:
 
