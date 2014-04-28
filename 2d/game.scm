@@ -64,15 +64,15 @@
   "Call the update callback. The update callback will be called as
 many times as tick-interval can divide LAG. The return value
 is the unused accumulator time."
-  (define (iter ticks)
+  (define (iter lag ticks)
     (cond ((>= ticks max-ticks-per-frame)
            lag)
           ((>= lag tick-interval)
            (tick-agenda! game-agenda)
-           (update (- lag tick-interval)))
+           (iter (- lag tick-interval) (1+ ticks)))
           (else
            lag)))
-  (iter 0))
+  (iter lag 0))
 
 (define (alpha lag)
   "Calculate interpolation factor in the range [0, 1] for the
