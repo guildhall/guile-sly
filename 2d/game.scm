@@ -30,6 +30,7 @@
   #:use-module (2d signal)
   #:use-module (2d window)
   #:export (tick-interval
+            max-ticks-per-frame
             game-agenda
             draw-hook
             start-game-loop
@@ -41,6 +42,11 @@
 
 ;; Update 60 times per second by default.
 (define tick-interval (floor (/ 1000 60)))
+;; The maximum number of times the game loop will update game state in
+;; a single frame.  When this upper bound is reached due to poor
+;; performance, the game will start to slow down instead of becoming
+;; completely unresponsive and possibly crashing.
+(define max-ticks-per-frame 4)
 (define draw-hook (make-hook 2))
 (define game-agenda (make-agenda))
 
@@ -57,11 +63,15 @@
   "Call the update callback. The update callback will be called as
 many times as tick-interval can divide LAG. The return value
 is the unused accumulator time."
-  (if (>= lag tick-interval)
-      (begin
-        (tick-agenda! game-agenda)
-        (update (- lag tick-interval)))
-      lag))
+  (define (iter ticks)
+    (cond ((>= ticks max-ticks-per-frame)
+           lag)
+          ((>= lag tick-interval)
+           (tick-agenda! game-agenda)
+           (update (- lag tick-interval)))
+          (else
+           lag)))
+  (iter 0))
 
 (define (alpha lag)
   "Calculate interpolation factor in the range [0, 1] for the
