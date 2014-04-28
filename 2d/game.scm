@@ -27,6 +27,7 @@
   #:use-module (gl)
   #:use-module (2d agenda)
   #:use-module (2d event)
+  #:use-module (2d math)
   #:use-module (2d signal)
   #:use-module (2d window)
   #:export (tick-interval
@@ -76,7 +77,7 @@ is the unused accumulator time."
 (define (alpha lag)
   "Calculate interpolation factor in the range [0, 1] for the
 leftover frame time LAG."
-  (/ lag tick-interval))
+  (clamp 0 1 (/ lag tick-interval)))
 
 (define (frame-sleep time)
   "Sleep for the remainder of the frame that started at TIME."
