@@ -27,6 +27,7 @@
   #:use-module (2d vector2)
   #:export (<rect>
             make-rect
+            null-rect
             rect?
             rect-x
             rect-y
@@ -69,6 +70,8 @@
   (y rect-y)
   (width rect-width)
   (height rect-height))
+
+(define null-rect (make-rect 0 0 0 0))
 
 (define (rect-right rect)
   (+ (rect-x rect) (rect-width rect)))
