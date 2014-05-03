@@ -64,12 +64,20 @@
 ;; immutable.
 
 (define-record-type <rect>
-  (make-rect x y width height)
+  (%make-rect x y width height)
   rect?
   (x rect-x)
   (y rect-y)
   (width rect-width)
   (height rect-height))
+
+(define make-rect
+  (case-lambda
+    ((x y width height)
+     (%make-rect x y width height))
+    ((position size)
+     (%make-rect (vx position) (vy position)
+                 (vx size) (vy size)))))
 
 (define null-rect (make-rect 0 0 0 0))
 
