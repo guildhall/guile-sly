@@ -35,9 +35,9 @@
             transform-vector2
             transform+
             transform*
-            translate
-            scale
-            rotate
+            transform-translate
+            transform-scale
+            transform-rotate
             orthographic-projection))
 
 (define-record-type <transform>
@@ -132,7 +132,7 @@ identity-transform if called without any arguments."
       (%make-transform m3)))
   (reduce mul identity-transform transforms))
 
-(define (translate v)
+(define (transform-translate v)
   "Return a new transform that translates the x and y axes by the
 vector2 V."
   (make-transform 1 0 0 (vx v)
@@ -140,7 +140,7 @@ vector2 V."
                   0 0 1 0
                   0 0 0 1))
 
-(define (scale v)
+(define (transform-scale v)
   "Return a new transform that scales the X and Y axes by the vector2
 V."
   (make-transform (vx v) 0      0 0
@@ -148,7 +148,7 @@ V."
                   0      0      1 0
                   0      0      0 1))
 
-(define (rotate angle)
+(define (transform-rotate angle)
   "Return a new transform that rotates the Z axis by ANGLE radians."
   (make-transform (cos angle) (- (sin angle)) 0 0
                   (sin angle) (cos angle)     0 0
