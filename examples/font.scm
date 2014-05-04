@@ -44,7 +44,7 @@
   (signal-map (lambda (p)
                 (let ((text (format #f "Mouse: (~d, ~d)" (vx p) (vy p))))
                   (make-label font text (vector2 0 20))))
-              (signal-throttle game-agenda 5 mouse-position)))
+              (signal-throttle 5 mouse-position)))
 
 (add-hook! draw-hook (lambda (dt alpha)
                        (draw-label label)

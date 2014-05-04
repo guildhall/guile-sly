@@ -32,7 +32,6 @@
   #:use-module (2d animation)
   #:use-module (2d color)
   #:use-module (2d config)
-  #:use-module (2d game)
   #:use-module (2d helpers)
   #:use-module (2d math)
   #:use-module (2d shader)
@@ -175,8 +174,7 @@ currently bound."
                              1))))
 
 ;; A hash table for all of the animated sprites that have been drawn
-;; since the last game update.  It is cleared after every game-agenda
-;; tick.
+;; since the last game update.  It is cleared after every agenda tick.
 (define animated-sprites (make-hash-table))
 
 (define (register-animated-sprite-maybe sprite)
@@ -191,4 +189,4 @@ currently bound."
   (hash-clear! animated-sprites))
 
 ;; Update animated sprites upon every update.
-(schedule-each game-agenda update-animated-sprites!)
+(schedule-each update-animated-sprites!)

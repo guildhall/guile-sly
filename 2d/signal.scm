@@ -260,33 +260,33 @@ SIGNAL.  This signal is a convenient way to sneak a procedure that has
 a side-effect into a signal chain."
   (signal-map (lambda (x) (proc x) x) signal))
 
-(define (signal-sample agenda delay signal)
+(define (signal-sample delay signal)
   "Create a new signal that emits the value contained within SIGNAL
-every DELAY ticks of AGENDA."
+every DELAY ticks of the current agenda."
   (let ((sampler (%make-signal (signal-ref signal) #f '())))
     (define (tick)
       (%signal-set! sampler (signal-ref signal)))
-    (schedule-interval agenda tick delay)
+    (schedule-interval tick delay)
     (make-signal-box sampler)))
 
-(define (signal-delay agenda delay signal)
+(define (signal-delay delay signal)
   "Create a new signal that delays propagation of SIGNAL by DELAY
-ticks of AGENDA."
+ticks of the current agenda."
   (make-boxed-signal (signal-ref signal)
                      (lambda (self value)
-                       (schedule agenda
-                                 (lambda ()
-                                   (%signal-set! self value))
-                                 delay))
+                       (schedule
+                        (lambda ()
+                          (%signal-set! self value))
+                        delay))
                      (list signal)))
 
-(define (signal-throttle agenda delay signal)
+(define (signal-throttle delay signal)
   "Return a new signal that propagates SIGNAL at most once every DELAY
-ticks of AGENDA."
+ticks of the current agenda."
   (make-boxed-signal (signal-ref signal)
-                     (let ((last-time (agenda-time agenda)))
+                     (let ((last-time (agenda-time)))
                        (lambda (self value)
-                         (when (>= (- (agenda-time agenda) last-time) delay)
+                         (when (>= (- (agenda-time) last-time) delay)
                            (%signal-set! self value)
-                           (set! last-time (agenda-time agenda)))))
+                           (set! last-time (agenda-time)))))
                      (list signal)))

@@ -38,9 +38,9 @@
     sprite
     (vector2 (random window-width)
              (random window-height)))
-   (wait game-agenda 15)
+   (wait 15)
    (set-sprite-rotation! sprite (random 360))
-   (wait game-agenda 15)))
+   (wait 15)))
 
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 

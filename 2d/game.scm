@@ -32,7 +32,6 @@
   #:use-module (2d window)
   #:export (tick-interval
             max-ticks-per-frame
-            game-agenda
             draw-hook
             start-game-loop
             stop-game-loop))
@@ -49,7 +48,6 @@
 ;; completely unresponsive and possibly crashing.
 (define max-ticks-per-frame 4)
 (define draw-hook (make-hook 2))
-(define game-agenda (make-agenda))
 
 (define (draw dt alpha)
   "Render a frame."
@@ -68,7 +66,7 @@ is the unused accumulator time."
     (cond ((>= ticks max-ticks-per-frame)
            lag)
           ((>= lag tick-interval)
-           (tick-agenda! game-agenda)
+           (tick-agenda!)
            (iter (- lag tick-interval) (1+ ticks)))
           (else
            lag)))

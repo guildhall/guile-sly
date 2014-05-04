@@ -33,9 +33,9 @@
 
 (add-hook! window-close-hook stop-game-loop)
 
-(schedule-interval game-agenda
-                   (lambda ()
-                     (format #t "FPS: ~d\n" (signal-ref fps)))
-                   60)
+(schedule-interval
+ (lambda ()
+   (format #t "FPS: ~d\n" (signal-ref fps)))
+ 60)
 
 (start-2d-repl)

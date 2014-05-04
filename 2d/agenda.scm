@@ -30,6 +30,8 @@
   #:export (make-agenda
             agenda?
             agenda-time
+            current-agenda
+            with-agenda
             tick-agenda!
             clear-agenda!
             schedule
@@ -69,7 +71,7 @@ list CALLBACKS."
 (define-record-type <agenda>
   (%make-agenda time segments)
   agenda?
-  (time agenda-time set-agenda-time!)
+  (time %agenda-time set-agenda-time!)
   (segments agenda-segments set-agenda-segments!))
 
 (define (make-agenda)
@@ -109,7 +111,7 @@ and enqueue CALLBACK."
 
 (define (agenda-time-delay agenda dt)
   "Return the sum of the time delta, DT, and the current time of AGENDA."
-  (+ (agenda-time agenda) (inexact->exact (round dt))))
+  (+ (%agenda-time agenda) (inexact->exact (round dt))))
 
 (define (flush-queue! q)
   "Dequeue and execute every member of Q."
@@ -117,26 +119,25 @@ and enqueue CALLBACK."
     ((deq! q)) ;; Execute scheduled procedure
     (flush-queue! q)))
 
-(define (tick-agenda! agenda)
+(define (%tick-agenda! agenda)
   "Move AGENDA forward in time and run scheduled procedures."
-  (set-agenda-time! agenda (1+ (agenda-time agenda)))
+  (set-agenda-time! agenda (1+ (%agenda-time agenda)))
   (let next-segment ()
     (unless (agenda-empty? agenda)
       (let ((segment (first-segment agenda)))
         ;; Process time segment if it is scheduled before or at the
         ;; current agenda time.
-        (when (>= (agenda-time agenda) (segment-time segment))
+        (when (>= (%agenda-time agenda) (segment-time segment))
           (flush-queue! (segment-queue segment))
           (set-agenda-segments! agenda (rest-segments agenda))
           (next-segment))))))
 
-(define (clear-agenda! agenda)
+(define (%clear-agenda! agenda)
   "Remove all scheduled procedures from AGENDA."
   (set-agenda-segments! agenda '()))
 
-(define* (schedule agenda thunk #:optional (delay 1))
-  "Schedule the procedure THUNK in AGENDA to be run DELAY ticks from
-now.  DELAY defaults to 1 if not specified."
+(define (%schedule agenda thunk delay)
+  "Schedule THUNK to be run after DELAY ticks of AGENDA."
   (let ((time (agenda-time-delay agenda delay)))
     (define (belongs-before? segments)
       (or (null? segments)
@@ -157,19 +158,49 @@ now.  DELAY defaults to 1 if not specified."
         (agenda-add-segment agenda time thunk)
         (add-to-segments (agenda-segments agenda)))))
 
-(define (schedule-interval agenda thunk delay)
-  "Schedule THUNK within AGENDA to be applied every DELAY ticks."
-  (schedule agenda
-            (lambda ()
-              (thunk)
-              (schedule-interval agenda thunk delay))
-            delay))
+(define current-agenda
+  (make-parameter (make-agenda)
+                  (lambda (val)
+                    (if (agenda? val)
+                        val
+                        (error "Must be an agenda")))))
 
-(define (schedule-each agenda thunk)
-  "Schedule THUNK within AGENDA to be applied every tick."
-  (schedule-interval agenda thunk 1))
+(define-syntax-rule (with-agenda agenda body ...)
+  (parameterize ((current-agenda agenda))
+    body ...))
 
-(define (wait agenda delay)
-  "Yield coroutine and schedule the continuation to be run after DELAY
-ticks."
-  (yield (cut schedule agenda <> delay)))
+(define (agenda-time)
+  "Return the time of the current agenda."
+  (%agenda-time (current-agenda)))
+
+(define (tick-agenda!)
+  "Increment time for the current agenda and run scheduled
+procedures."
+  (%tick-agenda! (current-agenda)))
+
+(define (clear-agenda!)
+  "Remove all scheduled procedures from the current agenda."
+  (%clear-agenda! (current-agenda)))
+
+(define* (schedule thunk #:optional (delay 1))
+  "Schedule THUNK to be applied after DELAY ticks of the current
+agenda, or 1 tick if DELAY is not specified."
+  (%schedule (current-agenda) thunk delay))
+
+(define (schedule-interval thunk interval)
+  "Schedule THUNK to be applied every INTERVAL ticks of the current
+agenda."
+  (coroutine
+   (while #t
+     (wait interval)
+     (thunk))))
+
+(define (schedule-each thunk)
+  "Schedule THUNK to be applied upon every tick of the current
+agenda."
+  (schedule-interval thunk 1))
+
+(define (wait delay)
+  "Abort coroutine and schedule the continuation to be run after DELAY
+ticks of the current agenda."
+  (yield (cut schedule <> delay)))
