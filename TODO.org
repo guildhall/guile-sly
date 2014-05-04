@@ -95,7 +95,7 @@
    referenced.
 
    - [ ] Create asset cache
-   - [ ] Investigate automatic asset reloading
+   - [ ] Live asset reloading
 
 ** TODO Keymaps
    Provide an Emacs-like way of defining key combinations so that
@@ -131,8 +131,9 @@
        main thread
      - Will be available in Guile 2.0.10!
 
-** TODO Entity/Component system
-   This may or may not be a good idea.  Investigate it.
+** TODO Scene Graph
+   Provide a reactive scene graph for representing the renderable
+   objects in a game.
 
 ** DONE 0.1 Release
    An official 0.1 alpha release with basic, minimal functionality
