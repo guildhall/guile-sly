@@ -33,6 +33,7 @@ SOURCES = 					\
   2d/game.scm					\
   2d/helpers.scm				\
   2d/keyboard.scm				\
+  2d/live-reload.scm				\
   2d/math.scm					\
   2d/mouse.scm					\
   2d/rect.scm					\
