@@ -48,17 +48,17 @@
     user might experience when updating the game takes longer than
     drawing a frame at the desired rate. Instead of slowing to a
     crawl, some frames are dropped and the loop tries to catch up on
-    updates. Additionally, a fixed timestep allows for a more
-    deterministic simulation than a variable timestep.
+    updates. Additionally, a fixed timestep allows for a deterministic
+    simulation, unlike a variable timestep.
 
-    To start up the game loop, simply call =(run-game-loop)=. It's a
+    To start up the game loop, simply call =(start-game-loop)=. It's a
     good idea to set up the game window prior to starting the loop via
     the =with-window= form.
 
     #+BEGIN_SRC scheme
       (with-window (make-window #:title "Best Game Ever"
                                 #:resolution (vector2 640 480))
-        (run-game-loop))
+        (start-game-loop))
     #+END_SRC
 
 *** Sprites
@@ -157,8 +157,7 @@
 
     #+BEGIN_SRC scheme
       (use-modules (2d agenda)
-                   (2d coroutine)
-                   (2d game))
+                   (2d coroutine))
 
       (coroutine
        (while #t
