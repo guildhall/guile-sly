@@ -25,6 +25,7 @@
 (define-module (2d sprite)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (gl)
   #:use-module (gl contrib packed-struct)
   #:use-module ((sdl sdl) #:prefix SDL:)
@@ -46,16 +47,16 @@
             animated-sprite?
             sprite-drawable
             sprite-position
-            set-sprite-drawable!
-            set-sprite-position!
-            set-sprite-scale!
-            set-sprite-rotation!
-            set-sprite-color!
-            set-sprite-anchor!
             sprite-scale
             sprite-rotation
             sprite-color
             sprite-anchor
+            set-sprite-drawable
+            set-sprite-position
+            set-sprite-scale
+            set-sprite-rotation
+            set-sprite-color
+            set-sprite-anchor
             load-sprite
             draw-sprite))
 
@@ -78,15 +79,15 @@
 ;; The <sprite> type represents a drawable object (texture,
 ;; texture-region, animation, etc.) with a given position, scale,
 ;; rotation, and color.
-(define-record-type <sprite>
+(define-immutable-record-type <sprite>
   (%make-sprite drawable position scale rotation color anchor vertices animator)
   sprite?
-  (drawable sprite-drawable set-sprite-drawable!)
-  (position sprite-position set-sprite-position!)
-  (scale sprite-scale set-sprite-scale!)
-  (rotation sprite-rotation set-sprite-rotation!)
-  (color sprite-color set-sprite-color!)
-  (anchor sprite-anchor %set-sprite-anchor!)
+  (drawable sprite-drawable set-sprite-drawable)
+  (position sprite-position set-sprite-position)
+  (scale sprite-scale set-sprite-scale)
+  (rotation sprite-rotation set-sprite-rotation)
+  (color sprite-color set-sprite-color)
+  (anchor sprite-anchor set-sprite-anchor)
   (vertices sprite-vertices)
   (animator sprite-animator))
 
@@ -150,9 +151,6 @@ optional keyword arguments."
   (let ((drawable (sprite-drawable sprite)))
     (drawable-texture (sprite-drawable sprite)
                       (sprite-animator sprite))))
-
-(define (set-sprite-anchor! sprite anchor)
-  (%set-sprite-anchor! sprite (anchor-texture (sprite-texture sprite) anchor)))
 
 (define (update-sprite-animator! sprite)
   (animator-update! (sprite-animator sprite))

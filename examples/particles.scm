@@ -65,8 +65,7 @@
   (for-each
    (lambda (p)
      (let* ((sprite (particle-sprite p)))
-       (set-sprite-position! sprite (particle-position p))
-       (draw-sprite sprite)))
+       (draw-sprite (set-sprite-position sprite (particle-position p)))))
    particles))
 
 (define (draw dt alpha)
