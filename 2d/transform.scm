@@ -27,6 +27,7 @@
   #:use-module (srfi srfi-42)
   #:use-module (2d vector2)
   #:export (make-transform
+            make-transform*
             null-transform
             identity-transform
             transform?
@@ -73,6 +74,15 @@ column-major format."
     (array-set! matrix dc 3 2)
     (array-set! matrix dd 3 3)
     (%make-transform matrix)))
+
+(define* (make-transform* #:optional #:key (translate null-vector2)
+                          (scale (vector2 1 1)) (rotate 0))
+  "Return a new transform that is the result of the composition of the
+given TRANSLATE, SCALE, and ROTATE values.  Both TRANSLATE and SCALE
+are vector2 values, while ROTATE is a number."
+  (transform* (transform-scale scale)
+              (transform-rotate rotate)
+              (transform-translate translate)))
 
 (define null-transform
   (%make-transform (make-4x4-matrix)))
