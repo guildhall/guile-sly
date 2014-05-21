@@ -26,3 +26,4 @@ Makefile.in
 /doc/guile-2d.html
 /doc/guile-2d.t2p
 /2d/config.scm
+/pre-inst-env

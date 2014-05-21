@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# guile-2d
+# Copyright © 2014 David Thompson <dthompson2@worcester.edu>
+#
+# guile-2d is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+abs_top_srcdir="`cd "@abs_top_srcdir@" > /dev/null; pwd`"
+abs_top_builddir="`cd "@abs_top_builddir@" > /dev/null; pwd`"
+
+GUILE_LOAD_COMPILED_PATH="$abs_top_builddir${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
+GUILE_LOAD_PATH="$abs_top_builddir:$abs_top_srcdir${GUILE_LOAD_PATH:+:}:$GUILE_LOAD_PATH"
+export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH
+
+PATH="$abs_top_builddir:$PATH"
+export PATH
+
+GUILE_2D_PKGDATADIR="$abs_top_builddir/data"
+export GUILE_2D_PKGDATADIR
+
+exec "$@"

@@ -24,4 +24,5 @@
 (define-module (2d config)
   #:export (%pkgdatadir))
 
-(define %pkgdatadir "@pkgdatadir@")
+(define %pkgdatadir
+  (or (getenv "GUILE_2D_PKGDATADIR") "@pkgdatadir@"))

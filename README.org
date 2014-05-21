@@ -286,12 +286,12 @@
      guile simple.scm
    #+END_SRC
 
-   To run an example using the modules in the source directory (useful
-   when developing):
+   To run an example without installing guile-2d (useful when
+   developing):
 
    #+BEGIN_SRC sh
      cd examples
-     guile -L .. simple.scm
+     ../pre-inst-env guile simple.scm
    #+END_SRC
 
    To quit an example:
@@ -300,7 +300,7 @@
 
 ** Using the Sandbox
    If you want to quickly create a guile-2d environment and start
-   experimenting, run the =sandbox= script.  It will import many
+   experimenting, run =./pre-inst-env sandbox=.  It will import many
    useful modules, start a REPL server, open a window, and start the
    game loop.  Simply connect to the REPL server and start hacking!
 
