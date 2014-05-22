@@ -36,6 +36,8 @@
             load-vertex-shader
             load-fragment-shader
             shader?
+            vertex-shader?
+            fragment-shader?
             shader-compiled?
             shader-type
             shader-id
@@ -75,6 +77,14 @@
   shader?
   (type shader-type)
   (id shader-id))
+
+(define (vertex-shader? shader)
+  "Return #t if SHADER is a vertex shader, #f otherwise."
+  (eq? (shader-type shader) 'vertex))
+
+(define (fragment-shader? shader)
+  "Return #t if SHADER is a fragment shader, #f otherwise."
+  (eq? (shader-type shader) 'fragment))
 
 (define-guardian shader-guardian
   (lambda (shader)
@@ -183,11 +193,16 @@ shaders or #f otherwise."
 (define (display-linking-error shader-program)
   (%display-linking-error (shader-program-id shader-program)))
 
-(define (make-shader-program . shaders)
+(define (make-shader-program vertex-shader fragment-shader)
   "Create a new shader program that has been linked with the given
-SHADERS."
+VERTEX-SHADER and FRAGMENT-SHADER."
+  (unless (and (vertex-shader? vertex-shader)
+               (fragment-shader? fragment-shader))
+    (error "Expected a vertex shader and fragment shader"
+           vertex-shader fragment-shader))
   (let* ((id (glCreateProgram))
-         (shader-program (%make-shader-program id)))
+         (shader-program (%make-shader-program id))
+         (shaders (list vertex-shader fragment-shader)))
     (shader-program-guardian shader-program)
     (for-each (lambda (shader)
                 (glAttachShader id (shader-id shader)))
