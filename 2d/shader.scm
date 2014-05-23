@@ -46,7 +46,6 @@
             shader-program-id
             shader-program?
             shader-program-linked?
-            shader-program-attribute-location
             with-shader-program
             %uniform-setters
             register-uniform-setter!
@@ -233,10 +232,6 @@ VERTEX-SHADER and FRAGMENT-SHADER."
         (glUseProgram 0)
         return-value))))
 
-(define (shader-program-attribute-location program name)
-  "Get the location of the attribute NAME within the shader PROGRAM."
-  (glGetAttribLocation (shader-program-id program) name))
-
 (define-record-type <uniform-setter>
   (make-uniform-setter predicate proc)
   uniform-setter?
@@ -289,6 +284,13 @@ location."
    (lambda (shader-program name)
      "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
      (glGetUniformLocation (shader-program-id shader-program)
+                           (symbol->string name)))))
+
+(define attribute-location
+  (memoize
+   (lambda (shader-program name)
+     "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
+     (glGetAttribLocation (shader-program-id shader-program)
                            (symbol->string name)))))
 
 (define (uniform-set! shader-program name value)
