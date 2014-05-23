@@ -284,9 +284,12 @@ location."
                                          (color-b c)
                                          (color-a c))))
 
-(define (uniform-location shader-program name)
-  "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-  (glGetUniformLocation (shader-program-id shader-program) name))
+(define uniform-location
+  (memoize
+   (lambda (shader-program name)
+     "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
+     (glGetUniformLocation (shader-program-id shader-program)
+                           (symbol->string name)))))
 
 (define (uniform-set! shader-program name value)
   "Use the appropriate setter procedure to translate VALUE into OpenGL
@@ -313,8 +316,6 @@ within SHADER-PROGRAM."
      (begin body ...))
     ((_ ((name value) ...) body ...)
      (begin
-       (uniform-set! (current-shader-program)
-                     (symbol->string 'name)
-                     value)
+       (uniform-set! (current-shader-program) 'name value)
        ...
        body ...))))

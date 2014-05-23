@@ -1,5 +1,6 @@
 ;;; guile-2d
 ;;; Copyright (C) 2013, 2014 David Thompson <dthompson2@worcester.edu>
+;;; Copyright (C) 2014 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License as
@@ -28,7 +29,8 @@
   #:use-module (2d game)
   #:export (any-equal?
             logand?
-            define-guardian))
+            define-guardian
+            memoize))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
@@ -51,3 +53,16 @@ same thread that is running the game loop."
          (when obj
            (reaper obj)
            (reap (name))))))))
+
+(define (memoize proc)
+  "Return a memoizing version of PROC."
+  (let ((cache (make-hash-table)))
+    (lambda args
+      (let ((results (hash-ref cache args)))
+        (if results
+            (apply values results)
+            (let ((results (call-with-values (lambda ()
+                                               (apply proc args))
+                             list)))
+              (hash-set! cache args results)
+              (apply values results)))))))
