@@ -59,13 +59,11 @@
 (define (enable-fonts)
   (SDL:ttf-init)
   (set! font-shader
-        (make-shader-program
-         (load-vertex-shader
-          (string-append %pkgdatadir
-                         "/shaders/font-vertex.glsl"))
-         (load-fragment-shader
-          (string-append %pkgdatadir
-                         "/shaders/font-fragment.glsl")))))
+        (load-shader-program
+         (string-append %pkgdatadir
+                        "/shaders/font-vertex.glsl")
+         (string-append %pkgdatadir
+                        "/shaders/font-fragment.glsl"))))
 
 (define-record-type <font>
   (make-font ttf point-size)

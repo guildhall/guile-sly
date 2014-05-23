@@ -42,6 +42,7 @@
             shader-type
             shader-id
             make-shader-program
+            load-shader-program
             shader-program-id
             shader-program?
             shader-program-linked?
@@ -216,6 +217,10 @@ VERTEX-SHADER and FRAGMENT-SHADER."
                 (glDetachShader id (shader-id shader)))
               shaders)
     shader-program))
+
+(define (load-shader-program vertex-shader-file-name fragment-shader-file-name)
+  (make-shader-program (load-vertex-shader vertex-shader-file-name)
+                       (load-fragment-shader fragment-shader-file-name)))
 
 (define current-shader-program (make-parameter #f))
 

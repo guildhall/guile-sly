@@ -68,13 +68,11 @@
 
 (define (enable-sprites)
   (set! sprite-shader
-        (make-shader-program
-         (load-vertex-shader
-          (string-append %pkgdatadir
-                         "/shaders/sprite-vertex.glsl"))
-         (load-fragment-shader
-          (string-append %pkgdatadir
-                         "/shaders/sprite-fragment.glsl")))))
+        (load-shader-program
+         (string-append %pkgdatadir
+                        "/shaders/sprite-vertex.glsl")
+         (string-append %pkgdatadir
+                        "/shaders/sprite-fragment.glsl"))))
 
 ;; The <sprite> type represents a drawable object (texture,
 ;; texture-region, animation, etc.) with a given position, scale,
