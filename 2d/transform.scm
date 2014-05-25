@@ -151,10 +151,10 @@ identity-transform if called without any arguments."
 (define (transform-translate v)
   "Return a new transform that translates the x and y axes by the
 vector2 V."
-  (make-transform 1 0 0 (vx v)
-                  0 1 0 (vy v)
-                  0 0 1 0
-                  0 0 0 1))
+  (make-transform 1      0      0 0
+                  0      1      0 0
+                  0      0      1 0
+                  (vx v) (vy v) 0 1))
 
 (define (transform-scale v)
   "Return a new transform that scales the X and Y axes by the vector2
