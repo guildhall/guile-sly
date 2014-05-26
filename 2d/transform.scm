@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
+  #:use-module (2d math)
   #:use-module (2d vector2)
   #:export (make-transform
             make-transform*
@@ -40,7 +41,8 @@
             transform-translate
             transform-scale
             transform-rotate
-            orthographic-projection))
+            orthographic-projection
+            perspective-projection))
 
 (define-record-type <transform>
   (%make-transform matrix)
@@ -183,3 +185,28 @@ FAR."
                   (- (/ (+ top bottom) (- top bottom)))
                   (- (/ (+ far near) (- far near)))
                   1))
+
+(define (perspective-projection field-of-vision aspect-ratio near far)
+  "Return a new transform that represents a perspective projection
+with a FIELD-OF-VISION in degrees, the desired ASPECT-RATIO, and the
+depth clipping plane NEAR and FAR."
+  (let ((size (* near (tan (/ (degrees->radians field-of-vision) 2)))))
+    (let ((left (- size))
+          (right size)
+          (top (/ size aspect-ratio))
+          (bottom (/ (- size) aspect-ratio)))
+      (make-transform (/ (* 2 near) (- right left)) ;; First row
+                      0
+                      (/ (+ right left) (- right left))
+                      0
+                      ;; Second row
+                      0
+                      (/ (* 2 near) (- top bottom))
+                      (/ (+ top bottom) (- top bottom))
+                      0
+                      ;; Third row
+                      0 0
+                      (- (/ (+ far near) (- far near)))
+                      (- (/ (* 2 far near) (- far near)))
+                      ;; Fourth row
+                      0 0 -1 0))))
