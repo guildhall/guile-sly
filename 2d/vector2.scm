@@ -54,6 +54,11 @@
   (vector2 (* r (cos theta))
            (* r (sin theta))))
 
+(define (v= v1 v2)
+  "Return #t if V1 and V2 are equivalent, #f otherwise."
+  (and (= (vx v1) (vx v2))
+       (= (vy v1) (vy v2))))
+
 (define (v+ . vectors)
   "Return the sum of all VECTORS."
   (define (add-vectors x y vectors)
