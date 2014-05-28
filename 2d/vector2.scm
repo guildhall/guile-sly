@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (2d vector2)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:export (<vector2>
@@ -34,7 +35,6 @@
             vector2-polar
             v+
             v*
-            vscale
             vmag
             vnorm
             vdot
@@ -66,7 +66,8 @@
   (add-vectors 0 0 vectors))
 
 (define (v* . vectors)
-  "Return the product of all VECTORS."
+  "Return the product of all VECTORS.  Alternatively, a single vector
+and a scalar can be specified to perform scalar multiplication."
   (define (multiply-vectors x y vectors)
     (cond ((null? vectors)
            (vector2 x y))
@@ -74,12 +75,10 @@
            (multiply-vectors (* x (vx (car vectors)))
                              (* y (vy (car vectors)))
                              (cdr vectors)))))
-  (multiply-vectors 1 1 vectors))
-
-(define (vscale v scalar)
-  "Multiply the vector V by a scalar value."
-  (vector2 (* (vx v) scalar)
-           (* (vy v) scalar)))
+  (match vectors
+    ((($ <vector2> x y) (? number? k))
+     (vector2 (* x k) (* y k)))
+    (_ (multiply-vectors 1 1 vectors))))
 
 (define (vmag v)
   "Return the magnitude of the vector V."
