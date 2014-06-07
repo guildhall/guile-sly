@@ -26,7 +26,7 @@
   #:use-module (gl low-level)
   #:use-module (2d helpers)
   #:use-module (2d transform)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:use-module (2d color)
   #:use-module (2d wrappers gl)
   #:export (make-shader
@@ -249,7 +249,7 @@ location."
         (cons (make-uniform-setter predicate setter)
               %uniform-setters)))
 
-;; Built-in uniform setters for booleans, numbers, vector2s, and
+;; Built-in uniform setters for booleans, numbers, vectors, and
 ;; colors.
 (register-uniform-setter! boolean?
                           (lambda (location b)
@@ -262,6 +262,14 @@ location."
 (register-uniform-setter! vector2?
                           (lambda (location v)
                             (glUniform2f location (vx v) (vy v))))
+
+(register-uniform-setter! vector3?
+                          (lambda (location v)
+                            (glUniform3f location (vx v) (vy v) (vz v))))
+
+(register-uniform-setter! vector4?
+                          (lambda (location v)
+                            (glUniform4f location (vx v) (vy v) (vz v) (vw v))))
 
 (register-uniform-setter! transform?
                           (lambda (location t)

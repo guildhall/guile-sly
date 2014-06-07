@@ -22,7 +22,7 @@
              (2d sprite)
              (2d texture)
              (2d tileset)
-             (2d vector2)
+             (2d vector)
              (2d window))
 
 (load "common.scm")
@@ -79,9 +79,9 @@
   (define (build-sprite x y)
     (let ((region (tileset-ref tileset (array-ref tiles y x))))
       (make-sprite region
-                   #:position (vector2 (* x tile-width)
-                                       (* y tile-height))
-                   #:anchor null-vector2)))
+                   #:position (vector (* x tile-width)
+                                      (* y tile-height))
+                   #:anchor #(0 0))))
 
   (let ((sprites (list-ec (: y height)
                           (list-ec (: x width)

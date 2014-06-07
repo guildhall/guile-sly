@@ -24,7 +24,7 @@
 
 (define-module (2d rect)
   #:use-module (srfi srfi-9)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:export (<rect>
             make-rect
             null-rect
@@ -92,23 +92,23 @@
   (+ (rect-y rect) (rect-height rect)))
 
 (define (rect-position rect)
-  "Return the top-left corner of RECT as a vector2."
-  (vector2 (rect-x rect)
-           (rect-y rect)))
+  "Return the top-left corner of RECT as a vector."
+  (vector (rect-x rect)
+          (rect-y rect)))
 
 (define rect-top-left rect-position)
 
 (define (rect-top-right rect)
-  (vector2 (rect-right rect)
-           (rect-top   rect)))
+  (vector (rect-right rect)
+          (rect-top   rect)))
 
 (define (rect-bottom-left rect)
-  (vector2 (rect-left   rect)
-           (rect-bottom rect)))
+  (vector (rect-left   rect)
+          (rect-bottom rect)))
 
 (define (rect-bottom-right rect)
-  (vector2 (rect-right  rect)
-           (rect-bottom rect)))
+  (vector (rect-right  rect)
+          (rect-bottom rect)))
 
 (define (rect-center-x rect)
   (+ (rect-x rect) (rect-half-width rect)))
@@ -117,8 +117,8 @@
   (+ (rect-y rect) (rect-half-height rect)))
 
 (define (rect-center rect)
-  (vector2 (rect-center-x rect)
-           (rect-center-y rect)))
+  (vector (rect-center-x rect)
+          (rect-center-y rect)))
 
 (define (rect-half-width rect)
   (/ (rect-width rect) 2))
@@ -127,9 +127,9 @@
   (/ (rect-height rect) 2))
 
 (define (rect-size rect)
-  "Return the size of RECT as a vector2."
-  (vector2 (rect-width rect)
-           (rect-height rect)))
+  "Return the size of RECT as a vector."
+  (vector (rect-width rect)
+          (rect-height rect)))
 
 (define (%rect-move rect x y)
   "Move RECT by the offset X, Y."
@@ -141,7 +141,7 @@
 (define rect-move
   (case-lambda
     "Create a new rectangle by moving RECT by the given
-offset. rect-move accepts a vector2 or x and y coordinates as separate
+offset. rect-move accepts a vector or x and y coordinates as separate
 arguments."
     ((rect v)
      (%rect-move rect (vx v) (vy v)))
@@ -159,7 +159,7 @@ its current center."
 (define rect-inflate
   (case-lambda
     "Create a new rectangle by growing RECT by the given amount
-without changing the center point. rect-inflate accepts a vector2 or x
+without changing the center point. rect-inflate accepts a vector or x
 and y coordinates as separate arguments."
     ((rect v)
      (%rect-inflate rect (vx v) (vy v)))

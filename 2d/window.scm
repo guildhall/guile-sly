@@ -29,7 +29,7 @@
   #:use-module (2d event)
   #:use-module (2d signal)
   #:use-module (2d transform)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:export (make-window
             window?
             window-title
@@ -54,7 +54,7 @@
 
 (define* (make-window #:optional #:key
                       (title "Guile-2D Window")
-                      (resolution (vector2 640 480))
+                      (resolution #(640 480))
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
 
@@ -69,9 +69,9 @@
 
 (define-signal window-size
   (hook->signal window-resize-hook
-                null-vector2
+                #(0 0)
                 (lambda (width height)
-                  (vector2 width height))))
+                  #(width height))))
 (define-signal window-width (signal-map vx window-size))
 (define-signal window-height (signal-map vy window-size))
 
@@ -94,7 +94,7 @@
   (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
         (width (vx (window-resolution window)))
         (height (vy (window-resolution window))))
-    (signal-set! window-size (vector2 width height))
+    (signal-set! window-size (vector width height))
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)

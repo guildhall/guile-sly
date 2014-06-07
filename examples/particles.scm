@@ -21,7 +21,7 @@
              (2d game)
              (2d sprite)
              (2d texture)
-             (2d vector2)
+             (2d vector)
              (2d window))
 
 (load "common.scm")
@@ -51,14 +51,14 @@
   (let ((particle-image (load-texture "images/bullet.png")))
     (list-tabulate n (lambda (n)
                        (make-particle (make-sprite particle-image)
-                                      (vector2 (random window-width)
-                                               (random window-height))
-                                      (vector2 (* (random:normal) 1)
-                                               (* (random:normal) 1)))))))
+                                      (vector (random window-width)
+                                              (random window-height))
+                                      (vector (* (random:normal) 1)
+                                              (* (random:normal) 1)))))))
 
 (define particle-count 500)
 (define background (load-sprite "images/stars.png"
-                                #:anchor null-vector2))
+                                #:anchor #(0 0)))
 (define particles (generate-particles particle-count))
 
 (define (draw-particles particles)
@@ -79,6 +79,6 @@
 (add-hook! draw-hook draw)
 
 (with-window (make-window #:title "Particles"
-                          #:resolution (vector2 window-width
-                                                window-height))
+                          #:resolution (vector window-width
+                                               window-height))
   (start-game-loop))

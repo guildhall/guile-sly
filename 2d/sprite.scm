@@ -38,7 +38,7 @@
   #:use-module (2d shader)
   #:use-module (2d signal)
   #:use-module (2d texture)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:use-module (2d window)
   #:use-module (2d wrappers gl)
   #:export (enable-sprites
@@ -101,17 +101,17 @@
                            (texture-t2 texture))))
 
 (define* (make-sprite drawable #:optional #:key
-                      (position (vector2 0 0)) (scale (vector2 1 1))
+                      (position #(0 0)) (scale #(1 1))
                       (rotation 0) (color white) (anchor 'center))
   "Create a new sprite object. DRAWABLE is either a texture or
 animation object.  All keyword arguments are optional. POSITION is a
-vector2 object with a default of (0, 0).  SCALE is a vector2 object
-that describes how much DRAWABLE should be strected on the x and y
-axes, with a default of 1x scale.  ROTATION is an angle in degrees
-with a default of 0.  COLOR is a color object with a default of white.
-ANCHOR is either a vector2 that represents the center point of the
-sprite, or 'center which will place the anchor at the center of
-DRAWABLE.  Sprites are centered by default."
+vector with a default of (0, 0).  SCALE is a vector that describes how
+much DRAWABLE should be strected on the x and y axes, with a default
+of 1x scale.  ROTATION is an angle in degrees with a default of 0.
+COLOR is a color object with a default of white.  ANCHOR is either a
+vector that represents the center point of the sprite, or 'center
+which will place the anchor at the center of DRAWABLE.  Sprites are
+centered by default."
   (let* ((vertices (make-packed-array texture-vertex 4))
          (animator (if (animation? drawable)
                        (make-animator drawable)
@@ -123,7 +123,7 @@ DRAWABLE.  Sprites are centered by default."
     sprite))
 
 (define* (load-sprite filename #:optional #:key
-                      (position (vector2 0 0)) (scale (vector2 1 1))
+                      (position #(0 0)) (scale #(1 1))
                       (rotation 0) (color white) (anchor 'center))
   "Load a sprite from the file at FILENAME. See make-sprite for
 optional keyword arguments."

@@ -28,7 +28,7 @@
   #:use-module (gl contrib packed-struct)
   #:use-module (2d color)
   #:use-module (2d helpers)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:use-module (2d wrappers gl)
   #:use-module (2d wrappers freeimage)
   #:export (make-texture
@@ -156,7 +156,7 @@ that will be rendered, in pixels."
     texture))
 
 (define (anchor-texture texture anchor)
-  "Return a vector2 of the coordinates for the center point of a
+  "Return a vector of the coordinates for the center point of a
 texture."
   (let ((w (texture-width texture))
         (h (texture-height texture)))
@@ -164,20 +164,20 @@ texture."
      ((vector2? anchor)
       anchor)
      ((eq? anchor 'center)
-      (vector2 (/ w 2)
-               (/ h 2)))
+      (vector (/ w 2)
+              (/ h 2)))
      ((eq? anchor 'top-left)
-      null-vector2)
+      #(0 0))
      ((eq? anchor 'top-right)
-      (vector2 w 0))
+      (vector w 0))
      ((eq? anchor 'bottom-left)
-      (vector2 0 h))
+      (vector 0 h))
      ((eq? anchor 'bottom-right)
-      (vector2 w h))
+      (vector w h))
      ((eq? anchor 'top-center)
-      (vector2 (/ w 2) 0))
+      (vector (/ w 2) 0))
      ((eq? anchor 'bottom-center)
-      (vector2 (/ w 2) h))
+      (vector (/ w 2) h))
      (else
       (error "Invalid anchor type!" anchor)))))
 

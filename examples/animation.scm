@@ -19,7 +19,7 @@
              (2d game)
              (2d sprite)
              (2d tileset)
-             (2d vector2)
+             (2d vector)
              (2d window))
 
 (load "common.scm")
@@ -39,7 +39,7 @@ sprite out of it."
     (make-animation frames 6 #t)))
 
 (define sprite (make-sprite (make-demo-animation)
-                            #:position (vector2 320 240)))
+                            #:position #(320 240)))
 
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 

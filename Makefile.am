@@ -44,7 +44,7 @@ SOURCES = 					\
   2d/texture.scm				\
   2d/tileset.scm				\
   2d/transform.scm				\
-  2d/vector2.scm				\
+  2d/vector.scm					\
   2d/window.scm					\
   $(WRAPPER_SOURCES)
 

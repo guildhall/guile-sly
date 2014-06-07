@@ -41,7 +41,7 @@
              (2d signal)
              (2d sprite)
              (2d texture)
-             (2d vector2)
+             (2d vector)
              (2d window)
              (2d repl))
 ;;;
@@ -326,20 +326,15 @@
          (h (texture-height tile-texture))
          (background
           (make-sprite tile-texture
-                       #:position (center
-                                   (vector2
-                                    (* x w)
-                                    (* y h)))
+                       #:position (center (vector (* x w) (* y h)))
                        #:color (tile-bg-color n)
-                       #:anchor null-vector2))
+                       #:anchor #(0 0)))
          (label
           (make-label font
                       (if (zero? n) " " (number->string n))
                       (center
-                       (vector2 (+ (* x w)
-                                   (/ w 2))
-                                (+ (* y h)
-                                   (/ h 2))))
+                       (vector (+ (* x w) (/ w 2))
+                               (+ (* y h) (/ h 2))))
                       #:color (tile-text-color n)
                       #:anchor 'center)))
     (%make-tile background label)))
@@ -355,8 +350,8 @@
 (define board-height
   (* board-size (texture-height tile-texture)))
 (define center-pos
-  (vector2 (/ (- window-width board-width) 2)
-           (- window-height board-height 8)))
+  (vector (/ (- window-width board-width) 2)
+          (- window-height board-height 8)))
 
 (define (center v)
   (v+ v center-pos))
@@ -388,8 +383,8 @@
                           (else ""))))
        (make-label font message
                    (center
-                    (vector2 (/ board-width 2)
-                             (/ board-height 2)))
+                    (vector (/ board-width 2)
+                            (/ board-height 2)))
                    #:color black
                    #:anchor 'bottom-center)))
    board))
@@ -405,8 +400,8 @@
                      "Press N to play again"
                      "")
                  (center
-                  (vector2 (/ board-width 2)
-                           (/ board-height 2)))
+                  (vector (/ board-width 2)
+                          (/ board-height 2)))
                  #:color black
                  #:anchor 'top-center))
    board))
@@ -416,7 +411,7 @@
 (define instructions
   (make-label instruction-font
               "Use the arrow keys to join the numbers and get to the 2048 tile!"
-              (vector2 (/ window-width 2) 0)
+              (vector (/ window-width 2) 0)
               #:color text-color-1
               #:anchor 'top-center))
 
@@ -426,7 +421,7 @@
 (define score-header
   (make-label score-header-font
               "SCORE"
-              (vector2 (+ (vx center-pos) (/ board-width 4)) 24)
+              (vector (+ (vx center-pos) (/ board-width 4)) 24)
               #:color text-color-1
               #:anchor 'top-center))
 
@@ -435,8 +430,8 @@
    (lambda (state)
      (make-label score-font
                  (format #f "~d" (2048-score state))
-                 (vector2 (vx (label-position score-header))
-                          (+ (vy (label-position score-header)) 32))
+                 (vector (vx (label-position score-header))
+                         (+ (vy (label-position score-header)) 32))
                  #:color text-color-1
                  #:anchor 'center))
    2048-state))
@@ -444,7 +439,9 @@
 (define best-score-header
   (make-label score-header-font
               "BEST"
-              (vector2 (+ (vx center-pos) (- board-width (/ board-width 4))) 24)
+              (vector (+ (vx center-pos)
+                         (- board-width (/ board-width 4)))
+                      24)
               #:color text-color-1
               #:anchor 'top-center))
 
@@ -453,8 +450,8 @@
    (lambda (state)
      (make-label score-font
                  (format #f "~d" (2048-best-score state))
-                 (vector2 (vx (label-position best-score-header))
-                          (+ (vy (label-position best-score-header)) 32))
+                 (vector (vx (label-position best-score-header))
+                         (+ (vy (label-position best-score-header)) 32))
                  #:color text-color-1
                  #:anchor 'center))
    2048-state))

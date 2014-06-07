@@ -34,7 +34,7 @@
   #:use-module (2d shader)
   #:use-module (2d signal)
   #:use-module (2d texture)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:use-module (2d window)
   #:use-module (2d wrappers gl)
   #:export (enable-fonts
@@ -141,7 +141,7 @@ the given position.  Optional arguments are COLOR with a default of
 white and ANCHOR with a default of 'top-left."
   (let* ((texture (render-text font text))
          (vertices (and texture (make-label-vertices texture)))
-         (anchor (if texture (anchor-texture texture anchor) null-vector2)))
+         (anchor (if texture (anchor-texture texture anchor) #(0 0))))
     (%make-label font text position anchor color texture vertices)))
 
 (define (draw-label label)

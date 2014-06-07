@@ -21,7 +21,7 @@
              (2d game)
              (2d sprite)
              (2d texture)
-             (2d vector2)
+             (2d vector)
              (2d window))
 
 (load "common.scm")
@@ -33,11 +33,11 @@
 
 (define sprite
   (make-sprite texture
-               #:position (vector 320 240)))
+               #:position #(320 240)))
 
 (define (random-vector2)
-  (vector2 (random window-width)
-           (random window-height)))
+  (vector (random window-width)
+          (random window-height)))
 
 ;; Simple script that moves the sprite to a random location every
 ;; second.
@@ -51,6 +51,6 @@
 (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
 
 (with-window (make-window #:title "Coroutines"
-                          #:resolution (vector2 window-width
-                                                window-height))
+                          #:resolution (vector window-width
+                                               window-height))
   (start-game-loop))

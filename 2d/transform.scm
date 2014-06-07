@@ -26,7 +26,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
   #:use-module (2d math)
-  #:use-module (2d vector2)
+  #:use-module (2d vector)
   #:export (make-transform
             make-transform*
             null-transform
@@ -77,8 +77,8 @@ column-major format."
     (array-set! matrix dd 3 3)
     (%make-transform matrix)))
 
-(define* (make-transform* #:optional #:key (translate null-vector2)
-                          (scale (vector2 1 1)) (rotate 0))
+(define* (make-transform* #:optional #:key (translate #(0 0))
+                          (scale #(1 1)) (rotate 0))
   "Return a new transform that is the result of the composition of the
 given TRANSLATE, SCALE, and ROTATE values.  Both TRANSLATE and SCALE
 are vector2 values, while ROTATE is a number."
@@ -105,21 +105,21 @@ are vector2 values, while ROTATE is a number."
     (%make-transform m2)))
 
 (define (transform-vector2 transform v)
-  "Apply TRANSFORM to the vector2 V."
+  "Apply TRANSFORM to the 2D vector V."
   (let ((m (transform-matrix transform))
         (x (vx v))
         (y (vy v)))
-    (vector2 (+ (* x (array-ref m 0 0))
-                (* y (array-ref m 0 1))
-                (array-ref m 0 3))
-             (+ (* x (array-ref m 1 0))
-                (* y (array-ref m 1 1))
-                (array-ref m 1 3)))))
+    (vector (+ (* x (array-ref m 0 0))
+               (* y (array-ref m 0 1))
+               (array-ref m 0 3))
+            (+ (* x (array-ref m 1 0))
+               (* y (array-ref m 1 1))
+               (array-ref m 1 3)))))
 
 (define (transform-position transform)
   "Extract 2D vector from TRANSFORM."
   (let ((m (transform-matrix transform)))
-    (vector2 (array-ref m 0 3) (array-ref m 1 3))))
+    (vector (array-ref m 0 3) (array-ref m 1 3))))
 
 (define (transform+ . transforms)
   "Return the sum of all given transformation matrices.  Return
@@ -152,14 +152,14 @@ identity-transform if called without any arguments."
 
 (define (transform-translate v)
   "Return a new transform that translates the x and y axes by the
-vector2 V."
+vector V."
   (make-transform 1      0      0 0
                   0      1      0 0
                   0      0      1 0
                   (vx v) (vy v) 0 1))
 
 (define (transform-scale v)
-  "Return a new transform that scales the X and Y axes by the vector2
+  "Return a new transform that scales the X and Y axes by the vector
 V."
   (make-transform (vx v) 0      0 0
                   0      (vy v) 0 0
