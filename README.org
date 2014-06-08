@@ -23,12 +23,11 @@
    #+BEGIN_SRC scheme
      (use-modules (2d game)
                   (2d sprite)
-                  (2d vector2)
                   (2d window))
 
      (define sprite
        (load-sprite "images/p1_front.png"
-                    #:position (vector2 320 240)))
+                    #:position #(320 240)))
 
      (add-hook! draw-hook
                 (lambda (dt alpha)
@@ -57,7 +56,7 @@
 
     #+BEGIN_SRC scheme
       (with-window (make-window #:title "Best Game Ever"
-                                #:resolution (vector2 640 480))
+                                #:resolution #(640 480))
         (start-game-loop))
     #+END_SRC
 
@@ -78,8 +77,8 @@
 
       (define sprite
         (load-sprite "cirno.png"
-                     #:position (vector2 320 240)
-                     #:scale (1 1)
+                     #:position #(320 240)
+                     #:scale #(1 1)
                      #:rotation 45
                      #:color white
                      #:anchor 'center))
@@ -95,7 +94,7 @@
     Position, scale, rotation, color, and anchor are mutable.
 
     #+BEGIN_SRC scheme
-      (set-sprite-position! sprite (vector2 100 100))
+      (set-sprite-position! sprite #(100 100))
     #+END_SRC
 
     Drawing a sprite is simple.
@@ -215,18 +214,17 @@
     Example:
     #+BEGIN_SRC scheme
       (define-signal position
-        (signal-fold v+ (vector2 320 240)
-                     (signal-map (lambda (v)
-                                   (vscale v 4))
+        (signal-fold v+ #(320 240)
+                     (signal-map (lambda (v) (v* v 4))
                                  (signal-sample 1 key-arrows))))
     #+END_SRC
 
     This signal describes a relationship between the arrow keys on the
     keyboard and the position of the player.  =signal-sample= is used
     to trigger a signal update upon every game tick that provides the
-    current state of the arrow keys.  =key-arrows= is a vector2 that
+    current state of the arrow keys.  =key-arrows= is a vector that
     maps to the current state of the arrow keys, allowing for 8
-    direction movement.  This vector2 is then scaled 4x to make the
+    direction movement.  This vector is then scaled 4x to make the
     player move faster.  Finally, the scaled vector is added to the
     previous player position via =signal-fold=.  The player's position
     is at (320, 240) initially.  As you can see, there are no
