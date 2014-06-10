@@ -40,9 +40,8 @@
             transform*
             transform-translate
             transform-scale
-            transform-rotate
-            orthographic-projection
-            perspective-projection))
+            rotate-x rotate-y rotate-z
+            orthographic-projection perspective-projection))
 
 (define-record-type <transform>
   (%make-transform matrix)
@@ -83,7 +82,7 @@ column-major format."
 given TRANSLATE, SCALE, and ROTATE values.  Both TRANSLATE and SCALE
 are vector2 values, while ROTATE is a number."
   (transform* (transform-scale scale)
-              (transform-rotate rotate)
+              (rotate-z rotate)
               (transform-translate translate)))
 
 (define null-transform
@@ -166,7 +165,20 @@ V."
                   0      0      1 0
                   0      0      0 1))
 
-(define (transform-rotate angle)
+(define (rotate-x angle)
+  "Return a new transform that rotates the X axis by ANGLE radians."
+  (make-transform 1 0           0               0
+                  0 (cos angle) (- (sin angle)) 0
+                  0 (sin angle) (cos angle)     0
+                  0 0           0               1))
+
+(define (rotate-y angle)
+  "Return a new transform that rotates the Y axis by ANGLE radians."
+  (make-transform (cos angle)     0 (sin angle) 0
+                  0               1 0           0
+                  (- (sin angle)) 0 (cos angle) 0
+                  0               0 0           1))
+(define (rotate-z angle)
   "Return a new transform that rotates the Z axis by ANGLE radians."
   (make-transform (cos angle) (- (sin angle)) 0 0
                   (sin angle) (cos angle)     0 0
