@@ -27,20 +27,11 @@
   #:use-module (srfi srfi-42)
   #:use-module (2d math)
   #:use-module (2d vector)
-  #:export (make-transform
-            make-transform*
-            null-transform
-            identity-transform
-            transform?
-            transform-matrix
-            transpose
-            transform-vector2
-            transform-position
-            transform+
-            transform*
-            transform-translate
-            transform-scale
-            rotate-x rotate-y rotate-z
+  #:export (make-transform null-transform identity-transform
+            transform? transform-matrix
+            transpose transform-vector2 transform-position
+            transform+ transform*
+            scale translate rotate-x rotate-y rotate-z
             orthographic-projection perspective-projection))
 
 (define-record-type <transform>
@@ -75,15 +66,6 @@ column-major format."
     (array-set! matrix dc 3 2)
     (array-set! matrix dd 3 3)
     (%make-transform matrix)))
-
-(define* (make-transform* #:optional #:key (translate #(0 0))
-                          (scale #(1 1)) (rotate 0))
-  "Return a new transform that is the result of the composition of the
-given TRANSLATE, SCALE, and ROTATE values.  Both TRANSLATE and SCALE
-are vector2 values, while ROTATE is a number."
-  (transform* (transform-scale scale)
-              (rotate-z rotate)
-              (transform-translate translate)))
 
 (define null-transform
   (%make-transform (make-4x4-matrix)))
@@ -149,7 +131,7 @@ identity-transform if called without any arguments."
       (%make-transform m3)))
   (reduce mul identity-transform transforms))
 
-(define (transform-translate v)
+(define (translate v)
   "Return a new transform that translates the x and y axes by the
 vector V."
   (make-transform 1      0      0 0
@@ -157,7 +139,7 @@ vector V."
                   0      0      1 0
                   (vx v) (vy v) 0 1))
 
-(define (transform-scale v)
+(define (scale v)
   "Return a new transform that scales the X and Y axes by the vector
 V."
   (make-transform (vx v) 0      0 0
