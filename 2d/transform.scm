@@ -140,12 +140,31 @@ vector V."
                   (vx v) (vy v) 0 1))
 
 (define (scale v)
-  "Return a new transform that scales the X and Y axes by the vector
-V."
-  (make-transform (vx v) 0      0 0
-                  0      (vy v) 0 0
-                  0      0      1 0
-                  0      0      0 1))
+  "Return a new transform that scales by the 2D vector, 3D vector, or
+scalar V."
+  (cond
+   ((number? v)
+    (make-transform v 0 0 0
+                    0 v 0 0
+                    0 0 v 0
+                    0 0 0 1))
+   ((vector2? v)
+    (let ((x (vx v))
+          (y (vy v)))
+      (make-transform x 0 0 0
+                      0 y 0 0
+                      0 0 1 0
+                      0 0 0 1)))
+   ((vector3? v)
+    (let ((x (vx v))
+          (y (vy v))
+          (z (vz v)))
+      (make-transform x 0 0 0
+                      0 y 0 0
+                      0 0 z 0
+                      0 0 0 1)))
+   (else
+    (error "Invalid scaling vector: " v))))
 
 (define (rotate-x angle)
   "Return a new transform that rotates the X axis by ANGLE radians."
