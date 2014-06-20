@@ -29,7 +29,7 @@
   #:use-module (2d vector)
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix
-            transpose transform-vector2 transform-position
+            transpose transform-vector2
             transform+ transform*
             scale translate rotate-x rotate-y rotate-z
             orthographic-projection perspective-projection))
@@ -96,11 +96,6 @@ column-major format."
             (+ (* x (array-ref m 1 0))
                (* y (array-ref m 1 1))
                (array-ref m 1 3)))))
-
-(define (transform-position transform)
-  "Extract 2D vector from TRANSFORM."
-  (let ((m (transform-matrix transform)))
-    (vector (array-ref m 0 3) (array-ref m 1 3))))
 
 (define (transform+ . transforms)
   "Return the sum of all given transformation matrices.  Return
