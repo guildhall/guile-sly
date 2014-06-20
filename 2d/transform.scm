@@ -132,12 +132,25 @@ identity-transform if called without any arguments."
   (reduce mul identity-transform transforms))
 
 (define (translate v)
-  "Return a new transform that translates the x and y axes by the
-vector V."
-  (make-transform 1      0      0 0
-                  0      1      0 0
-                  0      0      1 0
-                  (vx v) (vy v) 0 1))
+  "Return a new transform that translates by the 2D or 3D vector V."
+  (cond
+   ((vector2? v)
+    (let ((x (vx v))
+          (y (vy v)))
+      (make-transform 1 0 0 0
+                      0 1 0 0
+                      0 0 1 0
+                      x y 0 1)))
+   ((vector3? v)
+    (let ((x (vx v))
+          (y (vy v))
+          (z (vz v)))
+      (make-transform 1 0 0 0
+                      0 1 0 0
+                      0 0 1 0
+                      x y z 1)))
+   (else
+    (error "Invalid scaling vector: " v))))
 
 (define (scale v)
   "Return a new transform that scales by the 2D vector, 3D vector, or
