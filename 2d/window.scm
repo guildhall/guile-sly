@@ -71,7 +71,7 @@
   (hook->signal window-resize-hook
                 #(0 0)
                 (lambda (width height)
-                  #(width height))))
+                  (vector width height))))
 (define-signal window-width (signal-map vx window-size))
 (define-signal window-height (signal-map vy window-size))
 
