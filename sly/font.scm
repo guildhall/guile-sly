@@ -93,10 +93,10 @@ argument with a default value of 12."
     (with-gl-bind-texture (texture-target texture-2d) texture-id
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-min-filter)
-                            (texture-min-filter nearest))
+                            (texture-min-filter linear))
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-mag-filter)
-                            (texture-mag-filter nearest))
+                            (texture-mag-filter linear))
       (gl-texture-image-2d (texture-target texture-2d)
                            0
                            (pixel-format rgba)
