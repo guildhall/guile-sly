@@ -63,9 +63,11 @@
 (register-event-handler
  'video-resize
  (lambda (e)
-   (run-hook window-resize-hook
-             (SDL:event:resize:w e)
-             (SDL:event:resize:h e))))
+   (let ((width (SDL:event:resize:w e))
+         (height (SDL:event:resize:h e)))
+     ;; Reset video mode.
+     (SDL:set-video-mode width height 24 '(opengl))
+     (run-hook window-resize-hook width height))))
 
 (define-signal window-size
   (hook->signal window-resize-hook
