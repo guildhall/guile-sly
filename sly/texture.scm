@@ -25,6 +25,7 @@
 (define-module (sly texture)
   #:use-module (srfi srfi-9)
   #:use-module (gl)
+  #:use-module (gl low-level)
   #:use-module (gl contrib packed-struct)
   #:use-module (sly color)
   #:use-module (sly helpers)
@@ -46,7 +47,8 @@
             anchor-texture
             texture-vertex
             pack-texture-vertices
-            draw-texture-vertices))
+            draw-texture-vertices
+            with-texture))
 
 ;;;
 ;;; Textures
@@ -204,6 +206,13 @@ texture."
   (pack vertices (+ offset 1) texture-vertex 0 height s1 t2)
   (pack vertices (+ offset 2) texture-vertex width height s2 t2)
   (pack vertices (+ offset 3) texture-vertex width 0 s2 t1))
+
+(define-syntax-rule (with-texture texture body ...)
+  (begin
+    (glBindTexture (texture-target texture-2d) (texture-id texture))
+    body
+    ...
+    (glBindTexture (texture-target texture-2d) 0)))
 
 (define (draw-texture-vertices texture vertices size)
   (let ((pointer-type (tex-coord-pointer-type float)))
