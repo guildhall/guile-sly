@@ -30,6 +30,7 @@
   #:use-module (sly event)
   #:use-module (sly math)
   #:use-module (sly signal)
+  #:use-module (sly vector)
   #:use-module (sly window)
   #:export (draw-hook
             after-game-loop-error-hook
@@ -72,9 +73,8 @@ becoming completely unresponsive and possibly crashing."
         (frame-interval (interval frame-rate)))
     (define (draw dt alpha)
       "Render a frame."
-      (let ((width (signal-ref window-width))
-            (height (signal-ref window-height)))
-        (gl-viewport 0 0 width height))
+      (let ((size (signal-ref window-size)))
+        (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
       (run-hook draw-hook dt alpha)
       (SDL:gl-swap-buffers))
