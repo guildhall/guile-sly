@@ -2,7 +2,7 @@
 @chapter Math
 
 Games typically require a lot of linear algebra and trigonometry in
-order to function. Guile-2D provides modules to perform 2D vector
+order to function. Sly provides modules to perform 2D vector
 math, degree to/from radian conversions, and axis-aligned bounding box
 collision tests.
 

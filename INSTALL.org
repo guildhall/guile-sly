@@ -1,12 +1,9 @@
 * Installation Instructions
 
-  Installing guile-2d is rather easy (but not easy enough) if you are
-  on a GNU/Linux system. Currently, only installation instructions for
-  Debian are provided, but the non-apt commands should work without
-  any modifications on any GNU/Linux distro.
-
-  This installation guide assumes that you have the GNU build system
-  (automake, autoconf, texinfo, pkg-config) and git installed.
+  Installing Sly is rather easy (but not easy enough) if you are on a
+  GNU/Linux system.  This installation guide assumes that you have the
+  GNU build system (automake, autoconf, texinfo, pkg-config) and git
+  installed.
 
 ** Install dependencies
 
@@ -30,6 +27,7 @@
     Check the versions available to you with =sudo apt-cache show guile-2.0-dev=.
 
 *** SDL
+
     SDL is a very popular, cross-platform game library.
 
     *Debian*
@@ -97,16 +95,16 @@
       sudo make install
     #+END_SRC
 
-** Install guile-2d
+** Install Sly
 
-   Once the dependencies have been installed, installing guile-2d is
+   Once the dependencies have been installed, installing Sly is
    pretty straightforward.
 
    *GNU/Linux*
 
    #+BEGIN_SRC sh
-     git clone https://github.com/davexunit/guile-2d.git
-     cd guile-2d/
+     git clone https://gitorious.org/sly/sly.git
+     cd sly/
      ./autogen.sh
      ./configure --prefix=/usr
      make

@@ -1,7 +1,7 @@
 @node Graphics
 @chapter Graphics
 
-Graphics are a fundamental part of most computer games. Guile-2D makes
+Graphics are a fundamental part of most computer games. Sly makes
 it easy to make sprite-based games by providing all of the necessary
 primitives. Graphics are rendered via OpenGL to take advantage of
 hardware acceleration.

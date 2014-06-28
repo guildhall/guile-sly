@@ -1,7 +1,3 @@
-#! /usr/bin/guile \
--L . -s
-!#
-
 ;;; Sly
 ;;; Copyright (C) 2014 David Thompson <dthompson2@worcester.edu>
 ;;;
@@ -19,32 +15,23 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-;; Include almost every Sly module for convenience.
-(use-modules (sly agenda)
-             (sly audio)
-             (sly color)
-             (sly coroutine)
-             (sly font)
-             (sly fps)
-             (sly game)
-             (sly keyboard)
-             (sly mouse)
-             (sly rect)
-             (sly signal)
-             (sly sprite)
-             (sly texture)
-             (sly transform)
-             (sly vector2)
-             (sly window)
-             (sly repl))
+;;; Commentary:
+;;
+;; Cooperative REPL server extension.
+;;
+;;; Code:
 
-(start-sly-repl)
+(define-module (sly repl)
+  #:use-module (system repl coop-server)
+  #:use-module (system repl server)
+  #:use-module (sly agenda)
+  #:export (start-sly-repl))
 
-(add-hook! window-close-hook stop-game-loop)
-
-(display "Welcome to the Sly sandbox.  Happy hacking!\n")
-
-(with-window (make-window #:title "Sly Sandbox")
-  (start-game-loop))
-
-(display "Bye!\n")
+(define* (start-sly-repl #:optional (port (make-tcp-server-socket #:port 37146)))
+  "Start a cooperative REPL server that listens on the given PORT.  By
+default, this port is 37146.  Additionally, a process is scheduled to
+poll the REPL server upon every tick of the game loop."
+  (let ((server (spawn-coop-repl-server port)))
+    (schedule-each
+     (lambda ()
+       (poll-coop-repl-server server)))))

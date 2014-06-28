@@ -1,4 +1,4 @@
-## guile-2d
+## Sly
 ## Copyright (C) 2013, 2014 David Thompson <dthompson2@worcester.edu>
 ##
 ## This program is free software: you can redistribute it and/or
@@ -21,39 +21,39 @@ moddir=$(prefix)/share/guile/site/2.0
 godir=$(libdir)/guile/2.0/ccache
 
 SOURCES = 					\
-  2d/agenda.scm 				\
-  2d/animation.scm				\
-  2d/audio.scm					\
-  2d/color.scm					\
-  2d/config.scm					\
-  2d/coroutine.scm				\
-  2d/event.scm					\
-  2d/font.scm					\
-  2d/fps.scm					\
-  2d/game.scm					\
-  2d/helpers.scm				\
-  2d/keyboard.scm				\
-  2d/live-reload.scm				\
-  2d/math.scm					\
-  2d/mouse.scm					\
-  2d/rect.scm					\
-  2d/repl.scm					\
-  2d/shader.scm					\
-  2d/signal.scm					\
-  2d/sprite.scm					\
-  2d/texture.scm				\
-  2d/tileset.scm				\
-  2d/transform.scm				\
-  2d/vector.scm					\
-  2d/window.scm					\
+  sly/agenda.scm 				\
+  sly/animation.scm				\
+  sly/audio.scm					\
+  sly/color.scm					\
+  sly/config.scm					\
+  sly/coroutine.scm				\
+  sly/event.scm					\
+  sly/font.scm					\
+  sly/fps.scm					\
+  sly/game.scm					\
+  sly/helpers.scm				\
+  sly/keyboard.scm				\
+  sly/live-reload.scm				\
+  sly/math.scm					\
+  sly/mouse.scm					\
+  sly/rect.scm					\
+  sly/repl.scm					\
+  sly/shader.scm					\
+  sly/signal.scm					\
+  sly/sprite.scm					\
+  sly/texture.scm				\
+  sly/tileset.scm				\
+  sly/transform.scm				\
+  sly/vector.scm					\
+  sly/window.scm					\
   $(WRAPPER_SOURCES)
 
 WRAPPER_SOURCES =				\
-  2d/wrappers/freeimage.scm			\
-  2d/wrappers/gl.scm				\
-  2d/wrappers/util.scm
+  sly/wrappers/freeimage.scm			\
+  sly/wrappers/gl.scm				\
+  sly/wrappers/util.scm
 
-2d/config.scm: Makefile
+sly/config.scm: Makefile
 	sed -e "s|@pkgdatadir\@|$(pkgdatadir)|" $@.in > $@
 
 EXTRA_DIST += env.in

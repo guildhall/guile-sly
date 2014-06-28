@@ -1,7 +1,7 @@
 @node Fonts
 @section Fonts
 
-Guile-2D can render TTF fonts via the FTGL library.
+Sly can render TTF fonts via the FTGL library.
 
 @anchor{2d font font-ftgl-font}@defspec font-ftgl-font
 @end defspec

@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = gnu
 
-info_TEXINFOS = guile-2d.texi
+info_TEXINFOS = sly.texi
 
 guile_TEXINFOS = audio.texi \
                  fdl.texi \
@@ -12,7 +12,7 @@ guile_TEXINFOS = audio.texi \
                  graphics/sprite.texi \
                  graphics/texture.texi \
                  graphics/tileset.texi \
-                 guile-2d.texi \
+                 sly.texi \
                  introduction.texi \
                  math.texi \
                  math/math.texi \

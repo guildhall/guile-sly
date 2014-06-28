@@ -1,4 +1,4 @@
-;;; guile-2d
+;;; Sly
 ;;; Copyright (C) 2013, 2014 David Thompson <dthompson2@worcester.edu>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
@@ -15,12 +15,12 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (2d animation)
-             (2d game)
-             (2d sprite)
-             (2d tileset)
-             (2d vector)
-             (2d window))
+(use-modules (sly animation)
+             (sly game)
+             (sly sprite)
+             (sly tileset)
+             (sly vector)
+             (sly window))
 
 (load "common.scm")
 

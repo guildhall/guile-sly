@@ -1,7 +1,7 @@
 dnl -*- Autoconf -*-
 
-AC_INIT(guile-2d, 0.1.0)
-AC_CONFIG_SRCDIR(2d)
+AC_INIT(Sly, 0.1.0)
+AC_CONFIG_SRCDIR(sly)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability foreign])
 AM_SILENT_RULES([yes])

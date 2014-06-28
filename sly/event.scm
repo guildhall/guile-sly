@@ -15,27 +15,31 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly agenda)
-             (sly fps)
-             (sly game)
-             (sly keyboard)
-             (sly repl)
-             (sly signal)
-             (sly sprite)
-             (sly window))
+;;; Commentary:
+;;
+;; SDL event handlers.
+;;
+;;; Code:
 
-(open-window)
-(enable-sprites)
+(define-module (sly event)
+  #:use-module ((sdl sdl) #:prefix SDL:)
+  #:export (process-events
+            register-event-handler))
 
-(add-hook! key-press-hook (lambda (key unicode)
-                            (when (eq? key 'escape)
-                              (stop-game-loop))))
+(define process-events
+  (let ((e (SDL:make-event)))
+    (lambda ()
+      "Process all events in the input event queue."
+      (while (SDL:poll-event e)
+        (handle-event e)))))
 
-(add-hook! window-close-hook stop-game-loop)
+(define event-handlers (make-hash-table))
 
-(schedule-interval
- (lambda ()
-   (format #t "FPS: ~d\n" (signal-ref fps)))
- 60)
+(define (register-event-handler event-type proc)
+  (hashq-set! event-handlers event-type proc))
 
-(start-sly-repl)
+(define (handle-event e)
+  "Run the relevant hook for the event E."
+  (let ((handle (hashq-get-handle event-handlers (SDL:event:type e))))
+    (when handle
+      ((cdr handle) e))))

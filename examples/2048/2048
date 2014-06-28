@@ -32,18 +32,18 @@
              (ice-9 match)
              (ice-9 rdelim)
              (gl)
-             (2d audio)
-             (2d color)
-             (2d font)
-             (2d game)
-             (2d keyboard)
-             (2d rect)
-             (2d signal)
-             (2d sprite)
-             (2d texture)
-             (2d vector)
-             (2d window)
-             (2d repl))
+             (sly audio)
+             (sly color)
+             (sly font)
+             (sly game)
+             (sly keyboard)
+             (sly rect)
+             (sly signal)
+             (sly sprite)
+             (sly texture)
+             (sly vector)
+             (sly window)
+             (sly repl))
 ;;;
 ;;; Helpers
 ;;;
@@ -470,7 +470,7 @@
 ;;; Initialization
 ;;;
 
-(start-2d-repl)
+(start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
 (add-hook! draw-hook (lambda (dt alpha) (render)))

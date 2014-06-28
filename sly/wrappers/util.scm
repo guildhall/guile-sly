@@ -15,27 +15,26 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly agenda)
-             (sly fps)
-             (sly game)
-             (sly keyboard)
-             (sly repl)
-             (sly signal)
-             (sly sprite)
-             (sly window))
+;;; Commentary:
+;;
+;; Wrapper helper procedures.
+;;
+;;; Code:
 
-(open-window)
-(enable-sprites)
+(define-module (sly wrappers util)
+  #:export (define-enumeration))
 
-(add-hook! key-press-hook (lambda (key unicode)
-                            (when (eq? key 'escape)
-                              (stop-game-loop))))
-
-(add-hook! window-close-hook stop-game-loop)
-
-(schedule-interval
- (lambda ()
-   (format #t "FPS: ~d\n" (signal-ref fps)))
- 60)
-
-(start-sly-repl)
+;; Borrowed from guile-opengl
+(define-syntax-rule (define-enumeration enumerator (name value) ...)
+  (define-syntax enumerator
+    (lambda (x)
+      (syntax-case x ()
+        ((_)
+         #''(name ...))
+        ((_ enum) (number? (syntax->datum #'enum))
+         #'enum)
+        ((_ enum)
+         (or (assq-ref '((name . value) ...)
+                       (syntax->datum #'enum))
+             (syntax-violation 'enumerator "invalid enumerated value"
+                               #'enum)))))))

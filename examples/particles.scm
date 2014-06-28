@@ -1,4 +1,4 @@
-;;; guile-2d
+;;; Sly
 ;;; Copyright (C) 2013, 2014 David Thompson <dthompson2@worcester.edu>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
@@ -17,12 +17,12 @@
 
 (use-modules (srfi srfi-1)
              (srfi srfi-9)
-             (2d agenda)
-             (2d game)
-             (2d sprite)
-             (2d texture)
-             (2d vector)
-             (2d window))
+             (sly agenda)
+             (sly game)
+             (sly sprite)
+             (sly texture)
+             (sly vector)
+             (sly window))
 
 (load "common.scm")
 

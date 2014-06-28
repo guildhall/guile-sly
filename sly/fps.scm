@@ -15,27 +15,33 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly agenda)
-             (sly fps)
-             (sly game)
-             (sly keyboard)
-             (sly repl)
-             (sly signal)
-             (sly sprite)
-             (sly window))
+;;; Commentary:
+;;
+;; Frames per second counter.
+;;
+;;; Code:
 
-(open-window)
-(enable-sprites)
+(define-module (sly fps)
+  #:use-module (sly game)
+  #:use-module (sly signal)
+  #:export (fps))
 
-(add-hook! key-press-hook (lambda (key unicode)
-                            (when (eq? key 'escape)
-                              (stop-game-loop))))
+;; Current frames per second
+(define-signal fps (make-signal 0))
 
-(add-hook! window-close-hook stop-game-loop)
+(define accumulate-fps!
+  (let* ((elapsed-time 0)
+         (fps-counter 0))
+    (lambda (dt alpha)
+      (let ((new-time (+ elapsed-time dt))
+            (new-fps (1+ fps-counter)))
+        (if (>= new-time 1000)
+            (begin
+              (signal-set! fps new-fps)
+              (set! fps-counter 0)
+              (set! elapsed-time 0))
+            (begin
+              (set! fps-counter new-fps)
+              (set! elapsed-time new-time)))))))
 
-(schedule-interval
- (lambda ()
-   (format #t "FPS: ~d\n" (signal-ref fps)))
- 60)
-
-(start-sly-repl)
+(add-hook! draw-hook accumulate-fps!)

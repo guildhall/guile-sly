@@ -2,7 +2,7 @@
 @section Tilesets
 
 In most 2D games, the game world is composed of many small,
-rectangular pieces called tiles. In Guile-2D, tilesets are used to
+rectangular pieces called tiles. In Sly, tilesets are used to
 encapsulate a group of uniformly sized texture regions that come from
 a single parent texture.
 

@@ -1,7 +1,7 @@
 @node Textures
 @section Textures
 
-Textures are images loaded in graphics memory. Guile-2D supports many
+Textures are images loaded in graphics memory. Sly supports many
 texture formats via the FreeImage library. A texture object can
 describe a full image or a rectangular section of an image.
 
