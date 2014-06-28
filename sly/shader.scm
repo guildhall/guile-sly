@@ -291,15 +291,13 @@ location."
   (memoize
    (lambda (shader-program name)
      "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-     (glGetUniformLocation (shader-program-id shader-program)
-                           (symbol->string name)))))
+     (glGetUniformLocation (shader-program-id shader-program) name))))
 
 (define attribute-location
   (memoize
    (lambda (shader-program name)
      "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-     (glGetAttribLocation (shader-program-id shader-program)
-                           (symbol->string name)))))
+     (glGetAttribLocation (shader-program-id shader-program) name))))
 
 (define (uniform-set! shader-program name value)
   "Use the appropriate setter procedure to translate VALUE into OpenGL
