@@ -104,6 +104,8 @@
     ;; Enable texturing and alpha blending
     (gl-enable (enable-cap texture-2d))
     (gl-enable (enable-cap blend))
+    (gl-enable (enable-cap cull-face))
+    (gl-enable (enable-cap depth-test))
     (set-gl-blend-function (blending-factor-src src-alpha)
                            (blending-factor-dest one-minus-src-alpha))))
 
