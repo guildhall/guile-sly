@@ -27,3 +27,4 @@ Makefile.in
 /doc/sly.t2p
 /2d/config.scm
 /pre-inst-env
+/sly/config.scm
