@@ -94,3 +94,27 @@ instanced rendering.")
 
 (export glDrawArraysInstanced
         glVertexAttribDivisor)
+
+;;;
+;;; VAOs
+;;;
+
+(define-gl-procedure (glGenVertexArrays (n GLsizei)
+                                        (arrays GLuint-*)
+                                        -> void)
+  "Generate N vertex arrays.")
+
+(define-gl-procedure (glBindVertexArray (array GLuint)
+                                        -> void)
+  "Bind vertex array object ARRAY.")
+
+(export glGenVertexArrays
+        glBindVertexArray)
+
+(define-syntax-rule (with-gl-client-state state body ...)
+  (begin
+    (gl-enable-client-state state)
+    body ...
+    (gl-disable-client-state state)))
+
+(export with-gl-client-state)
