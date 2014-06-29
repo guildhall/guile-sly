@@ -36,6 +36,7 @@
             rgba
             rgb
             color*
+            color-scale
             color+
             color-
             color-inverse
@@ -127,6 +128,13 @@ For example: #xffffff will return a color with RGBA values 1, 1, 1,
                  (color-b b))
               (* (color-a a)
                  (color-a b))))
+
+(define (color-scale c k)
+  "Multiple the RGBA channels of the color C by the scalar K."
+  (make-color (* (color-r c) k)
+              (* (color-g c) k)
+              (* (color-b c) k)
+              (* (color-a c) k)))
 
 (define (color+ a b)
   "Add the RGBA channels of colors A and B."
