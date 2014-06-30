@@ -44,6 +44,7 @@ SOURCES = 					\
   sly/texture.scm				\
   sly/tileset.scm				\
   sly/transform.scm				\
+  sly/transition.scm				\
   sly/vector.scm					\
   sly/window.scm					\
   $(WRAPPER_SOURCES)
