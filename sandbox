@@ -34,7 +34,7 @@
              (sly sprite)
              (sly texture)
              (sly transform)
-             (sly vector2)
+             (sly vector)
              (sly window)
              (sly repl))
 
