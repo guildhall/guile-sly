@@ -54,6 +54,11 @@
 (define (enumerate lst)
   (zip (iota (length lst)) lst))
 
+(define (replace-at lst idx item)
+  (let-values (((f d)
+                (split-at lst idx)))
+    (append f (cons item (cdr d)))))
+
 ;;;
 ;;; Game Board
 ;;;
@@ -141,20 +146,15 @@
 (define (random-tile)
   (list-ref '(2 4) (random 2)))
 
-;; So gross.
 (define (board-insert board)
   (let ((x (random board-size))
         (y (random board-size)))
-    (if (zero? (list-ref (list-ref board y) x))
-        (append (take board y)
-                (let ((rows (drop board y)))
-                  (cons (let ((cells (car rows)))
-                          (append (take cells x)
-                                  (let ((rest (drop cells x)))
-                                    (cons (random-tile)
-                                          (cdr rest)))))
-                        (cdr rows))))
-        (board-insert board))))
+    (let-values (((f d)
+                  (split-at (list-ref board y) x)))
+      (if (zero? (car d))
+          (replace-at board y
+                   (append f (cons (random-tile) (cdr d))))
+          (board-insert board)))))
 
 (define (board-find board n)
   (list?
@@ -163,7 +163,7 @@
         board)))
 
 (define (board-win? board)
-  (board-find (make-board) 2048))
+  (board-find board 2048))
 
 (define (board-lose? board)
   (define (full? row)
