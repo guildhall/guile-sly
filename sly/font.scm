@@ -115,12 +115,16 @@ argument with a default value of 12."
   (%make-label font text position anchor color texture vertices)
   label?
   (font label-font)
-  (text label-text)
-  (position label-position)
+  (text %label-text)
+  (position %label-position)
   (anchor label-anchor)
-  (color label-color)
+  (color %label-color)
   (texture label-texture)
   (vertices label-vertices))
+
+(define label-text (compose signal-ref-maybe %label-text))
+(define label-position (compose signal-ref-maybe %label-position))
+(define label-color (compose signal-ref-maybe %label-color))
 
 (define (make-label-vertices texture)
   "Return a packed array of vertices for TEXTURE."
