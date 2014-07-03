@@ -81,13 +81,18 @@
   (%make-sprite drawable position scale rotation color anchor vertices animator)
   sprite?
   (drawable sprite-drawable set-sprite-drawable)
-  (position sprite-position set-sprite-position)
-  (scale sprite-scale set-sprite-scale)
-  (rotation sprite-rotation set-sprite-rotation)
-  (color sprite-color set-sprite-color)
+  (position %sprite-position set-sprite-position)
+  (scale %sprite-scale set-sprite-scale)
+  (rotation %sprite-rotation set-sprite-rotation)
+  (color %sprite-color set-sprite-color)
   (anchor sprite-anchor set-sprite-anchor)
   (vertices sprite-vertices)
   (animator sprite-animator))
+
+(define sprite-position (compose signal-ref-maybe %sprite-position))
+(define sprite-scale (compose signal-ref-maybe %sprite-scale))
+(define sprite-rotation (compose signal-ref-maybe %sprite-rotation))
+(define sprite-color (compose signal-ref-maybe %sprite-color))
 
 (define (update-sprite-vertices! sprite)
   (let ((texture (sprite-texture sprite)))
