@@ -30,9 +30,7 @@
   #:use-module (sly math)
   #:use-module (sly signal)
   #:use-module (sly window)
-  #:export (tick-interval
-            max-ticks-per-frame
-            draw-hook
+  #:export (draw-hook
             start-game-loop
             stop-game-loop))
 
@@ -40,69 +38,76 @@
 ;;; Game Loop
 ;;;
 
-;; Update 60 times per second by default.
-(define tick-interval (floor (/ 1000 60)))
-;; The maximum number of times the game loop will update game state in
-;; a single frame.  When this upper bound is reached due to poor
-;; performance, the game will start to slow down instead of becoming
-;; completely unresponsive and possibly crashing.
-(define max-ticks-per-frame 4)
 (define draw-hook (make-hook 2))
 
-(define (draw dt alpha)
-  "Render a frame."
-  (let ((width (signal-ref window-width))
-        (height (signal-ref window-height)))
-    (gl-viewport 0 0 width height))
-  (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-  (run-hook draw-hook dt alpha)
-  (SDL:gl-swap-buffers))
+(define (interval rate)
+  (floor (/ 1000 rate)))
 
-(define (update lag)
-  "Call the update callback. The update callback will be called as
-many times as tick-interval can divide LAG. The return value
-is the unused accumulator time."
-  (define (iter lag ticks)
-    (cond ((>= ticks max-ticks-per-frame)
-           lag)
-          ((>= lag tick-interval)
-           (tick-agenda!)
-           (iter (- lag tick-interval) (1+ ticks)))
-          (else
-           lag)))
-  (iter lag 0))
+(define* (start-game-loop #:optional #:key
+                          (frame-rate 60)
+                          (tick-rate 60)
+                          (max-ticks-per-frame 4))
+  "Start the game loop.  FRAME-RATE specifies the optimal number of
+frames to draw per second.  TICK-RATE specifies the optimal game logic
+updates per second.  Both FRAME-RATE and TICK-RATE are 60 by default.
+MAX-TICKS-PER-FRAME is the maximum number of times the game loop will
+update game state in a single frame.  When this upper bound is reached
+due to poor performance, the game will start to slow down instead of
+becoming completely unresponsive and possibly crashing."
+  (let ((tick-interval (interval tick-rate))
+        (frame-interval (interval frame-rate)))
+    (define (draw dt alpha)
+      "Render a frame."
+      (let ((width (signal-ref window-width))
+            (height (signal-ref window-height)))
+        (gl-viewport 0 0 width height))
+      (gl-clear (clear-buffer-mask color-buffer depth-buffer))
+      (run-hook draw-hook dt alpha)
+      (SDL:gl-swap-buffers))
 
-(define (alpha lag)
-  "Calculate interpolation factor in the range [0, 1] for the
+    (define (update lag)
+      "Call the update callback. The update callback will be called as
+many times as tick-interval can divide LAG. The return value is the
+unused accumulator time."
+      (define (iter lag ticks)
+        (cond ((>= ticks max-ticks-per-frame)
+               lag)
+              ((>= lag tick-interval)
+               (tick-agenda!)
+               (iter (- lag tick-interval) (1+ ticks)))
+              (else
+               lag)))
+      (iter lag 0))
+
+    (define (alpha lag)
+      "Calculate interpolation factor in the range [0, 1] for the
 leftover frame time LAG."
-  (clamp 0 1 (/ lag tick-interval)))
+      (clamp 0 1 (/ lag tick-interval)))
 
-(define (frame-sleep time)
-  "Sleep for the remainder of the frame that started at TIME."
-  (let ((t (- (+ time tick-interval)
-              (SDL:get-ticks))))
-    (usleep (max 0 (* t 1000)))))
+    (define (frame-sleep time)
+      "Sleep for the remainder of the frame that started at TIME."
+      (let ((t (- (+ time frame-interval)
+                  (SDL:get-ticks))))
+        (usleep (max 0 (* t 1000)))))
 
-(define (game-loop previous-time lag)
-  "Update game state, and render.  PREVIOUS-TIME is the time in
+    (define (game-loop previous-time lag)
+      "Update game state, and render.  PREVIOUS-TIME is the time in
 milliseconds of the last iteration of the game loop."
-  (let* ((current-time (SDL:get-ticks))
-         (dt (- current-time previous-time)))
-    (process-events)
-    (let ((lag (update (+ lag dt))))
-      (draw dt (alpha lag))
-      (frame-sleep current-time)
-      (game-loop current-time lag))))
+      (let* ((current-time (SDL:get-ticks))
+             (dt (- current-time previous-time)))
+        (process-events)
+        (let ((lag (update (+ lag dt))))
+          (draw dt (alpha lag))
+          (frame-sleep current-time)
+          (game-loop current-time lag))))
 
-(define (start-game-loop)
-  "Start the game loop."
-  (call-with-prompt
-   'game-loop-prompt
-   (lambda ()
-     (game-loop (SDL:get-ticks) 0))
-   (lambda (cont callback)
-     (when (procedure? callback)
-       (callback cont)))))
+    (call-with-prompt
+     'game-loop-prompt
+     (lambda ()
+       (game-loop (SDL:get-ticks) 0))
+     (lambda (cont callback)
+       (when (procedure? callback)
+         (callback cont))))))
 
 (define (stop-game-loop)
   "Abort the game loop."
