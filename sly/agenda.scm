@@ -156,7 +156,8 @@ and enqueue CALLBACK."
 
     (if (belongs-before? (agenda-segments agenda))
         (agenda-add-segment agenda time thunk)
-        (add-to-segments (agenda-segments agenda)))))
+        (add-to-segments (agenda-segments agenda)))
+    *unspecified*))
 
 (define current-agenda
   (make-parameter (make-agenda)
