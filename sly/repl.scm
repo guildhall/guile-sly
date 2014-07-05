@@ -25,13 +25,39 @@
   #:use-module (system repl coop-server)
   #:use-module (system repl server)
   #:use-module (sly agenda)
-  #:export (start-sly-repl))
+  #:use-module (sly game)
+  #:export (start-sly-repl
+            resume-game-loop))
 
 (define* (start-sly-repl #:optional (port (make-tcp-server-socket #:port 37146)))
   "Start a cooperative REPL server that listens on the given PORT.  By
 default, this port is 37146.  Additionally, a process is scheduled to
 poll the REPL server upon every tick of the game loop."
-  (let ((server (spawn-coop-repl-server port)))
+  (let ((server (spawn-coop-repl-server port))
+        (error-agenda (make-agenda)))
     (schedule-each
      (lambda ()
-       (poll-coop-repl-server server)))))
+       (poll-coop-repl-server server)))
+    ;; Pause game and handle errors when they occur.
+    (add-hook! after-game-loop-error-hook
+               (lambda ()
+                 (call-with-prompt
+                  'sly-repl-error-prompt
+                  (lambda ()
+                    (with-agenda error-agenda
+                      (while #t
+                        (poll-coop-repl-server server)
+                        (tick-agenda!)
+                        (usleep 10))))
+                  (lambda (cont)
+                    ;; Discard the continuation
+                    #f))))))
+
+(define (resume-game-loop)
+  "Abort from the error handling loop prompt and resume the game
+loop."
+  ;; We need to use the agenda so that the prompt is not aborted
+  ;; within the REPL, which would break the client session.
+  (schedule
+   (lambda ()
+     (abort-to-prompt 'sly-repl-error-prompt))))
