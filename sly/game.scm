@@ -23,6 +23,7 @@
 
 (define-module (sly game)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-11)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (gl)
   #:use-module (sly agenda)
@@ -31,6 +32,7 @@
   #:use-module (sly signal)
   #:use-module (sly window)
   #:export (draw-hook
+            after-game-loop-error-hook
             start-game-loop
             stop-game-loop))
 
@@ -39,9 +41,21 @@
 ;;;
 
 (define draw-hook (make-hook 2))
+(define after-game-loop-error-hook (make-hook))
 
 (define (interval rate)
   (floor (/ 1000 rate)))
+
+(define (display-game-loop-error stack key . args)
+  "Display a backtrace and error message using the current error port
+for the given STACK and error KEY with additional arguments ARGS."
+  (let ((cep (current-error-port)))
+    (display "Sly game loop error!\n\n" cep)
+    (display "Backtrace:\n" cep)
+    (display-backtrace stack cep)
+    (newline cep)
+    (apply display-error (stack-ref stack 0) cep args)
+    (newline cep)))
 
 (define* (start-game-loop #:optional #:key
                           (frame-rate 60)
@@ -90,16 +104,42 @@ leftover frame time LAG."
                   (SDL:get-ticks))))
         (usleep (max 0 (* t 1000)))))
 
+    (define (process-frame previous-time lag)
+      "Render and/or update the game as needed, integrating from the
+PREVIOUS-TIME to the current time, and updating using a game tick
+accumulator initialized to LAG.  Returns a timestamp to be used as the
+starting point of the next delta time calculation and the leftover
+time in the game tick accumulator."
+      (let* ((current-time (SDL:get-ticks))
+             (dt (- current-time previous-time)))
+        (catch #t
+          (lambda ()
+            (process-events)
+            (let ((lag (update (+ lag dt))))
+              (draw dt (alpha lag))
+              (frame-sleep current-time)
+              (values current-time lag)))
+          (lambda (key . args)
+            (if (hook-empty? after-game-loop-error-hook)
+                ;; Rethrow error if there's nothing to handle it.
+                (apply throw key args)
+                (begin
+                  (run-hook after-game-loop-error-hook)
+                  ;; An unknown amount of time has passed since running the
+                  ;; hook, so let's start with a fresh timer.
+                  (values (SDL:get-ticks) 0))))
+          (lambda (key . args)
+            ;; Strip out 3 stack frames to get to the frame where the
+            ;; error happened.  The stripped frames include the throw
+            ;; call, and the make-stack call.
+            (apply display-game-loop-error (make-stack #t 3) key args)))))
+
     (define (game-loop previous-time lag)
       "Update game state, and render.  PREVIOUS-TIME is the time in
 milliseconds of the last iteration of the game loop."
-      (let* ((current-time (SDL:get-ticks))
-             (dt (- current-time previous-time)))
-        (process-events)
-        (let ((lag (update (+ lag dt))))
-          (draw dt (alpha lag))
-          (frame-sleep current-time)
-          (game-loop current-time lag))))
+      (let-values (((time lag)
+                    (process-frame previous-time lag)))
+        (game-loop time lag)))
 
     (call-with-prompt
      'game-loop-prompt
