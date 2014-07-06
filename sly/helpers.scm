@@ -26,7 +26,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
   #:use-module (sly agenda)
-  #:use-module (sly game)
   #:export (any-equal?
             logand?
             define-guardian
