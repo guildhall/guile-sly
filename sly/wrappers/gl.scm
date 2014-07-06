@@ -27,6 +27,9 @@
   #:use-module (gl runtime)
   #:use-module (gl types))
 
+(re-export (%glClearColor . gl-clear-color)
+           (%glScissor . gl-scissor))
+
 ;;;
 ;;; 3.8.1 Texture Image Specification
 ;;;
