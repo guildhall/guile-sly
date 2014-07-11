@@ -5,7 +5,7 @@
    updates the game state, renders the scene. Use a fixed update
    timestep and cap the maximum FPS.
 
-** TODO Input
+** DONE Input
    Provide hooks to respond to keyboard, mouse, and joystick events.
    Wrap SDL keycode, mouse button, etc. constants in our own
    enumeration.
@@ -13,7 +13,7 @@
    - [X] Keyboard
    - [X] Mouse
    - [X] Window (active, resize, quit)
-   - [ ] Joystick
+   - [X] Joystick
 
 ** DONE Sprites
    Encapsulates an image and all of its transformations: position,

@@ -1,5 +1,6 @@
 ;;; Sly
 ;;; Copyright (C) 2013, 2014 David Thompson <dthompson2@worcester.edu>
+;;; Copyright (C) 2014 Jordan Russell <jordan.likes.curry@gmail.com>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License as
@@ -29,7 +30,8 @@
             cos-degrees
             tan-degrees
             atan-degrees
-            clamp))
+            clamp
+            linear-scale))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -89,3 +91,9 @@ actually less than MAX."
   (cond ((< x min) min)
         ((> x max) max)
         (else x)))
+
+(define (linear-scale min max a b val)
+  "Map a VAL in the range [MIN,MAX] to numbers in [A,B]"
+  (+ a
+     (/ (* (- b a) (- val min))
+        (- max min))))

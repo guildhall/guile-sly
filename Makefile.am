@@ -47,6 +47,7 @@ SOURCES = 					\
   sly/transition.scm				\
   sly/vector.scm					\
   sly/window.scm					\
+  sly/joystick.scm				\
   $(WRAPPER_SOURCES)
 
 WRAPPER_SOURCES =				\
