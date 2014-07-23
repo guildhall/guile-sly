@@ -272,8 +272,8 @@ signal PRED is true, or the value of the signal OFF otherwise."
                      (list pred)))
 
 (define (signal-constant constant signal)
-  "Create a new signal whose value is always CONSTANT regardless of
-what the value received from SIGNAL."
+  "Create a new signal whose value is always CONSTANT no matter the
+value of SIGNAL."
   (signal-map (lambda (value) constant) signal))
 
 (define (signal-count signal)
@@ -282,7 +282,7 @@ value from SIGNAL is received."
   (signal-fold + 0 (signal-constant 1 signal)))
 
 (define (signal-tap proc signal)
-  "Create a new signal that applies PROC when a new values is received
+  "Create a new signal that applies PROC when a new value is received
 from SIGNAL.  The value of the new signal will always be the value of
 SIGNAL.  This signal is a convenient way to sneak a procedure that has
 a side-effect into a signal chain."
