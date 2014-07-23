@@ -41,6 +41,7 @@
             signal-filter
             signal-reject
             signal-drop-repeats
+            signal-switch
             signal-constant
             signal-count
             signal-tap
@@ -257,6 +258,18 @@ testing equivalence."
                            #f))))
                  (signal-ref signal)
                  signal))
+
+(define (signal-switch pred on off)
+  "Create a new signal whose value is that of the signal ON when the
+signal PRED is true, or the value of the signal OFF otherwise."
+  (define (current-value)
+    (if (signal-ref pred)
+        (signal-ref on)
+        (signal-ref off)))
+  (make-boxed-signal (current-value)
+                     (lambda (self value)
+                       (%signal-set! self (current-value)))
+                     (list pred)))
 
 (define (signal-constant constant signal)
   "Create a new signal whose value is always CONSTANT regardless of
