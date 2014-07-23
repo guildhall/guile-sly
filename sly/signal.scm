@@ -276,10 +276,11 @@ signal PRED is true, or the value of the signal OFF otherwise."
 value of SIGNAL."
   (signal-map (lambda (value) constant) signal))
 
-(define (signal-count signal)
-  "Create a new signal that increments a counter every time a new
-value from SIGNAL is received."
-  (signal-fold + 0 (signal-constant 1 signal)))
+(define* (signal-count signal #:optional (start 0) (step 1))
+  "Create a new signal that increments a counter by STEP every time a
+new value from SIGNAL is received, with an initial value of START.  By
+default, START is 0 and STEP is 1."
+  (signal-fold + start (signal-constant step signal)))
 
 (define (signal-tap proc signal)
   "Create a new signal that applies PROC when a new value is received
