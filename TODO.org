@@ -135,25 +135,17 @@
    Provide a reactive scene graph for representing the renderable
    objects in a game.
 
-** DONE 0.1 Release
-   An official 0.1 alpha release with basic, minimal functionality
-   will provide a good place for people other than me to try out
-   guile-2d and perhaps even start to hack on it.
+** TODO 0.1 Release
+   A 0.1 release was made under the project's old name, guile-2d.  Now
+   that things have changed so drastically and the name has been
+   changed, a new 0.1 release will be made.
 
-   - [X] Font rendering with FTGL
-   - [X] Resolve issues with FIGL
-   - [X] Texinfo documentation
-   - [X] Clean up docstrings
-   - [X] Autotools build files
-   - [X] Fix animation bug
-
-** TODO 0.2 Release
    - [X] New REPL server
-     Use the (system repl coop-server) module in Guile 2.0.10.
+     Use the (system repl coop-server) module in Guile 2.0.11.
    - [ ] Screencast
    - [ ] Relatively complete documentation
    - [X] Clean up font module
    - [X] Add GLSL shaders
    - [X] Finish FRP module
    - [X] Make basic webpage with HTML docs
-   - [ ] Make sprites cheaper (cache coords in texture)
+   - [ ] Basic scene graph (must support sprites and text)
