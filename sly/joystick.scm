@@ -63,10 +63,10 @@
         (js-proc (get-joystick idx)))))
 
 (js-proc->idx-proc (SDL:joystick-num-axes . joystick-num-axes)
-                   "Get number of axes of joystick at IDX")
+                   "Get number of axes of joystick at IDX.")
 
 (js-proc->idx-proc (SDL:joystick-num-buttons . joystick-num-buttons)
-                   "Get number of buttons of joystick at IDX")
+                   "Get number of buttons of joystick at IDX.")
 
 (define joystick-axis-hook (make-hook 3))
 
@@ -113,7 +113,7 @@
 (define (axis-value-raw idx axis)
   "Create a signal on the axis at AXIS of the joystick at IDX;
 joystick axis values are stored in a signed 16 bit integer and so,
-values range from [-32768,32767]"
+values range from [-32768,32767]."
   (signal-map axis-event-value
               (signal-filter
                (lambda (e)
@@ -125,13 +125,13 @@ values range from [-32768,32767]"
 
 (define (make-directional-signal-raw idx x-axis y-axis)
   "Create a signal for a Dpad or Analog stick with X and Y axes;
-values range from [-32768,32767]"
+values range from [-32768,32767]."
   (signal-map vector
               (axis-value-raw idx x-axis)
               (axis-value-raw idx y-axis)))
 
 (define (axis-scale raw-value)
-  "Map a RAW-VALUE in [-32768, 32767] to a value in [-1, 1]"
+  "Map a RAW-VALUE in [-32768, 32767] to a value in [-1, 1]."
   (define (clamp x)
     (cond ((< (abs x) 1/100) 0)
           ((> x 99/100) 1)
@@ -141,12 +141,12 @@ values range from [-32768,32767]"
 
 (define (axis-value idx axis)
   "Create a signal for the value of AXIS on joystick IDX;
-values are scaled to [-1,1]"
+values are scaled to [-1,1]."
   (signal-map axis-scale (axis-value-raw idx axis)))
 
 (define (make-directional-signal idx x-axis y-axis)
   "Create a signal for a Dpad or Analog stick with X and Y axes;
-values are scaled to [-1,1]"
+values are scaled to [-1,1]."
   (signal-map (lambda (v)
                 (vector (axis-scale (vx v))
                         (axis-scale (vy v))))
