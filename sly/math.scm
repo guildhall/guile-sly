@@ -92,8 +92,8 @@ actually less than MAX."
         ((> x max) max)
         (else x)))
 
-(define (linear-scale min max a b val)
-  "Map a VAL in the range [MIN,MAX] to numbers in [A,B]"
+(define (linear-scale min max a b n)
+  "Map a number N in the range [MIN,MAX] to the range [A,B]."
   (+ a
-     (/ (* (- b a) (- val min))
+     (/ (* (- b a) (- n min))
         (- max min))))
