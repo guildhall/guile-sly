@@ -114,26 +114,19 @@ null-transform if called without any arguments."
 (define (transform* . transforms)
   "Return the product of all given transformation matrices.  Return
 identity-transform if called without any arguments."
-  (cond
-   ((null? transforms)
-    identity-transform)
-   ((null? (cdr transforms))
-    (car transforms))
-   (else
-    (let ((result (make-4x4-matrix)))
-      (array-copy! (transform-matrix (car transforms)) result)
-      (for-each
-       (lambda (t)
-         (let ((m (transform-matrix t)))
-           (do-ec
+  (define (mul a b)
+    (let ((m1 (transform-matrix a))
+          (m2 (transform-matrix b))
+          (m3 (make-4x4-matrix)))
+      (do-ec
             (: r 4) (: c 4)
             (let ((x (sum-ec
                       (: k 4)
-                      (* (array-ref m r k)
-                         (array-ref result k c)))))
-              (array-set! result x r c)))))
-       (cdr transforms))
-      (%make-transform result)))))
+                      (* (array-ref m1 r k)
+                         (array-ref m2 k c)))))
+              (array-set! m3 x r c)))
+      (%make-transform m3)))
+  (reduce mul identity-transform transforms))
 
 (define (translate v)
   "Return a new transform that translates by the 2D or 3D vector V."
