@@ -32,7 +32,8 @@
             transpose transform-vector2
             transform+ transform*
             scale translate rotate-x rotate-y rotate-z
-            orthographic-projection perspective-projection))
+            orthographic-projection perspective-projection
+            look-at))
 
 (define-record-type <transform>
   (%make-transform matrix)
@@ -218,3 +219,14 @@ depth clipping plane NEAR and FAR."
                     0 f 0 0
                     0 0 (/ (+ far near) (- near far)) -1
                     0 0 (/ (* 2 far near) (- near far)) 0)))
+
+(define* (look-at eye center #:optional (up #(0 1 0)))
+  (let* ((forward (normalize (v- center eye)))
+         (side (normalize (vcross forward up)))
+         (up (normalize (vcross side forward))))
+    (transform*
+     (make-transform (vx side) (vx up) (- (vx forward)) 0
+                     (vy side) (vy up) (- (vy forward)) 0
+                     (vz side) (vz up) (- (vz forward)) 0
+                     0         0       0                1)
+     (translate (v- eye)))))
