@@ -151,7 +151,7 @@ both be 3D vectors."
   "Normalize the vector V."
   (let ((m (magnitude v)))
     (if (zero? m)
-        0
+        v
         (vector-map (lambda (i n)
                       (/ n m))
                     v))))
