@@ -30,6 +30,7 @@
             cos-degrees
             tan-degrees
             atan-degrees
+            cotan
             clamp
             linear-scale))
 
@@ -84,6 +85,10 @@
 (define (atan-degrees y x)
   "Compute the arctangent in degrees of the coordinates Y and X."
   (radians->degrees (atan y x)))
+
+(define (cotan z)
+  "Return the cotangent of Z."
+  (/ 1 (tan z)))
 
 (define (clamp min max x)
   "Restrict X to the range defined by MIN and MAX. Assumes that MIN is

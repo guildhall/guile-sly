@@ -213,23 +213,8 @@ FAR."
   "Return a new transform that represents a perspective projection
 with a FIELD-OF-VISION in degrees, the desired ASPECT-RATIO, and the
 depth clipping plane NEAR and FAR."
-  (let ((size (* near (tan (/ (degrees->radians field-of-vision) 2)))))
-    (let ((left (- size))
-          (right size)
-          (top (/ size aspect-ratio))
-          (bottom (/ (- size) aspect-ratio)))
-      (make-transform (/ (* 2 near) (- right left)) ;; First row
-                      0
-                      (/ (+ right left) (- right left))
-                      0
-                      ;; Second row
-                      0
-                      (/ (* 2 near) (- top bottom))
-                      (/ (+ top bottom) (- top bottom))
-                      0
-                      ;; Third row
-                      0 0
-                      (- (/ (+ far near) (- far near)))
-                      (- (/ (* 2 far near) (- far near)))
-                      ;; Fourth row
-                      0 0 -1 0))))
+  (let ((f (cotan (/ (degrees->radians field-of-vision) 2))))
+    (make-transform (/ f aspect-ratio) 0 0 0
+                    0 f 0 0
+                    0 0 (/ (+ far near) (- near far)) -1
+                    0 0 (/ (* 2 far near) (- near far)) 0)))
