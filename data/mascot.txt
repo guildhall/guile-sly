@@ -1,0 +1,23 @@
+                __ _
+              ,'  ' '-_
+        _    /___      ;
+       \ '-./    '._    ,
+        '-.--'--,   '-.,;
+          \,"    '=,_ /,\,
+          ,_         // 3,'
+         ,o   ,._      /
+     O_--'     O     =
+       _____,;       "=
+         '_'_,' --,.'-"'
+                   "
+        ,--,
+       (      (   (   )
+        '-_    )   '.'
+       .___)  (___  |
+
+
+Copyright © 2014  Christopher Allan Webber <cwebber@dustycloud.org>
+
+The Sly ASCII art mascot is dual licensed under the Creative Commons
+Attribution-ShareAlike 4.0 International license and the GNU General
+Public License version 3 or later.
