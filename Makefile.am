@@ -35,6 +35,7 @@ SOURCES = 					\
   sly/keyboard.scm				\
   sly/live-reload.scm				\
   sly/math.scm					\
+  sly/mesh.scm					\
   sly/mouse.scm					\
   sly/rect.scm					\
   sly/repl.scm					\
