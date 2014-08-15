@@ -329,6 +329,11 @@
    - SDL 1.2
    - FreeImage >= 3.0
 
+** Community
+
+   For help and general discussion, join the =#sly= IRC channel on
+   irc.freenode.net.
+
 ** License
 
    GNU GPL v3+
