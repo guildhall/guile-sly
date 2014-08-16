@@ -29,36 +29,13 @@
   #:use-module (gl)
   #:use-module (gl contrib packed-struct)
   #:use-module ((sdl sdl) #:prefix SDL:)
-  #:use-module (sly agenda)
-  #:use-module (sly animation)
-  #:use-module (sly color)
   #:use-module (sly config)
-  #:use-module (sly helpers)
   #:use-module (sly math)
+  #:use-module (sly mesh)
   #:use-module (sly shader)
-  #:use-module (sly signal)
   #:use-module (sly texture)
-  #:use-module (sly vector)
-  #:use-module (sly window)
-  #:use-module (sly wrappers gl)
   #:export (enable-sprites
-            make-sprite
-            sprite?
-            animated-sprite?
-            sprite-drawable
-            sprite-position
-            sprite-scale
-            sprite-rotation
-            sprite-color
-            sprite-anchor
-            set-sprite-drawable
-            set-sprite-position
-            set-sprite-scale
-            set-sprite-rotation
-            set-sprite-color
-            set-sprite-anchor
-            load-sprite
-            draw-sprite))
+            make-sprite))
 
 ;;;
 ;;; Sprites
@@ -74,120 +51,24 @@
          (string-append %pkgdatadir
                         "/shaders/sprite-fragment.glsl"))))
 
-;; The <sprite> type represents a drawable object (texture,
-;; texture-region, animation, etc.) with a given position, scale,
-;; rotation, and color.
-(define-immutable-record-type <sprite>
-  (%make-sprite drawable position scale rotation color anchor vertices animator)
-  sprite?
-  (drawable sprite-drawable set-sprite-drawable)
-  (position %sprite-position set-sprite-position)
-  (scale %sprite-scale set-sprite-scale)
-  (rotation %sprite-rotation set-sprite-rotation)
-  (color %sprite-color set-sprite-color)
-  (anchor sprite-anchor set-sprite-anchor)
-  (vertices sprite-vertices)
-  (animator sprite-animator))
-
-(define sprite-position (compose signal-ref-maybe %sprite-position))
-(define sprite-scale (compose signal-ref-maybe %sprite-scale))
-(define sprite-rotation (compose signal-ref-maybe %sprite-rotation))
-(define sprite-color (compose signal-ref-maybe %sprite-color))
-
-(define (update-sprite-vertices! sprite)
-  (let ((texture (sprite-texture sprite)))
-    (pack-texture-vertices (sprite-vertices sprite)
-                           0
-                           (texture-width texture)
-                           (texture-height texture)
-                           (texture-s1 texture)
-                           (texture-t1 texture)
-                           (texture-s2 texture)
-                           (texture-t2 texture))))
-
-(define* (make-sprite drawable #:optional #:key
-                      (position #(0 0)) (scale #(1 1))
-                      (rotation 0) (color white) (anchor 'center))
-  "Create a new sprite object. DRAWABLE is either a texture or
-animation object.  All keyword arguments are optional. POSITION is a
-vector with a default of (0, 0).  SCALE is a vector that describes how
-much DRAWABLE should be strected on the x and y axes, with a default
-of 1x scale.  ROTATION is an angle in degrees with a default of 0.
-COLOR is a color object with a default of white.  ANCHOR is either a
-vector that represents the center point of the sprite, or 'center
-which will place the anchor at the center of DRAWABLE.  Sprites are
-centered by default."
-  (let* ((vertices (make-packed-array texture-vertex 4))
-         (animator (if (animation? drawable)
-                       (make-animator drawable)
-                       #f))
-         (anchor (anchor-texture (drawable-texture drawable animator) anchor))
-         (sprite (%make-sprite drawable position scale rotation color
-                               anchor vertices animator)))
-    (update-sprite-vertices! sprite)
-    sprite))
-
-(define* (load-sprite filename #:optional #:key
-                      (position #(0 0)) (scale #(1 1))
-                      (rotation 0) (color white) (anchor 'center))
-  "Load a sprite from the file at FILENAME. See make-sprite for
-optional keyword arguments."
-  (make-sprite (load-texture filename)
-               #:position position
-               #:scale scale
-               #:rotation rotation
-               #:color color
-               #:anchor anchor))
-
-(define (animated-sprite? sprite)
-  "Return #t if SPRITE has an animation as its drawable object."
-  (animation? (sprite-drawable sprite)))
-
-(define (drawable-texture drawable animator)
-  (cond ((texture? drawable)
-         drawable)
-        ((animation? drawable)
-         (animator-texture animator))))
-
-(define (sprite-texture sprite)
-  "Return the texture for the SPRITE's drawable object."
-  (let ((drawable (sprite-drawable sprite)))
-    (drawable-texture (sprite-drawable sprite)
-                      (sprite-animator sprite))))
-
-(define (update-sprite-animator! sprite)
-  (animator-update! (sprite-animator sprite))
-  (update-sprite-vertices! sprite))
-
-(define (draw-sprite sprite)
-  "Render SPRITE to the screen. A sprite batch will be used if one is
-currently bound."
-  (register-animated-sprite-maybe sprite)
-  (with-shader-program sprite-shader
-    (uniforms ((position (sprite-position sprite))
-               (anchor (sprite-anchor sprite))
-               (scale (sprite-scale sprite))
-               (rotation (sprite-rotation sprite))
-               (color (sprite-color sprite))
-               (projection (signal-ref window-projection)))
-      (draw-texture-vertices (sprite-texture sprite)
-                             (sprite-vertices sprite)
-                             1))))
-
-;; A hash table for all of the animated sprites that have been drawn
-;; since the last game update.  It is cleared after every agenda tick.
-(define animated-sprites (make-hash-table))
-
-(define (register-animated-sprite-maybe sprite)
-  (when (animated-sprite? sprite)
-    (hash-set! animated-sprites sprite sprite)))
-
-(define (update-animated-sprites!)
-  "Update all animators for sprites that have been drawn this frame."
-  (hash-for-each (lambda (key val)
-                   (update-sprite-animator! val))
-                 animated-sprites)
-  (hash-clear! animated-sprites))
-
-;; Update animated sprites upon every update.
-(schedule-each update-animated-sprites!)
+(define (make-sprite texture shader)
+  (let* ((half-width (half (texture-width texture)))
+         (half-height (half (texture-height texture)))
+         (s1 (texture-s1 texture))
+         (t1 (texture-t1 texture))
+         (s2 (texture-s2 texture))
+         (t2 (texture-t2 texture)))
+    (make-mesh
+     #:shader shader
+     #:texture texture
+     #:indices #(0 3 2 0 2 1)
+     #:data `(("position" ,(vector
+                            (vector (- half-width) (- half-height) 0)
+                            (vector half-width (- half-height) 0)
+                            (vector half-width half-height 0)
+                            (vector (- half-width) half-height 0)))
+              ("tex" ,(vector
+                       (vector s1 t1)
+                       (vector s2 t1)
+                       (vector s2 t2)
+                       (vector s1 t2)))))))
