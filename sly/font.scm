@@ -28,27 +28,19 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl ttf) #:prefix SDL:)
   #:use-module (gl)
-  #:use-module (gl contrib packed-struct)
+  #:use-module (sly wrappers gl)
   #:use-module (sly color)
   #:use-module (sly config)
+  #:use-module (sly mesh)
   #:use-module (sly shader)
-  #:use-module (sly signal)
   #:use-module (sly texture)
   #:use-module (sly vector)
-  #:use-module (sly window)
-  #:use-module (sly wrappers gl)
   #:export (enable-fonts
             load-font
             load-default-font
             font?
             font-point-size
-            make-label
-            label?
-            label-font
-            label-text
-            label-position
-            label-color
-            draw-label))
+            make-label))
 
 ;;;
 ;;; Font
@@ -111,50 +103,27 @@ argument with a default value of 12."
                   (SDL:surface:h surface)
                   0 0 1 1)))
 
-(define-record-type <label>
-  (%make-label font text position anchor color texture vertices)
-  label?
-  (font label-font)
-  (text %label-text)
-  (position %label-position)
-  (anchor label-anchor)
-  (color %label-color)
-  (texture label-texture)
-  (vertices label-vertices))
-
-(define label-text (compose signal-ref-maybe %label-text))
-(define label-position (compose signal-ref-maybe %label-position))
-(define label-color (compose signal-ref-maybe %label-color))
-
-(define (make-label-vertices texture)
-  "Return a packed array of vertices for TEXTURE."
-  (let ((vertices (make-packed-array texture-vertex 4)))
-    (pack-texture-vertices vertices 0
-                           (texture-width texture)
-                           (texture-height texture)
-                           (texture-s1 texture)
-                           (texture-t1 texture)
-                           (texture-s2 texture)
-                           (texture-t2 texture))
-    vertices))
-
-(define* (make-label font text position #:optional #:key
-                     (color white) (anchor 'top-left))
-  "Return a new label containing the string TEXT rendered with FONT at
-the given position.  Optional arguments are COLOR with a default of
-white and ANCHOR with a default of 'top-left."
-  (let* ((texture (render-text font text))
-         (vertices (and texture (make-label-vertices texture)))
-         (anchor (if texture (anchor-texture texture anchor) #(0 0))))
-    (%make-label font text position anchor color texture vertices)))
-
-(define (draw-label label)
-  "Draw LABEL on the screen."
-  (when (label-texture label)
-    (with-shader-program font-shader
-      (uniforms ((projection (signal-ref window-projection))
-                 (position (label-position label))
-                 (anchor (label-anchor label))
-                 (color (label-color label)))
-        (draw-texture-vertices (label-texture label) (label-vertices label) 1))))
-  *unspecified*)
+(define* (make-label font text #:optional #:key
+                     (anchor 'top-left) (color white)
+                     (shader font-shader))
+  (let ((texture (render-text font text)))
+    (let ((w (texture-width texture))
+          (h (texture-height texture))
+          (s1 (texture-s1 texture))
+          (t1 (texture-t1 texture))
+          (s2 (texture-s2 texture))
+          (t2 (texture-t2 texture)))
+      (make-mesh
+       #:shader shader
+       #:texture texture
+       #:indices #(0 3 2 0 2 1)
+       #:data `(("position" ,(vector
+                              (vector 0 0 0)
+                              (vector w 0 0)
+                              (vector w h 0)
+                              (vector 0 h 0)))
+                ("tex" ,(vector
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2))))))))
