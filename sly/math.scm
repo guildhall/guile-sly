@@ -32,7 +32,8 @@
             atan-degrees
             cotan
             clamp
-            linear-scale))
+            linear-scale
+            half))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -102,3 +103,6 @@ actually less than MAX."
   (+ a
      (/ (* (- b a) (- n min))
         (- max min))))
+
+(define (half x)
+  (/ x 2))
