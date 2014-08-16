@@ -42,6 +42,7 @@ SOURCES = 					\
   sly/repl.scm					\
   sly/scene.scm					\
   sly/shader.scm					\
+  sly/shape.scm					\
   sly/signal.scm					\
   sly/sprite.scm					\
   sly/texture.scm				\
