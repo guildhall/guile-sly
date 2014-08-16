@@ -40,6 +40,7 @@ SOURCES = 					\
   sly/mouse.scm					\
   sly/rect.scm					\
   sly/repl.scm					\
+  sly/scene.scm					\
   sly/shader.scm					\
   sly/signal.scm					\
   sly/sprite.scm					\
