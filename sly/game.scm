@@ -22,13 +22,17 @@
 ;;; Code:
 
 (define-module (sly game)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-11)
+  #:use-module (srfi srfi-26)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (gl)
   #:use-module (sly agenda)
+  #:use-module (sly camera)
   #:use-module (sly event)
   #:use-module (sly math)
+  #:use-module (sly scene)
   #:use-module (sly signal)
   #:use-module (sly vector)
   #:use-module (sly window)
@@ -58,7 +62,8 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop #:optional #:key
+(define* (start-game-loop cameras
+                          #:optional #:key
                           (frame-rate 60)
                           (tick-rate 60)
                           (max-ticks-per-frame 4))
@@ -76,7 +81,8 @@ becoming completely unresponsive and possibly crashing."
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-      (run-hook draw-hook dt alpha)
+      (for-each (cut draw-camera <> alpha)
+                (signal-ref-maybe cameras))
       (SDL:gl-swap-buffers))
 
     (define (update lag)
@@ -87,6 +93,10 @@ unused accumulator time."
         (cond ((>= ticks max-ticks-per-frame)
                lag)
               ((>= lag tick-interval)
+               (for-each (cut update-scene-node <>)
+                         (delete-duplicates
+                          (map camera-scene (signal-ref-maybe cameras))
+                          eq?))
                (tick-agenda!)
                (iter (- lag tick-interval) (1+ ticks)))
               (else
