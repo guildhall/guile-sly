@@ -24,6 +24,7 @@ SOURCES = 					\
   sly/agenda.scm 				\
   sly/animation.scm				\
   sly/audio.scm					\
+  sly/camera.scm				\
   sly/color.scm					\
   sly/config.scm					\
   sly/coroutine.scm				\
