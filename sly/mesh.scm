@@ -188,9 +188,7 @@
     (for-each (lambda (uniform)
                 (match uniform
                   ((name value)
-                   ((@@ (sly shader) uniform-set!)
-                    (mesh-shader mesh)
-                    name value))))
+                   (uniform-set! (mesh-shader mesh) name value))))
               uniforms)
     (with-vertex-array (mesh-vao mesh)
       (if (texture? (mesh-texture mesh))

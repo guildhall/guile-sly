@@ -51,6 +51,7 @@
             load-default-shader
             %uniform-setters
             register-uniform-setter!
+            uniform-set!
             uniforms))
 
 (define-syntax-rule (define-logger name length-proc log-proc)
