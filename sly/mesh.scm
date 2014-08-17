@@ -178,6 +178,12 @@
     (%make-mesh vao (vector-length indices) shader texture)))
 
 (define (draw-mesh mesh uniforms)
+  (define (draw)
+    (glDrawElements (begin-mode triangles)
+                    (mesh-length mesh)
+                    (data-type unsigned-int)
+                    %null-pointer))
+
   (with-shader-program (mesh-shader mesh)
     (for-each (lambda (uniform)
                 (match uniform
@@ -187,8 +193,6 @@
                     name value))))
               uniforms)
     (with-vertex-array (mesh-vao mesh)
-      (with-texture (mesh-texture mesh)
-        (glDrawElements (begin-mode triangles)
-                        (mesh-length mesh)
-                        (data-type unsigned-int)
-                        %null-pointer)))))
+      (if (texture? (mesh-texture mesh))
+          (with-texture (mesh-texture mesh) (draw))
+          (draw)))))
