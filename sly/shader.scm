@@ -28,6 +28,7 @@
   #:use-module (sly transform)
   #:use-module (sly vector)
   #:use-module (sly color)
+  #:use-module (sly config)
   #:use-module (sly wrappers gl)
   #:export (make-shader
             make-vertex-shader
@@ -47,6 +48,7 @@
             shader-program?
             shader-program-linked?
             with-shader-program
+            load-default-shader
             %uniform-setters
             register-uniform-setter!
             uniforms))
@@ -231,6 +233,19 @@ VERTEX-SHADER and FRAGMENT-SHADER."
       (let ((return-value (begin body ...)))
         (glUseProgram 0)
         return-value))))
+
+(define load-default-shader
+  (memoize
+   (lambda ()
+     (load-shader-program
+      (string-append %pkgdatadir
+                     "/shaders/default-vertex.glsl")
+      (string-append %pkgdatadir
+                     "/shaders/default-fragment.glsl")))))
+
+;;;
+;;; Uniforms
+;;;
 
 (define-record-type <uniform-setter>
   (make-uniform-setter predicate proc)
