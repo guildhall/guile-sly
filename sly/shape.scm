@@ -24,15 +24,13 @@
 (define-module (sly shape)
   #:use-module (sly math)
   #:use-module (sly mesh)
+  #:use-module (sly shader)
   #:use-module (sly texture)
   #:export (make-cube))
 
-(define (make-cube texture shader size)
-  (let* ((s1 (texture-s1 texture))
-         (t1 (texture-t1 texture))
-         (s2 (texture-s2 texture))
-         (t2 (texture-t2 texture))
-         (half-size (half size)))
+(define* (make-cube size #:optional #:key (texture #f)
+                    (shader (load-default-shader)))
+  (let ((half-size (half size)))
     (make-mesh
      #:shader shader
      #:texture texture
@@ -80,34 +78,41 @@
                             (vector half-size half-size (- half-size))
                             (vector half-size half-size half-size)
                             (vector half-size (- half-size) half-size)))
-              ("tex" ,(vector
-                       ;; Front
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)
-                       ;; Back
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)
-                       ;; Top
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)
-                       ;; Bottom
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)
-                       ;; Left
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)
-                       ;; Right
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)))))))
+              ,@(if texture
+                   (let ((s1 (texture-s1 texture))
+                         (t1 (texture-t1 texture))
+                         (s2 (texture-s2 texture))
+                         (t2 (texture-t2 texture)))
+                     `("texture"
+                       ,(vector
+                         ;; Front
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2)
+                         ;; Back
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2)
+                         ;; Top
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2)
+                         ;; Bottom
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2)
+                         ;; Left
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2)
+                         ;; Right
+                         (vector s1 t1)
+                         (vector s2 t1)
+                         (vector s2 t2)
+                         (vector s1 t2))))
+                   '())))))

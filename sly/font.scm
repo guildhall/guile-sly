@@ -46,16 +46,8 @@
 ;;; Font
 ;;;
 
-(define font-shader #f)
-
 (define (enable-fonts)
-  (SDL:ttf-init)
-  (set! font-shader
-        (load-shader-program
-         (string-append %pkgdatadir
-                        "/shaders/font-vertex.glsl")
-         (string-append %pkgdatadir
-                        "/shaders/font-fragment.glsl"))))
+  (SDL:ttf-init))
 
 (define-record-type <font>
   (make-font ttf point-size)
@@ -105,7 +97,7 @@ argument with a default value of 12."
 
 (define* (make-label font text #:optional #:key
                      (anchor 'top-left) (color white)
-                     (shader font-shader))
+                     (shader (load-default-shader)))
   (let ((texture (render-text font text)))
     (let ((w (texture-width texture))
           (h (texture-height texture))

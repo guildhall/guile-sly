@@ -25,7 +25,6 @@
              (sly window))
 
 (open-window)
-(enable-sprites)
 
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)

@@ -34,24 +34,13 @@
   #:use-module (sly mesh)
   #:use-module (sly shader)
   #:use-module (sly texture)
-  #:export (enable-sprites
-            make-sprite))
+  #:export (make-sprite))
 
 ;;;
 ;;; Sprites
 ;;;
 
-(define sprite-shader #f)
-
-(define (enable-sprites)
-  (set! sprite-shader
-        (load-shader-program
-         (string-append %pkgdatadir
-                        "/shaders/sprite-vertex.glsl")
-         (string-append %pkgdatadir
-                        "/shaders/sprite-fragment.glsl"))))
-
-(define (make-sprite texture shader)
+(define* (make-sprite texture #:optional #:key (shader (load-default-shader)))
   (let* ((half-width (half (texture-width texture)))
          (half-height (half (texture-height texture)))
          (s1 (texture-s1 texture))
