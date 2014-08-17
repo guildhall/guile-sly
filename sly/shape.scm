@@ -83,36 +83,36 @@
                          (t1 (texture-t1 texture))
                          (s2 (texture-s2 texture))
                          (t2 (texture-t2 texture)))
-                     `("texture"
-                       ,(vector
-                         ;; Front
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2)
-                         ;; Back
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2)
-                         ;; Top
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2)
-                         ;; Bottom
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2)
-                         ;; Left
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2)
-                         ;; Right
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2))))
+                     `(("tex"
+                        ,(vector
+                          ;; Front
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)
+                          ;; Back
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)
+                          ;; Top
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)
+                          ;; Bottom
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)
+                          ;; Left
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)
+                          ;; Right
+                          (vector s1 t1)
+                          (vector s2 t1)
+                          (vector s2 t2)
+                          (vector s1 t2)))))
                    '())))))
