@@ -24,17 +24,20 @@
 
 (define-module (sly sprite)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9)
-  #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-26)
   #:use-module (gl)
   #:use-module (gl contrib packed-struct)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly config)
+  #:use-module (sly agenda)
+  #:use-module (sly helpers)
   #:use-module (sly math)
   #:use-module (sly mesh)
   #:use-module (sly shader)
+  #:use-module (sly signal)
   #:use-module (sly texture)
-  #:export (make-sprite))
+  #:export (make-sprite
+            make-animated-sprite))
 
 ;;;
 ;;; Sprites
@@ -61,3 +64,23 @@
                        (vector s2 t1)
                        (vector s2 t2)
                        (vector s1 t2)))))))
+
+(define* (make-animated-sprite textures frame-duration #:optional #:key
+                               (loop? #t)
+                               (shader (load-default-shader)))
+  "Return a signal that iterates through the list TEXTURES and
+displays them each for FRAME-DURATION ticks.  The optional LOOP? flag
+specifies if the animation should play once or indefinitely.
+Optionally, a SHADER can be specified, otherwise the default mesh
+shader is used."
+  (let ((frames (map (cut make-sprite <> #:shader shader) textures)))
+    (signal-generator
+     (define (animate)
+       (for-each (lambda (frame)
+                   (yield frame)
+                   (wait frame-duration))
+                 frames))
+
+     (if loop?
+         (forever (animate))
+         (animate)))))
