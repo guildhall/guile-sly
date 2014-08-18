@@ -26,6 +26,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:use-module (sly agenda)
+  #:use-module (sly coroutine)
   #:export (signal?
             make-signal
             define-signal
@@ -48,7 +49,8 @@
             signal-tap
             signal-sample
             signal-delay
-            signal-throttle))
+            signal-throttle
+            signal-generator))
 
 ;;;
 ;;; Signals
@@ -349,3 +351,25 @@ ticks of the current agenda."
                            (%signal-set! self value)
                            (set! last-time (agenda-time)))))
                      (list signal)))
+
+(define-syntax-parameter yield
+  (lambda (form)
+    (syntax-violation 'yield
+                      "yield used outside of a signal-generator form"
+                      form)))
+
+(define-syntax-rule (signal-generator body ...)
+  (let ((signal (make-signal #f)))
+    (define (handler k value)
+      (signal-set! signal value)
+      (call-with-prompt 'signal-generator k handler))
+    (coroutine
+     (call-with-prompt
+      'signal-generator
+      (syntax-parameterize
+          ((yield (syntax-rules ()
+                    ((_ exp)
+                     (abort-to-prompt 'signal-generator exp)))))
+        (lambda () body ...))
+      handler))
+    signal))
