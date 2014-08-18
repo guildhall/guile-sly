@@ -29,7 +29,8 @@
   #:export (any-equal?
             logand?
             define-guardian
-            memoize))
+            memoize
+            forever))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
@@ -65,3 +66,6 @@ same thread that is running the game loop."
                              list)))
               (hash-set! cache args results)
               (apply values results)))))))
+
+(define-syntax-rule (forever body ...)
+  (while #t body ...))
