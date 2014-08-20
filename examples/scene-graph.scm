@@ -37,6 +37,8 @@
              (sly scene)
              (sly shape)
              (sly sprite)
+             (sly helpers)
+             (sly tileset)
              (sly wrappers gl))
 
 (load "common.scm")
@@ -48,43 +50,70 @@
 
 (define my-scene
   (scene-root
-   (scene-node #:mesh unit-cube
-               #:position #(0 0 0)
-               #:scale 2)
+   (scene-node #:position #(0 0 0)
+               #:scale (signal-generator
+                        (forever
+                          (yield 1/2)
+                          (wait 30)
+                          (yield 1)
+                          (wait 30)
+                          (yield 2)
+                          (wait 30)))
+               #:children (list unit-cube))
    (signal-map
     (lambda (down?)
-      (scene-node #:mesh unit-cube
-                  #:position #(0 2 0)
-                  #:scale (if down? (transition 2 3/2 15) 3/2)))
+      (scene-node #:position #(0 2 0)
+                  #:scale (if down? (transition 2 3/2 15) 3/2)
+                  #:children (list unit-cube)))
     (key-down? 'space))
-   (scene-node #:mesh unit-cube
-               #:position #(0 4 0))
-   (scene-node #:mesh unit-cube
-               #:position #(0 6 0)
-               #:scale 1/2)
-   (scene-node #:mesh unit-cube
-               #:position #(0 0 0))
-   (scene-node #:mesh unit-cube
-               #:position #(3 0 0)
-               #:scale 2)
-   (scene-node #:mesh unit-cube
-               #:position #(-3 0 0)
+   (scene-node  #:position #(0 4 0)
+                #:children (list unit-cube))
+   (scene-node #:position #(0 6 0)
+               #:scale 1/2
+               #:children (list unit-cube))
+   (scene-node #:position #(3 0 0)
+               #:scale 2
+               #:children (list unit-cube))
+   (scene-node #:position #(-3 0 0)
                #:scale 2
                #:children (list
-                           (scene-node #:mesh unit-cube
-                                       #:position (transition #(0 2 0)
+                           unit-cube
+                           (scene-node #:position (transition #(0 2 0)
                                                               #(0 1 0)
-                                                              120))))))
+                                                              120)
+                                       #:children (list unit-cube))))))
+
+(define animation
+  (let ((tiles (load-tileset "images/princess.png" 64 64)))
+    (list (tileset-ref tiles 19)
+          (tileset-ref tiles 20)
+          (tileset-ref tiles 21)
+          (tileset-ref tiles 22)
+          (tileset-ref tiles 23)
+          (tileset-ref tiles 24)
+          (tileset-ref tiles 25)
+          (tileset-ref tiles 26))))
+
+(define font (load-default-font 16))
 
 (define gui
   (scene-root
-   (scene-node #:mesh (make-sprite (load-texture "images/p1_front.png"))
-               #:position #(100 100))
-   (scene-node #:mesh (make-label (load-default-font 16)
-                                  "Testing the scene graph"
-                                  #:color red)
-               #:translate #(10 10)
-               #:rotation -1/8)))
+   (scene-node  #:position #(100 100)
+                #:children (list (make-animated-sprite animation 6)))
+   (scene-node #:translate #(10 10)
+               #:rotation -1/8
+               #:children (list
+                           (signal-generator
+                            (let ((message "Testing the scene graph"))
+                              (forever
+                               (let loop ((i 1))
+                                 (when (<= i (string-length message))
+                                   (yield (make-label font
+                                                      (substring message 0 i)
+                                                      #:color red))
+                                   (wait 3)
+                                   (loop (1+ i))))
+                               (wait 60))))))))
 
 (define camera
   (make-camera my-scene
