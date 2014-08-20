@@ -23,6 +23,7 @@
 ;;; Code:
 
 (define-module (sly texture)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
   #:use-module (gl)
   #:use-module (gl low-level)
@@ -108,7 +109,7 @@ that will be rendered, in pixels."
       ;; ignore the error and move on.
       (false-if-exception (gl-delete-texture (texture-id texture))))))
 
-(define (bitmap->texture bitmap)
+(define (bitmap->texture bitmap min-filter mag-filter)
   "Translates a freeimage bitmap into an OpenGL texture."
   (let ((texture-id (gl-generate-texture))
         (pixels (freeimage-get-bits bitmap)))
@@ -117,10 +118,14 @@ that will be rendered, in pixels."
       ;; blurry when scaled.
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-min-filter)
-                            (texture-min-filter nearest))
+                            (match min-filter
+                              ('nearest (texture-min-filter nearest))
+                              ('linear (texture-min-filter linear))))
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-mag-filter)
-                            (texture-mag-filter nearest))
+                            (match mag-filter
+                              ('nearest (texture-mag-filter nearest))
+                              ('linear (texture-mag-filter linear))))
       (gl-texture-image-2d (texture-target texture-2d)
                            0
                            (pixel-format rgba)
@@ -150,10 +155,14 @@ that will be rendered, in pixels."
     (freeimage-flip-vertical 32bit-bitmap)
     32bit-bitmap))
 
-(define (load-texture filename)
-  "Load a texture from an image file at FILENAME."
-  (let* ((bitmap (load-bitmap filename))
-         (texture (bitmap->texture bitmap)))
+(define* (load-texture file-name #:optional #:key
+                       (min-filter 'nearest) (mag-filter 'nearest))
+  "Load a texture from an image file at FILENAME.  MIN-FILTER and
+MAG-FILTER describe the method that should be used for minification
+and magnification.  Valid values are 'nearest and 'linear.  By
+default, 'nearest is used."
+  (let* ((bitmap (load-bitmap file-name))
+         (texture (bitmap->texture bitmap min-filter mag-filter)))
     (freeimage-unload bitmap)
     texture))
 
