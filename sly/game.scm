@@ -78,6 +78,7 @@ becoming completely unresponsive and possibly crashing."
         (frame-interval (interval frame-rate)))
     (define (draw dt alpha)
       "Render a frame."
+      (run-hook draw-hook dt alpha)
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
