@@ -33,11 +33,11 @@
             scene-root
             scene-node?
             scene-node-position scene-node-scale scene-node-rotation
-            scene-node-mesh scene-node-uniforms scene-node-children
+            scene-node-uniforms scene-node-children
             update-scene-node draw-scene-node))
 
 (define-record-type <scene-node>
-  (%make-scene-node position scale rotation mesh uniforms children)
+  (%make-scene-node position scale rotation uniforms children)
   scene-node?
   (position %scene-node-position)
   (scale %scene-node-scale)
@@ -45,7 +45,6 @@
   (prev-position scene-node-prev-position set-scene-node-prev-position!)
   (prev-scale scene-node-prev-scale set-scene-node-prev-scale!)
   (prev-rotation scene-node-prev-rotation set-scene-node-prev-rotation!)
-  (mesh %scene-node-mesh)
   (uniforms %scene-node-uniforms)
   (children %scene-node-children))
 
@@ -55,7 +54,6 @@
 (define/signal-ref scene-node-position %scene-node-position)
 (define/signal-ref scene-node-scale %scene-node-scale)
 (define/signal-ref scene-node-rotation %scene-node-rotation)
-(define/signal-ref scene-node-mesh %scene-node-mesh)
 (define/signal-ref scene-node-uniforms %scene-node-uniforms)
 (define/signal-ref scene-node-children %scene-node-children)
 
@@ -63,11 +61,10 @@
                            (position #(0 0))
                            (scale 1)
                            (rotation 0)
-                           (mesh #f)
                            (uniforms '())
                            (children '())
                            #:allow-other-keys)
-  (%make-scene-node position scale rotation mesh uniforms children))
+  (%make-scene-node position scale rotation uniforms children))
 
 (define scene-node make-scene-node)
 
@@ -76,13 +73,14 @@
 
 (define (update-scene-node node)
   (let ((node (signal-ref-maybe node)))
-    (let ((position (scene-node-position node))
-          (scale (scene-node-scale node))
-          (rotation (scene-node-rotation node)))
-      (set-scene-node-prev-position! node position)
-      (set-scene-node-prev-scale! node scale)
-      (set-scene-node-prev-rotation! node rotation))
-    (for-each update-scene-node (scene-node-children node))))
+    (when (scene-node? node)
+      (let ((position (scene-node-position node))
+            (scale (scene-node-scale node))
+            (rotation (scene-node-rotation node)))
+        (set-scene-node-prev-position! node position)
+        (set-scene-node-prev-scale! node scale)
+        (set-scene-node-prev-rotation! node rotation))
+      (for-each update-scene-node (scene-node-children node)))))
 
 (define (interpolate current prev alpha)
   (if (or (not prev)
@@ -91,18 +89,17 @@
       (vector-interpolate prev current alpha)))
 
 (define (draw-scene-node node alpha transform)
-  (let* ((node (signal-ref-maybe node))
-         (transform (transform*
-                     transform
-                     (translate
-                      (interpolate (scene-node-position node)
-                                   (scene-node-prev-position node)
-                                   alpha))
-                     (rotate-z (scene-node-rotation node))
-                     (scale (scene-node-scale node))))
-        (mesh (scene-node-mesh node)))
-    (when mesh
-      (draw-mesh mesh (cons (list "mvp" transform)
-                            (scene-node-uniforms node))))
-    (for-each (cut draw-scene-node <> alpha transform)
-              (scene-node-children node))))
+  (let ((node (signal-ref-maybe node)))
+    (if (mesh? node)
+        (draw-mesh node
+                   `(("mvp" ,transform)))
+        (let ((transform (transform*
+                          transform
+                          (translate
+                           (interpolate (scene-node-position node)
+                                        (scene-node-prev-position node)
+                                        alpha))
+                          (rotate-z (scene-node-rotation node))
+                          (scale (scene-node-scale node)))))
+          (for-each (cut draw-scene-node <> alpha transform)
+                    (scene-node-children node))))))
