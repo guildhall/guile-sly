@@ -167,30 +167,32 @@ default, 'nearest is used."
     texture))
 
 (define (anchor-texture texture anchor)
-  "Return a vector of the coordinates for the center point of a
-texture."
+  "Translate ANCHOR into a vector that represents the desired centtral
+point for TEXTURE.  Valid values for ANCHOR are: 'center, 'top-left,
+'top-right, 'bottom-left, 'bottom-right, 'top-center, 'bottom-center,
+or any 2D vector.  Passing a 2D vector will simply cause the same
+vector to be returned."
   (let ((w (texture-width texture))
         (h (texture-height texture)))
-    (cond
-     ((vector2? anchor)
-      anchor)
-     ((eq? anchor 'center)
-      (vector (/ w 2)
-              (/ h 2)))
-     ((eq? anchor 'top-left)
-      #(0 0))
-     ((eq? anchor 'top-right)
-      (vector w 0))
-     ((eq? anchor 'bottom-left)
-      (vector 0 h))
-     ((eq? anchor 'bottom-right)
-      (vector w h))
-     ((eq? anchor 'top-center)
-      (vector (/ w 2) 0))
-     ((eq? anchor 'bottom-center)
-      (vector (/ w 2) h))
-     (else
-      (error "Invalid anchor type!" anchor)))))
+    (match anchor
+      (#(x y)
+       anchor)
+      ('center
+       (vector (/ w 2)
+               (/ h 2)))
+      ('top-left
+       #(0 0))
+      ('top-right
+       (vector w 0))
+      ('bottom-left
+       (vector 0 h))
+      ('bottom-right
+       (vector w h))
+      ('top-center
+       (vector (/ w 2) 0))
+      ('bottom-center
+       (vector (/ w 2) h))
+      (_ (error "Invalid anchor type: " anchor)))))
 
 ;;;
 ;;; Texture Vertices
