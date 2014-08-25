@@ -29,6 +29,7 @@
   #:export (signal?
             make-signal
             define-signal
+            signal-let signal-let*
             hook->signal
             signal-ref
             signal-ref-maybe
@@ -166,6 +167,17 @@ be coerced into one."
        #'(define name (make-signal-maybe (signal ...))))
       ((_ name value)
        #'(define name (make-signal-maybe value))))))
+
+(define-syntax-rule (signal-let ((var signal) ...) body ...)
+  ((lambda (var ...) body ...) (signal-ref signal) ...))
+
+(define-syntax signal-let*
+  (syntax-rules ()
+    ((_ ((var signal)) body ...)
+     (signal-let ((var signal)) body ...))
+    ((_ ((var signal) . rest) body ...)
+     (signal-let ((var signal))
+       (signal-let* rest body ...)))))
 
 ;;;
 ;;; Higher Order Signals
