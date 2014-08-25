@@ -292,11 +292,29 @@ a side-effect into a signal chain."
 (define (signal-sample delay signal)
   "Create a new signal that emits the value contained within SIGNAL
 every DELAY ticks of the current agenda."
-  (let ((sampler (%make-signal (signal-ref signal) #f '())))
-    (define (tick)
-      (%signal-set! sampler (signal-ref signal)))
-    (schedule-interval tick delay)
-    (make-signal-box sampler)))
+  ;; To prevent memory leaks, the new signal is stored within a weak
+  ;; value hash table and never bound to a variable within the main
+  ;; body of the procedure.  When this signal is GC'd, the sampling
+  ;; will stop.
+  (let ((container (make-weak-value-hash-table 1)))
+    (define (get)
+      (hash-ref container 'signal))
+
+    (define (sample!)
+      (let ((sampler (get)))
+        (if sampler
+            (begin
+              (signal-set! sampler (signal-ref signal))
+              #t)
+            #f)))
+
+    (hash-set! container 'signal (make-signal (signal-ref signal)))
+    (coroutine
+     (let loop ()
+       (wait delay)
+       (when (sample!)
+         (loop))))
+    (get)))
 
 (define (signal-delay delay signal)
   "Create a new signal that delays propagation of SIGNAL by DELAY
