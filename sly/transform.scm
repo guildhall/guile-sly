@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (sly transform)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
@@ -131,51 +132,39 @@ identity-transform if called without any arguments."
 
 (define (translate v)
   "Return a new transform that translates by the 2D or 3D vector V."
-  (cond
-   ((vector2? v)
-    (let ((x (vx v))
-          (y (vy v)))
-      (make-transform 1 0 0 0
+  (match v
+    (#(x y)
+     (make-transform 1 0 0 0
                       0 1 0 0
                       0 0 1 0
-                      x y 0 1)))
-   ((vector3? v)
-    (let ((x (vx v))
-          (y (vy v))
-          (z (vz v)))
-      (make-transform 1 0 0 0
+                      x y 0 1))
+    (#(x y z)
+     (make-transform 1 0 0 0
                       0 1 0 0
                       0 0 1 0
-                      x y z 1)))
-   (else
-    (error "Invalid scaling vector: " v))))
+                      x y z 1))
+    (_ (error "Invalid translation vector: " v))))
 
 (define (scale v)
   "Return a new transform that scales by the 2D vector, 3D vector, or
 scalar V."
-  (cond
-   ((number? v)
+  (match v
+   ((? number? v)
     (make-transform v 0 0 0
                     0 v 0 0
                     0 0 v 0
                     0 0 0 1))
-   ((vector2? v)
-    (let ((x (vx v))
-          (y (vy v)))
-      (make-transform x 0 0 0
-                      0 y 0 0
-                      0 0 1 0
-                      0 0 0 1)))
-   ((vector3? v)
-    (let ((x (vx v))
-          (y (vy v))
-          (z (vz v)))
-      (make-transform x 0 0 0
-                      0 y 0 0
-                      0 0 z 0
-                      0 0 0 1)))
-   (else
-    (error "Invalid scaling vector: " v))))
+   (#(x y)
+    (make-transform x 0 0 0
+                    0 y 0 0
+                    0 0 1 0
+                    0 0 0 1))
+   (#(x y z)
+    (make-transform x 0 0 0
+                    0 y 0 0
+                    0 0 z 0
+                    0 0 0 1))
+   (_ (error "Invalid scaling vector: " v))))
 
 (define (rotate-x angle)
   "Return a new transform that rotates the X axis by ANGLE radians."
@@ -190,6 +179,7 @@ scalar V."
                   0               1 0           0
                   (- (sin angle)) 0 (cos angle) 0
                   0               0 0           1))
+
 (define (rotate-z angle)
   "Return a new transform that rotates the Z axis by ANGLE radians."
   (make-transform (cos angle) (- (sin angle)) 0 0
