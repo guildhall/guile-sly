@@ -39,6 +39,7 @@
             signal-merge
             signal-zip
             signal-map
+            signal-negate
             signal-fold
             signal-filter
             signal-reject
@@ -225,6 +226,11 @@ or more SIGNALS."
                        (lambda (self value)
                          (%signal-set! self (current-value)))
                        inputs)))
+
+(define (signal-negate signal)
+  "Create a new signal whose value is the 'not' of the value of
+SIGNAL."
+  (signal-map not signal))
 
 (define (signal-fold proc init signal . rest)
   "Create a new signal that applies PROC to the values stored in
