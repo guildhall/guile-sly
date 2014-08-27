@@ -48,6 +48,7 @@
             signal-constant
             signal-count
             signal-tap
+            signal-timestamp
             signal-sample
             signal-delay
             signal-throttle
@@ -308,6 +309,12 @@ from SIGNAL.  The value of the new signal will always be the value of
 SIGNAL.  This signal is a convenient way to sneak a procedure that has
 a side-effect into a signal chain."
   (signal-map (lambda (x) (proc x) x) signal))
+
+(define (signal-timestamp signal)
+  "Create a new signal whose value is a pair, the car of which is the
+time that the value of SIGNAL was received and whose cdr is the value
+of SIGNAL."
+  (signal-map (cut cons (agenda-time) <>) signal))
 
 (define (signal-sample delay signal)
   "Create a new signal that emits the value contained within SIGNAL
