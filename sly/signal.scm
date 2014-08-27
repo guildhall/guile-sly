@@ -171,7 +171,7 @@ be coerced into one."
        #'(define name (make-signal-maybe value))))))
 
 (define-syntax-rule (signal-let ((var signal) ...) body ...)
-  ((lambda (var ...) body ...) (signal-ref signal) ...))
+  ((lambda (var ...) body ...) (signal-ref-maybe signal) ...))
 
 (define-syntax signal-let*
   (syntax-rules ()
