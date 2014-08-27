@@ -92,8 +92,7 @@
   "Draw SCENE from the perspective of CAMERA with interpolation factor
 ALPHA."
   (clear-camera camera)
-  (draw-scene-node (camera-scene camera)
-                   alpha
-                   (transform*
-                    (signal-ref-maybe (camera-projection camera))
-                    (signal-ref-maybe (camera-location camera)))))
+  (signal-let ((scene (camera-scene camera))
+               (projection (camera-projection camera))
+               (location (camera-location camera)))
+    (draw-scene-node scene alpha (transform* projection location))))
