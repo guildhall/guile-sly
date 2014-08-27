@@ -37,6 +37,7 @@
   #:use-module (sly signal)
   #:use-module (sly texture)
   #:export (make-sprite
+            load-sprite
             make-animated-sprite))
 
 ;;;
@@ -64,6 +65,11 @@
                        (vector s2 t1)
                        (vector s2 t2)
                        (vector s1 t2)))))))
+
+(define* (load-sprite file-name #:optional #:key (shader (load-default-shader)))
+  "Return a sprite mesh for the texture loaded from FILE-NAME.
+Optionally, a custom SHADER can be specified."
+  (make-sprite (load-texture file-name) #:shader shader))
 
 (define* (make-animated-sprite textures frame-duration #:optional #:key
                                (loop? #t)
