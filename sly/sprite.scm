@@ -45,6 +45,9 @@
 ;;;
 
 (define* (make-sprite texture #:optional #:key (shader (load-default-shader)))
+  "Return a 2D rectangular mesh that displays the image TEXTURE.  The
+size of the mesh is the size of TEXTURE, in pixels.  Optionally, a
+custom SHADER can be specified."
   (let* ((half-width (half (texture-width texture)))
          (half-height (half (texture-height texture)))
          (s1 (texture-s1 texture))
