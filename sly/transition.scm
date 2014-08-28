@@ -153,8 +153,8 @@ transition."
       (interpolator start end (ease t duration)))
 
     (signal-generator
+     (yield start)
      (let lp ((t 0))
-       (yield start)
        (if (< t duration)
            (begin
              (wait (min step (- duration t)))
