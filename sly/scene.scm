@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:use-module (sly mesh)
+  #:use-module (sly quaternion)
   #:use-module (sly signal)
   #:use-module (sly transform)
   #:use-module (sly transition)
@@ -51,7 +52,7 @@
 (define* (make-scene-node #:optional #:key
                            (position #(0 0))
                            (scale 1)
-                           (rotation 0)
+                           (rotation identity-quaternion)
                            (uniforms '())
                            (children '())
                            #:allow-other-keys)
@@ -94,6 +95,6 @@
                              (interpolate position
                                           (scene-node-prev-position node)
                                           alpha))
-                            (rotate-z rotation)
+                            (quaternion->transform rotation)
                             (scale %scale))))
             (for-each (cut draw-scene-node <> alpha transform) children))))))
