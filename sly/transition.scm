@@ -152,13 +152,12 @@ transition."
     (define (value-at t)
       (interpolator start end (ease t duration)))
 
-    (let ((signal (make-signal start)))
-      (coroutine
-       (let lp ((t 0))
-         (if (< t duration)
-             (begin
-               (wait (min step (- duration t)))
-               (signal-set! signal (value-at t))
-               (lp (+ t step)))
-             (signal-set! signal end))))
-      signal)))
+    (signal-generator
+     (let lp ((t 0))
+       (yield start)
+       (if (< t duration)
+           (begin
+             (wait (min step (- duration t)))
+             (yield (value-at t))
+             (lp (+ t step)))
+           (yield end))))))
