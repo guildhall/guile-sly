@@ -38,6 +38,7 @@ SOURCES = 					\
   sly/math.scm					\
   sly/mesh.scm					\
   sly/mouse.scm					\
+  sly/quaternion.scm				\
   sly/rect.scm					\
   sly/repl.scm					\
   sly/scene.scm					\
