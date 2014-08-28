@@ -26,6 +26,7 @@
   #:use-module (sly color)
   #:use-module (sly coroutine)
   #:use-module (sly math)
+  #:use-module (sly quaternion)
   #:use-module (sly signal)
   #:use-module (sly vector)
   #:export (ease-linear
@@ -125,6 +126,8 @@ range [0, 1]."
          vector-interpolate)
         ((both? color?)
          color-interpolate)
+        ((both? quaternion?)
+         quaternion-slerp)
         (else
          (error "Failed to guess interpolator: " a b))))
 
