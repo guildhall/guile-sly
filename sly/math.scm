@@ -33,7 +33,7 @@
             cotan
             clamp
             linear-scale
-            half))
+            half square))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -106,3 +106,6 @@ actually less than MAX."
 
 (define (half x)
   (/ x 2))
+
+(define (square x)
+  (* x x))
