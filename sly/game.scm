@@ -62,18 +62,21 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop cameras
+(define* (start-game-loop camera
                           #:optional #:key
                           (frame-rate 60)
                           (tick-rate 60)
                           (max-ticks-per-frame 4))
-  "Start the game loop.  FRAME-RATE specifies the optimal number of
-frames to draw per second.  TICK-RATE specifies the optimal game logic
-updates per second.  Both FRAME-RATE and TICK-RATE are 60 by default.
-MAX-TICKS-PER-FRAME is the maximum number of times the game loop will
-update game state in a single frame.  When this upper bound is reached
-due to poor performance, the game will start to slow down instead of
-becoming completely unresponsive and possibly crashing."
+  "Start the game loop.  For each frame, render the scene that is
+looked upon by CAMERA.  CAMERA may be a single camera object, or a
+list of cameras for rendering multiple viewports.  FRAME-RATE
+specifies the optimal number of frames to draw per second.  TICK-RATE
+specifies the optimal game logic updates per second.  Both FRAME-RATE
+and TICK-RATE are 60 by default.  MAX-TICKS-PER-FRAME is the maximum
+number of times the game loop will update game state in a single
+frame.  When this upper bound is reached due to poor performance, the
+game will start to slow down instead of becoming completely
+unresponsive and possibly crashing."
   (let ((tick-interval (interval tick-rate))
         (frame-interval (interval frame-rate)))
     (define (draw dt alpha)
@@ -82,8 +85,10 @@ becoming completely unresponsive and possibly crashing."
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-      (for-each (cut draw-camera <> alpha)
-                (signal-ref-maybe cameras))
+      (signal-let ((camera camera))
+        (if (list? camera)
+            (for-each (cut draw-camera <> alpha) camera)
+            (draw-camera camera alpha)))
       (SDL:gl-swap-buffers))
 
     (define (update lag)
@@ -94,10 +99,11 @@ unused accumulator time."
         (cond ((>= ticks max-ticks-per-frame)
                lag)
               ((>= lag tick-interval)
-               (for-each (cut update-scene-node <>)
-                         (delete-duplicates
-                          (map camera-scene (signal-ref-maybe cameras))
-                          eq?))
+               (signal-let ((camera camera))
+                 (if (list? camera)
+                     (for-each (cut update-scene-node <>)
+                               (delete-duplicates (map camera-scene camera) eq?))
+                     (update-scene-node (camera-scene camera))))
                (tick-agenda!)
                (iter (- lag tick-interval) (1+ ticks)))
               (else
