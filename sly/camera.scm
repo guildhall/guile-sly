@@ -31,6 +31,7 @@
   #:use-module (sly signal)
   #:use-module (sly transform)
   #:export (make-camera
+            orthographic-camera
             camera?
             camera-scene
             camera-location
@@ -55,6 +56,25 @@
                       (clear-flags '(color-buffer depth-buffer))
                       (clear-color black))
   (%make-camera scene location projection viewport clear-flags clear-color))
+
+(define* (orthographic-camera scene width height
+                              #:optional #:key
+                              (z-near 0) (z-far 1)
+                              (viewport (make-rect 0 0 width height))
+                              (clear-flags '(color-buffer depth-buffer))
+                              (clear-color black))
+  "Return a camera that renders SCENE using an orthographic (2D)
+projection of size WIDTH x HEIGHT.  Optionally, z-axis clipping planes
+Z-NEAR and Z-FAR can be specified, but default to 0 and 1,
+respectively.  By default, the camera's VIEWPORT uses the same
+dimensions as the projection, which is convenient if the dimensions
+are in pixels.  Like 'make-camera', custom CLEAR-COLOR and CLEAR-FLAGS
+can be specified."
+  (make-camera scene identity-transform
+               (orthographic-projection 0 width 0 height z-near z-far)
+               viewport
+               #:clear-flags clear-flags
+               #:clear-color clear-color))
 
 ;; guile-opengl's clear-buffer-mask does not work with symbols, only
 ;; syntax.
