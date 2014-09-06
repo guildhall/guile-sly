@@ -23,7 +23,6 @@
 
 (define-module (sly window)
   #:use-module (srfi srfi-9)
-  #:use-module (gl)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (sly event)
@@ -102,15 +101,7 @@
     (SDL:init 'everything)
     ;; Open SDL window in OpenGL mode.
     (SDL:set-video-mode width height 24 flags)
-    (SDL:set-caption (window-title window))
-    ;; Enable texturing and alpha blending
-    (gl-enable (enable-cap texture-2d))
-    (gl-enable (enable-cap blend))
-    (gl-enable (enable-cap cull-face))
-    (gl-enable (enable-cap depth-test))
-    (gl-enable (enable-cap scissor-test))
-    (set-gl-blend-function (blending-factor-src src-alpha)
-                           (blending-factor-dest one-minus-src-alpha))))
+    (SDL:set-caption (window-title window))))
 
 (define (close-window)
   "Close the currently open window and audio."

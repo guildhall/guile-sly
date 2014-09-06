@@ -39,30 +39,35 @@
             camera-viewport
             camera-clear-flags
             camera-clear-color
+            camera-before-draw-handler camera-after-draw-handler
             draw-camera))
 
 (define-record-type <camera>
-  (%make-camera scene location projection viewport clear-flags clear-color)
+  (%make-camera scene location projection viewport clear-flags clear-color
+                before-draw-handler after-draw-handler)
   camera?
   (scene camera-scene)
   (location camera-location)
   (projection camera-projection)
   (viewport camera-viewport)
   (clear-flags camera-clear-flags)
-  (clear-color camera-clear-color))
+  (clear-color camera-clear-color)
+  (before-draw-handler camera-before-draw-handler)
+  (after-draw-handler camera-after-draw-handler))
 
 (define* (make-camera scene location projection viewport
                       #:optional #:key
                       (clear-flags '(color-buffer depth-buffer))
-                      (clear-color black))
-  (%make-camera scene location projection viewport clear-flags clear-color))
+                      (clear-color black)
+                      before-draw after-draw)
+  (%make-camera scene location projection viewport clear-flags clear-color
+                before-draw after-draw))
 
 (define* (orthographic-camera scene width height
                               #:optional #:key
                               (z-near 0) (z-far 1)
                               (viewport (make-rect 0 0 width height))
-                              (clear-flags '(color-buffer depth-buffer))
-                              (clear-color black))
+                              #:allow-other-keys #:rest rest)
   "Return a camera that renders SCENE using an orthographic (2D)
 projection of size WIDTH x HEIGHT.  Optionally, z-axis clipping planes
 Z-NEAR and Z-FAR can be specified, but default to 0 and 1,
@@ -70,11 +75,11 @@ respectively.  By default, the camera's VIEWPORT uses the same
 dimensions as the projection, which is convenient if the dimensions
 are in pixels.  Like 'make-camera', custom CLEAR-COLOR and CLEAR-FLAGS
 can be specified."
-  (make-camera scene identity-transform
-               (orthographic-projection 0 width 0 height z-near z-far)
-               viewport
-               #:clear-flags clear-flags
-               #:clear-color clear-color))
+  (apply make-camera
+         scene identity-transform
+         (orthographic-projection 0 width 0 height z-near z-far)
+         viewport
+         rest))
 
 ;; guile-opengl's clear-buffer-mask does not work with symbols, only
 ;; syntax.
@@ -108,11 +113,32 @@ can be specified."
                     (color-a c))
     (gl-clear (apply clear-buffer-mask (camera-clear-flags camera)))))
 
+(define (run-handler camera getter)
+  (let ((handler (getter camera)))
+    (when (procedure? handler)
+      (handler))))
+
 (define (draw-camera camera alpha)
   "Draw SCENE from the perspective of CAMERA with interpolation factor
 ALPHA."
+  ;; Enable texturing, alpha blending, face culling, depth and scissor
+  ;; tests.
+  (gl-enable (enable-cap texture-2d))
+  (gl-enable (enable-cap blend))
+  (gl-enable (enable-cap cull-face))
+  (gl-enable (enable-cap depth-test))
+  (gl-enable (enable-cap scissor-test))
+  (set-gl-blend-function (blending-factor-src src-alpha)
+                         (blending-factor-dest one-minus-src-alpha))
+  (run-handler camera camera-before-draw-handler)
   (clear-camera camera)
   (signal-let ((scene (camera-scene camera))
                (projection (camera-projection camera))
                (location (camera-location camera)))
-    (draw-scene-node scene alpha (transform* projection location))))
+    (draw-scene-node scene alpha (transform* projection location)))
+  (run-handler camera camera-after-draw-handler)
+  (gl-disable (enable-cap texture-2d))
+  (gl-disable (enable-cap blend))
+  (gl-disable (enable-cap cull-face))
+  (gl-disable (enable-cap depth-test))
+  (gl-disable (enable-cap scissor-test)))
