@@ -28,6 +28,7 @@
   #:use-module (gl)
   #:use-module (gl contrib packed-struct)
   #:use-module ((sdl sdl) #:prefix SDL:)
+  #:use-module (sly color)
   #:use-module (sly config)
   #:use-module (sly agenda)
   #:use-module (sly helpers)
@@ -36,6 +37,7 @@
   #:use-module (sly shader)
   #:use-module (sly signal)
   #:use-module (sly texture)
+  #:use-module (sly vector)
   #:export (make-sprite
             load-sprite
             make-animated-sprite))
@@ -44,12 +46,18 @@
 ;;; Sprites
 ;;;
 
-(define* (make-sprite texture #:optional #:key (shader (load-default-shader)))
+(define* (make-sprite texture #:optional #:key
+                      (shader (load-default-shader))
+                      (anchor 'center)
+                      (color white))
   "Return a 2D rectangular mesh that displays the image TEXTURE.  The
 size of the mesh is the size of TEXTURE, in pixels.  Optionally, a
 custom SHADER can be specified."
-  (let* ((half-width (half (texture-width texture)))
-         (half-height (half (texture-height texture)))
+  (let* ((anchor (anchor-texture texture anchor))
+         (x1 (- (vx anchor)))
+         (y1 (- (vy anchor)))
+         (x2 (+ x1 (texture-width texture)))
+         (y2 (+ y1 (texture-height texture)))
          (s1 (texture-s1 texture))
          (t1 (texture-t1 texture))
          (s2 (texture-s2 texture))
@@ -59,10 +67,10 @@ custom SHADER can be specified."
      #:texture texture
      #:indices #(0 3 2 0 2 1)
      #:data `(("position" ,(vector
-                            (vector (- half-width) (- half-height) 0)
-                            (vector half-width (- half-height) 0)
-                            (vector half-width half-height 0)
-                            (vector (- half-width) half-height 0)))
+                            (vector x1 y1 0)
+                            (vector x2 y1 0)
+                            (vector x2 y2 0)
+                            (vector x1 y2 0)))
               ("tex" ,(vector
                        (vector s1 t1)
                        (vector s2 t1)
