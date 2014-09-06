@@ -48,6 +48,7 @@
             yellow
             magenta
             cyan
+            transparent
             tango-light-butter
             tango-butter
             tango-dark-butter
@@ -179,6 +180,7 @@ is left unchanged."
 (define yellow (rgb #xffff00))
 (define magenta (rgb #xff00ff))
 (define cyan (rgb #x00ffff))
+(define transparent (make-color 0 0 0 0))
 
 ;; Tango color pallete
 ;; http://tango.freedesktop.org
