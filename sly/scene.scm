@@ -112,14 +112,17 @@
       (set-scene-node-transform! node t)
       t)))
 
-(define (draw-scene-node node alpha transform)
+(define* (draw-scene-node node alpha transform #:optional (uniforms '()))
   (signal-let ((node node))
     (if (mesh? node)
-        (draw-mesh node `(("mvp" ,transform)))
+        (draw-mesh node `(("mvp" ,transform)
+                          ,@uniforms))
         (let ((transform
                (transform* transform
                            (if (scene-node-dirty? node)
                                (recompute-transform! node alpha)
                                (scene-node-transform node)))))
           (signal-let ((children (scene-node-children node)))
-            (for-each (cut draw-scene-node <> alpha transform) children))))))
+            (for-each (cut draw-scene-node <> alpha transform
+                           (scene-node-uniforms node))
+                      children))))))
