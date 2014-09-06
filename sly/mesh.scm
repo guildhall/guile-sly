@@ -35,6 +35,7 @@
   #:use-module (sly shader)
   #:use-module (sly texture)
   #:use-module (sly vector)
+  #:use-module (sly signal)
   #:export (make-mesh
             mesh?
             mesh-length
@@ -188,7 +189,8 @@
     (for-each (lambda (uniform)
                 (match uniform
                   ((name value)
-                   (uniform-set! (mesh-shader mesh) name value))))
+                   (uniform-set! (mesh-shader mesh) name
+                                 (signal-ref-maybe value)))))
               uniforms)
     (with-vertex-array (mesh-vao mesh)
       (if (texture? (mesh-texture mesh))
