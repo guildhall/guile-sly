@@ -36,15 +36,28 @@
              (sly transform)
              (sly vector)
              (sly window)
+             (sly scene)
+             (sly camera)
              (sly repl))
 
+(open-window)
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
 
 (display "Welcome to the Sly sandbox.  Happy hacking!\n")
 
+(define-signal simple-scene
+  (scene-root
+   (scene-node
+    #:position #(100 100)
+    #:uniforms `(("color" ,white))
+    #:children (list (load-sprite "examples/images/p1_front.png")))))
+
+(define-signal camera
+  (orthographic-camera simple-scene 640 480))
+
 (with-window (make-window #:title "Sly Sandbox")
-  (start-game-loop))
+  (start-game-loop camera))
 
 (display "Bye!\n")
