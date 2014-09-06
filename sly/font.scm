@@ -33,6 +33,7 @@
   #:use-module (sly config)
   #:use-module (sly mesh)
   #:use-module (sly shader)
+  #:use-module (sly sprite)
   #:use-module (sly texture)
   #:use-module (sly vector)
   #:export (enable-fonts
@@ -99,23 +100,4 @@ argument with a default value of 12."
                      (anchor 'top-left) (color white)
                      (shader (load-default-shader)))
   (let ((texture (render-text font text)))
-    (let ((w (texture-width texture))
-          (h (texture-height texture))
-          (s1 (texture-s1 texture))
-          (t1 (texture-t1 texture))
-          (s2 (texture-s2 texture))
-          (t2 (texture-t2 texture)))
-      (make-mesh
-       #:shader shader
-       #:texture texture
-       #:indices #(0 3 2 0 2 1)
-       #:data `(("position" ,(vector
-                              (vector 0 0 0)
-                              (vector w 0 0)
-                              (vector w h 0)
-                              (vector 0 h 0)))
-                ("tex" ,(vector
-                         (vector s1 t1)
-                         (vector s2 t1)
-                         (vector s2 t2)
-                         (vector s1 t2))))))))
+    (make-sprite texture #:shader shader #:anchor anchor #:color color)))
