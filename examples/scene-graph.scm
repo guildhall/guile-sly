@@ -48,58 +48,60 @@
 (define tex (load-texture "images/crate.png"))
 
 (define unit-cube
-  (scene-node #:children (list (make-cube 1 #:texture tex))
-              #:uniforms `(("color" ,white))))
+  (scene-node (children (list (make-cube 1 #:texture tex)))
+              (uniforms `(("color" ,white)))))
 
 (define-signal my-scene
   (scene-root
    (scene-node
-    #:position #(0 0 0)
-    #:scale (signal-generator
-             (forever
-              (yield 1/2)
-              (wait 30)
-              (yield 1)
-              (wait 30)
-              (yield 2)
-              (wait 30)))
-    #:children (list unit-cube))
+    (position #(0 0 0))
+    (scale
+     (signal-generator
+      (forever
+       (yield 1/2)
+       (wait 30)
+       (yield 1)
+       (wait 30)
+       (yield 2)
+       (wait 30))))
+    (children (list unit-cube)))
    (signal-map
     (lambda (down?)
       (scene-node
-       #:position #(0 2 0)
-       #:scale (if down? (transition 2 3/2 15) 3/2)
-       #:children (list unit-cube)))
+       (position #(0 2 0))
+       (scale (if down? (transition 2 3/2 15) 3/2))
+       (children (list unit-cube))))
     (key-down? 'space))
    (scene-node
-    #:position #(0 4 0)
-    #:children (list unit-cube))
+    (position #(0 4 0))
+    (children (list unit-cube)))
    (scene-node
-    #:position #(0 6 0)
-    #:scale 1/2
-    #:children (list unit-cube))
+    (position #(0 6 0))
+    (scale 1/2)
+    (children (list unit-cube)))
    (scene-node
-    #:position #(3 0 0)
-    #:scale 2
-    #:children (list unit-cube))
+    (position #(3 0 0))
+    (scale 2)
+    (children (list unit-cube)))
    (scene-node
-    #:position #(-3 0 0)
-    #:scale 2
-    #:children (list
-                (scene-node
-                 #:rotation (transition
-                             (axis-angle->quaternion
-                              #(0 0 1) 1)
-                             (axis-angle->quaternion
-                              (normalize #(0 0 1))
-                              (/ (* 7 pi) 4))
-                             90)
-                 #:children (list unit-cube))
-                (scene-node
-                 #:position (transition #(0 2 0)
-                                        #(0 1 0)
-                                        120)
-                 #:children (list unit-cube))))))
+    (position #(-3 0 0))
+    (scale 2)
+    (children
+     (list
+      (scene-node
+       (rotation (transition
+                    (axis-angle->quaternion
+                     #(0 0 1) 1)
+                    (axis-angle->quaternion
+                     (normalize #(0 0 1))
+                     (/ (* 7 pi) 4))
+                    90))
+       (children (list unit-cube)))
+      (scene-node
+       (position (transition #(0 2 0)
+                             #(0 1 0)
+                             120))
+       (children (list unit-cube))))))))
 
 (define animation
   (let ((tiles (load-tileset "images/princess.png" 64 64)))
@@ -117,26 +119,28 @@
 (define-signal gui
   (scene-root
    (scene-node
-    #:position #(100 100)
-    #:children (list (make-animated-sprite animation 6)))
+    (position #(100 100))
+    (children (list (make-animated-sprite animation 6))))
    (scene-node
-    #:translate #(10 10)
+    (translate #(10 10))
     ;; #:rotation -1/8
-    #:children (list
-                (scene-node
-                 #:uniforms `(("color" ,white))
-                 #:children (list
-                             (signal-generator
-                              (let ((message "Testing the scene graph"))
-                                (forever
-                                 (let loop ((i 1))
-                                   (when (<= i (string-length message))
-                                     (yield (make-label font
-                                                        (substring message 0 i)
-                                                        #:color red))
-                                     (wait 3)
-                                     (loop (1+ i))))
-                                 (wait 60))))))))))
+    (children
+     (list
+      (scene-node
+       (uniforms `(("color" ,white)))
+       (children
+        (list
+         (signal-generator
+          (let ((message "Testing the scene graph"))
+            (forever
+             (let loop ((i 1))
+               (when (<= i (string-length message))
+                 (yield (make-label font
+                                    (substring message 0 i)
+                                    #:color red))
+                 (wait 3)
+                 (loop (1+ i))))
+             (wait 60))))))))))))
 
 (define camera
   (make-camera my-scene
