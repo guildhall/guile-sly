@@ -62,7 +62,9 @@
     (recompute-transform! node 0)
     node))
 
-(define scene-node make-scene-node)
+(define-syntax-rule (scene-node (field val) ...)
+  (apply make-scene-node
+         (append (list (symbol->keyword 'field) val) ...)))
 
 (define (scene-node-dirty? node)
   (define (different? a b)
@@ -73,7 +75,7 @@
       (different? scene-node-rotation scene-node-prev-rotation)))
 
 (define (scene-root . children)
-  (scene-node #:children children))
+  (make-scene-node #:children children))
 
 (define (update-scene-node node)
   (signal-let ((node node))
