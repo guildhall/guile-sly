@@ -15,7 +15,8 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (srfi srfi-1)
+(use-modules (ice-9 match)
+             (srfi srfi-1)
              (srfi srfi-9)
              (srfi srfi-42)
              (sly game)
@@ -23,7 +24,14 @@
              (sly texture)
              (sly tileset)
              (sly vector)
-             (sly window))
+             (sly window)
+             (sly scene)
+             (sly signal)
+             (sly camera)
+             (sly color)
+             (sly transition)
+             (sly helpers)
+             (sly keyboard))
 
 (load "common.scm")
 
@@ -35,73 +43,67 @@
 ;; loading. Just a hardcoded tile map that demonstrates the
 ;; split-texture procedure.
 
-;; tiles is a 2d array of texture regions.
-(define-record-type <map-layer>
-  (make-map-layer width height tile-width tile-height tiles)
-  map-layer?
-  (width map-layer-width)
-  (height map-layer-height)
-  (tile-width map-layer-tile-width)
-  (tile-height map-layer-tile-height)
-  (tiles map-layer-tiles))
-
-(define draw-map-layer
-  (lambda (layer)
-    (do-ec (: y (map-layer-height layer))
-           (: x (map-layer-width layer))
-           (let ((tile (array-ref (map-layer-tiles layer) y x)))
-             (draw-sprite tile)))))
-
 ;; A small 8x8 array of tile indices.
 (define map-width 8)
 (define map-height 8)
 (define map-tiles
-  #2u32((00 01 01 01 01 01 01 02)
-        (16 17 17 17 17 17 17 18)
-        (16 17 17 17 17 17 17 18)
-        (16 17 17 48 49 17 17 18)
-        (16 17 17 64 65 17 17 18)
-        (16 17 17 17 17 17 17 18)
-        (16 17 17 17 17 17 17 18)
-        (32 33 33 33 33 33 33 34)))
+  #2((00 01 01 01 01 01 01 02)
+     (16 17 17 17 17 17 17 18)
+     (16 17 17 17 17 17 17 18)
+     (16 17 17 48 49 17 17 18)
+     (16 17 17 64 65 17 17 18)
+     (16 17 17 17 17 17 17 18)
+     (16 17 17 17 17 17 17 18)
+     (32 33 33 33 33 33 33 34)))
 
 (define tile-width 32)
 (define tile-height 32)
 
 (define (random-map width height tileset)
   (let ((tiles (make-array 0 height width))
-        (n (vector-length tileset)))
+        (n (vector-length (tileset-tiles tileset))))
     (do-ec (: y height) (: x width)
            (array-set! tiles (random n) y x))
     tiles))
 
-(define (tiles->sprites width height tile-width tile-height tileset tiles)
-  (define (build-sprite x y)
-    (let ((region (tileset-ref tileset (array-ref tiles y x))))
-      (make-sprite region
-                   #:position (vector (* x tile-width)
-                                      (* y tile-height))
-                   #:anchor #(0 0))))
+(define (build-map-layer tiles tileset)
+  (define build-sprite
+    (memoize
+     (lambda (tile-index)
+       (let ((texture (tileset-ref tileset tile-index)))
+         (make-sprite texture #:anchor #(0 0))))))
 
-  (let ((sprites (list-ec (: y height)
-                          (list-ec (: x width)
-                                   (build-sprite x y)))))
-    (list->array 2 sprites)))
+  (define (build-tile x y)
+    (scene-node
+     (position (vector (* x (tileset-width tileset))
+                       (* y (tileset-height tileset))))
+     (uniforms `(("color" ,white)))
+     (children (list (build-sprite (array-ref tiles y x))))))
 
-(define (build-map)
-  ;; Load tileset and build map layer
-  (let ((tileset (load-tileset "images/tiles.png" 32 32)))
-    (make-map-layer map-width map-height tile-width tile-height
-                    (tiles->sprites map-width
-                                    map-height
-                                    tile-width
-                                    tile-height
-                                    tileset
-                                    map-tiles))))
+  (match (array-dimensions tiles)
+    ((height width)
+     (scene-node
+      (children
+       (list-ec (: x width) (: y height)
+                (build-tile x y)))))))
 
-(define layer (build-map))
+(define tileset (load-tileset "images/tiles.png" 32 32))
 
-(add-hook! draw-hook (lambda (dt alpha) (draw-map-layer layer)))
+(define-signal map-scene
+  (scene-root
+   (scene-node
+    (position
+     (vector (- 320 (* tile-width 4))
+             (- 240 (* tile-height 4))))
+    (children
+     (list (build-map-layer map-tiles tileset))))))
+
+(define-signal camera
+  (orthographic-camera map-scene 640 480))
 
 (with-window (make-window #:title "Tilemap")
-  (start-game-loop))
+  (start-game-loop camera))
+
+;;; Local Variables:
+;;; compile-command: "../pre-inst-env guile tilemap.scm"
+;;; End:
