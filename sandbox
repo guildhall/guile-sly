@@ -50,9 +50,9 @@
 (define-signal simple-scene
   (scene-root
    (scene-node
-    #:position #(100 100)
-    #:uniforms `(("color" ,white))
-    #:children (list (load-sprite "examples/images/p1_front.png")))))
+    (position #(100 100))
+    (uniforms `(("color" ,white)))
+    (children (list (load-sprite "examples/images/p1_front.png"))))))
 
 (define-signal camera
   (orthographic-camera simple-scene 640 480))
@@ -61,3 +61,7 @@
   (start-game-loop camera))
 
 (display "Bye!\n")
+
+;;; Local Variables:
+;;; compile-command: "./pre-inst-env sandbox"
+;;; End:
