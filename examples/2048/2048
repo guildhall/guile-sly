@@ -34,16 +34,21 @@
              (ice-9 rdelim)
              (gl)
              (sly audio)
+             (sly camera)
              (sly color)
              (sly font)
              (sly game)
              (sly keyboard)
              (sly rect)
+             (sly scene)
              (sly signal)
              (sly sprite)
              (sly texture)
+             (sly transition)
              (sly vector)
              (sly window)
+             (sly quaternion)
+             (sly math)
              (sly repl))
 ;;;
 ;;; Helpers
@@ -75,8 +80,8 @@
 (define (pad-zeros lst size)
   (append lst (make-list (max (- size (length lst)) 0) 0)))
 
-(define (merge lst)
-  (match lst
+(define merge
+  (match-lambda
     ((x x . rest)
      (cons (double x) (merge rest)))
     ((x . rest)
@@ -266,26 +271,14 @@
 ;;;
 
 (open-window)
-(enable-sprites)
 (enable-fonts)
 (enable-audio)
 
 (define background (rgb #xfaf8ef))
 
-(set-gl-clear-color (color-r background)
-                    (color-g background)
-                    (color-b background)
-                    (color-a background))
-
 (define tile-texture (load-texture "tile.png"))
 
 (define font (load-default-font 32))
-
-(define-record-type <tile>
-  (%make-tile background label)
-  tile?
-  (background tile-background)
-  (label tile-label))
 
 (define text-color-1 (rgb #x776e65))
 (define text-color-2 (rgb #xf9f6f2))
@@ -322,27 +315,30 @@
 (define (tile-text-color n)
   (assoc-ref (assoc-ref tile-properties n) 'text-color))
 
+(define tile-sprite (make-sprite tile-texture #:anchor #(0 0)))
+
+(define tile-label-cache
+  (map (lambda (n)
+         (cons n (make-label font (number->string n)
+                             #:anchor 'center)))
+       '(2 4 8 16 32 64 128 256 512 1024 2048)))
+
 (define (make-tile x y n)
   (let* ((w (texture-width tile-texture))
-         (h (texture-height tile-texture))
-         (background
-          (make-sprite tile-texture
-                       #:position (center (vector (* x w) (* y h)))
-                       #:color (tile-bg-color n)
-                       #:anchor #(0 0)))
-         (label
-          (make-label font
-                      (if (zero? n) " " (number->string n))
-                      (center
-                       (vector (+ (* x w) (/ w 2))
-                               (+ (* y h) (/ h 2))))
-                      #:color (tile-text-color n)
-                      #:anchor 'center)))
-    (%make-tile background label)))
-
-(define (draw-tile tile)
-  (draw-sprite (tile-background tile))
-  (draw-label (tile-label tile)))
+         (h (texture-height tile-texture)))
+    (scene-node
+     (position (vector (* x w) (* y h)))
+     (uniforms `(("color" ,(tile-bg-color n))))
+     (children
+      `(,tile-sprite
+        ,@(if (zero? n)
+              '()
+              (list
+               (scene-node
+                (position (vector (/ w 2) (/ h 2)))
+                (uniforms `(("color" ,(tile-text-color n))))
+                (children
+                 (list (assoc-ref tile-label-cache n)))))))))))
 
 (define window-width 640)
 (define window-height 480)
@@ -376,96 +372,100 @@
       (enumerate-board board)))
    board))
 
-(define-signal status
-  (signal-map
-   (lambda (board)
-     (let ((message (cond ((board-lose? board) "GAME OVER")
-                          ((board-win? board) "YOU WIN!")
-                          (else ""))))
-       (make-label font message
-                   (center
-                    (vector (/ board-width 2)
-                            (/ board-height 2)))
-                   #:color black
-                   #:anchor 'bottom-center)))
-   board))
-
 (define play-again-font (load-default-font 16))
 
-(define-signal play-again-message
+(define-signal status-message
   (signal-map
    (lambda (board)
-     (make-label play-again-font
-                 (if (or (board-lose? board)
-                         (board-win? board))
-                     "Press N to play again"
-                     "")
-                 (center
-                  (vector (/ board-width 2)
-                          (/ board-height 2)))
-                 #:color black
-                 #:anchor 'top-center))
+     (let ((message (cond
+                     ((board-lose? board) "GAME OVER")
+                     ((board-win? board) "YOU WIN!")
+                     (else #f))))
+       (scene-node
+        (position (center
+                   (vector (/ board-width 2)
+                           (/ board-height 2))))
+        (uniforms `(("color" ,black)))
+        (children
+         (if message
+             (list
+              (make-label font message
+                          #:color black
+                          #:anchor 'bottom-center)
+              (make-label play-again-font
+                          "Press N to play again"
+                          #:color black
+                          #:anchor 'top-center))
+             '())))))
    board))
 
 (define instruction-font (load-default-font 16))
 
-(define instructions
-  (make-label instruction-font
-              "Use the arrow keys to join the numbers and get to the 2048 tile!"
-              (vector (/ window-width 2) 0)
-              #:color text-color-1
-              #:anchor 'top-center))
+(define instruction-text
+  "Use the arrow keys to join the numbers and get to the 2048 tile!")
+
+(define-signal instructions
+  (scene-node
+   (position (vector (/ window-width 2) 0))
+   (uniforms `(("color" ,text-color-1)))
+   (children
+    (list
+     (make-label instruction-font
+                 instruction-text
+                 #:color text-color-1
+                 #:anchor 'top-center)))))
 
 (define score-header-font (load-default-font 14))
 (define score-font (load-default-font 22))
 
-(define score-header
-  (make-label score-header-font
-              "SCORE"
-              (vector (+ (vx center-pos) (/ board-width 4)) 24)
-              #:color text-color-1
-              #:anchor 'top-center))
+(define (score-label position label score)
+  (scene-node
+   (position position)
+   (uniforms `(("color" ,text-color-1)))
+   (children
+    (list
+     (make-label score-header-font label
+                 #:color text-color-1
+                 #:anchor 'top-center)
+     (signal-map
+      (lambda (score)
+        (scene-node
+         (position (let ((pos #(0 32)))
+                     (transition (v- pos #(0 8)) pos 15)))
+         (uniforms `(("color" ,(transition transparent text-color-1 15))))
+         (children
+          (list
+           (make-label score-font (number->string score)
+                       #:color text-color-1
+                       #:anchor 'center)))))
+      (signal-drop-repeats score =))))))
 
 (define-signal score
-  (signal-map
-   (lambda (state)
-     (make-label score-font
-                 (format #f "~d" (2048-score state))
-                 (vector (vx (label-position score-header))
-                         (+ (vy (label-position score-header)) 32))
-                 #:color text-color-1
-                 #:anchor 'center))
-   2048-state))
-
-(define best-score-header
-  (make-label score-header-font
-              "BEST"
-              (vector (+ (vx center-pos)
-                         (- board-width (/ board-width 4)))
-                      24)
-              #:color text-color-1
-              #:anchor 'top-center))
+  (score-label (vector (+ (vx center-pos) (/ board-width 4)) 24)
+               "SCORE" (signal-map 2048-score 2048-state)))
 
 (define-signal best-score
-  (signal-map
-   (lambda (state)
-     (make-label score-font
-                 (format #f "~d" (2048-best-score state))
-                 (vector (vx (label-position best-score-header))
-                         (+ (vy (label-position best-score-header)) 32))
-                 #:color text-color-1
-                 #:anchor 'center))
-   2048-state))
+  (score-label (vector (+ (vx center-pos)
+                          (- board-width (/ board-width 4)))
+                       24)
+               "BEST" (signal-map 2048-best-score 2048-state)))
 
-(define (render)
-  (for-each draw-tile (signal-ref tiles))
-  (draw-label instructions)
-  (draw-label score-header)
-  (draw-label best-score-header)
-  (draw-label (signal-ref score))
-  (draw-label (signal-ref best-score))
-  (draw-label (signal-ref status))
-  (draw-label (signal-ref play-again-message)))
+(define-signal 2048-scene
+  (scene-root
+   (scene-node
+    (position (center #(0 0)))
+    (children tiles))
+   instructions
+   score
+   best-score
+   status-message))
+
+(define-signal camera
+  (orthographic-camera 2048-scene window-width window-height
+                       #:clear-flags '(depth-buffer)
+                       #:clear-color background
+                       #:before-draw (lambda ()
+                                       (gl-disable (enable-cap depth-test)))))
 
 ;;;
 ;;; Initialization
@@ -474,10 +474,10 @@
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
-(add-hook! draw-hook (lambda (dt alpha) (render)))
+;; (add-hook! draw-hook (lambda (dt alpha) (render)))
 
 (with-window (make-window #:title "2048")
-  (start-game-loop))
+  (start-game-loop camera))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile 2048"
