@@ -16,12 +16,13 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (sly shader)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 match)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-4)
   #:use-module (srfi srfi-9)
-  #:use-module (ice-9 rdelim)
   #:use-module (gl)
   #:use-module (gl low-level)
   #:use-module (sly helpers)
@@ -44,6 +45,8 @@
             shader-id
             make-shader-program
             load-shader-program
+            shader-program-uniform-location
+            shader-program-attribute-location
             shader-program-id
             shader-program?
             shader-program-linked?
@@ -171,58 +174,103 @@ in the file FILENAME."
   (load-shader 'fragment filename))
 
 ;;;
-;;; Programs
+;;; Shader Programs
 ;;;
 
+(define-record-type <uniform>
+  (make-uniform name location)
+  uniform?
+  (name uniform-name)
+  (location uniform-location))
+
+(define-record-type <attribute>
+  (make-attribute name location)
+  attribute?
+  (name attribute-name)
+  (location attribute-location))
+
 (define-record-type <shader-program>
-  (%make-shader-program id)
+  (%make-shader-program id uniforms attributes)
   shader-program?
-  (id shader-program-id))
+  (id shader-program-id)
+  (uniforms shader-program-uniforms)
+  (attributes shader-program-attributes))
+
+(define (shader-program-uniform-location shader-program uniform-name)
+  (let ((uniform (find (match-lambda
+                        (($ <uniform> name _)
+                         (string=? uniform-name name)))
+                       (shader-program-uniforms shader-program))))
+    (if uniform
+        (uniform-location uniform)
+        (error "Uniform not found: " uniform-name))))
+
+(define (shader-program-attribute-location shader-program attribute-name)
+  (let ((attribute (find (match-lambda
+                          (($ <attribute> name _)
+                           (string=? attribute-name name)))
+                         (shader-program-attributes shader-program))))
+    (if attribute
+        (attribute-location attribute)
+        (error "Attribute not found: " attribute-name))))
 
 (define-guardian shader-program-guardian
   (lambda (shader-program)
     (false-if-exception
      (glDeleteProgram (shader-program-id shader-program)))))
 
-(define-status %shader-program-linked? glGetProgramiv link-status)
+(define-status shader-program-linked? glGetProgramiv link-status)
+(define-logger display-linking-error glGetProgramiv glGetProgramInfoLog)
 
-(define (shader-program-linked? shader-program)
-  "Return #t if SHADER-PROGRAM has been successfully linked with
-shaders or #f otherwise."
-  (%shader-program-linked? (shader-program-id shader-program)))
-
-(define-logger %display-linking-error glGetProgramiv glGetProgramInfoLog)
-
-(define (display-linking-error shader-program)
-  (%display-linking-error (shader-program-id shader-program)))
-
-(define (make-shader-program vertex-shader fragment-shader)
+(define (make-shader-program vertex-shader fragment-shader uniforms attributes)
   "Create a new shader program that has been linked with the given
 VERTEX-SHADER and FRAGMENT-SHADER."
   (unless (and (vertex-shader? vertex-shader)
                (fragment-shader? fragment-shader))
     (error "Expected a vertex shader and fragment shader"
            vertex-shader fragment-shader))
-  (let* ((id (glCreateProgram))
-         (shader-program (%make-shader-program id))
-         (shaders (list vertex-shader fragment-shader)))
-    (shader-program-guardian shader-program)
-    (for-each (lambda (shader)
-                (glAttachShader id (shader-id shader)))
-              shaders)
-    (glLinkProgram id)
-    (unless (shader-program-linked? shader-program)
-      (display "Failed to link shader program:\n")
-      (display-linking-error shader-program))
-    ;; Once the program has been linked, the shaders can be detached.
-    (for-each (lambda (shader)
-                (glDetachShader id (shader-id shader)))
-              shaders)
-    shader-program))
+  (let ((id (glCreateProgram))
+        (shaders (list vertex-shader fragment-shader)))
+    (define (string->uniform uniform-name)
+      (let ((location (glGetUniformLocation id uniform-name)))
+        (if (= location -1)
+            (error "Uniform not found: " uniform-name)
+            (make-uniform uniform-name location))))
 
-(define (load-shader-program vertex-shader-file-name fragment-shader-file-name)
+    (define (string->attribute attribute-name)
+      (let ((location (glGetAttribLocation id attribute-name)))
+        (if (= location -1)
+            (error "Attribute not found: " attribute-name)
+            (make-attribute attribute-name location))))
+
+    (catch #t
+      (lambda ()
+        (for-each (lambda (shader)
+                    (glAttachShader id (shader-id shader)))
+                  shaders)
+        (glLinkProgram id)
+        (unless (shader-program-linked? id)
+          (display "Failed to link shader program:\n")
+          (display-linking-error id))
+        ;; Once the program has been linked, the shaders can be detached.
+        (for-each (lambda (shader)
+                    (glDetachShader id (shader-id shader)))
+                  shaders)
+        (let* ((uniforms (map string->uniform uniforms))
+               (attributes (map string->attribute attributes))
+               (shader-program (%make-shader-program id uniforms attributes)))
+          (shader-program-guardian shader-program)
+          shader-program))
+      throw
+      (lambda _
+        ;; Make sure to delete program in case linking fails.
+        (glDeleteProgram id)))))
+
+(define (load-shader-program vertex-shader-file-name fragment-shader-file-name
+                             uniforms attributes)
   (make-shader-program (load-vertex-shader vertex-shader-file-name)
-                       (load-fragment-shader fragment-shader-file-name)))
+                       (load-fragment-shader fragment-shader-file-name)
+                       uniforms attributes))
 
 (define current-shader-program (make-parameter #f))
 
@@ -242,7 +290,9 @@ VERTEX-SHADER and FRAGMENT-SHADER."
       (string-append %pkgdatadir
                      "/shaders/default-vertex.glsl")
       (string-append %pkgdatadir
-                     "/shaders/default-fragment.glsl")))))
+                     "/shaders/default-fragment.glsl")
+      '("mvp" "color")
+      '("position" "tex")))))
 
 ;;;
 ;;; Uniforms
@@ -303,18 +353,6 @@ location."
                                          (color-b c)
                                          (color-a c))))
 
-(define uniform-location
-  (memoize
-   (lambda (shader-program name)
-     "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-     (glGetUniformLocation (shader-program-id shader-program) name))))
-
-(define attribute-location
-  (memoize
-   (lambda (shader-program name)
-     "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-     (glGetAttribLocation (shader-program-id shader-program) name))))
-
 (define (uniform-set! shader-program name value)
   "Use the appropriate setter procedure to translate VALUE into OpenGL
 compatible data and assign it to the location of the uniform NAME
@@ -322,7 +360,7 @@ within SHADER-PROGRAM."
   (let ((setter (find (lambda (setter)
                         ((uniform-setter-predicate setter) value))
                       %uniform-setters))
-        (location (uniform-location shader-program name)))
+        (location (shader-program-uniform-location shader-program name)))
     (if setter
         ((uniform-setter-proc setter) location value)
         (error "Not a valid uniform data type" value))))

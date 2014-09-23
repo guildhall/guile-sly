@@ -142,12 +142,8 @@
     body ...
     (glBindVertexArray 0)))
 
-(define (attribute-location shader-program name)
-  "Retrieve the location for the uniform NAME within SHADER-PROGRAM."
-  (glGetAttribLocation (shader-program-id shader-program) name))
-
 (define (vertex-attrib-pointer shader attribute vbo)
-  (let ((location (attribute-location shader attribute)))
+  (let ((location (shader-program-attribute-location shader attribute)))
     (glEnableVertexAttribArray location)
     (with-vertex-buffer vbo
       (glVertexAttribPointer location (vertex-buffer-attr-size vbo)
