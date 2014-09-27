@@ -77,10 +77,12 @@ custom SHADER can be specified."
                        (vector s2 t2)
                        (vector s1 t2)))))))
 
-(define* (load-sprite file-name #:optional #:key (shader (load-default-shader)))
+(define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
+                      (anchor 'center) (color white))
   "Return a sprite mesh for the texture loaded from FILE-NAME.
 Optionally, a custom SHADER can be specified."
-  (make-sprite (load-texture file-name) #:shader shader))
+  (make-sprite (load-texture file-name) #:shader shader
+               #:anchor anchor #:color color))
 
 (define* (make-animated-sprite textures frame-duration #:optional #:key
                                (loop? #t)
