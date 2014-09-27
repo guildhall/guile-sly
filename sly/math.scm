@@ -23,7 +23,7 @@
 ;;; Code:
 
 (define-module (sly math)
-  #:export (pi pi/2
+  #:export (pi 2pi pi/2
             degrees->radians
             radians->degrees
             sin-degrees
@@ -61,6 +61,7 @@
 ;;      817488               152092096
 ;;
 (define pi 3.141592654)
+(define 2pi (* pi 2))
 (define pi/2 (/ pi 2))
 
 (define (degrees->radians angle)
