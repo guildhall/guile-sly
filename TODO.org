@@ -139,6 +139,9 @@
    - [ ] Scheme -> GLSL compiler
      Port http://wiki.call-cc.org/eggref/4/glls to guile?
 
+** TODO Upgrade to SDL2
+   Guile bindings needed.
+
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
    that things have changed so drastically and the name has been
