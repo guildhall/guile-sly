@@ -99,10 +99,6 @@ unused accumulator time."
         (cond ((>= ticks max-ticks-per-frame)
                lag)
               ((>= lag tick-interval)
-               (signal-let ((scene scene))
-                 (if (list? scene)
-                     (for-each (cut update-scene <>) scene)
-                     (update-scene scene)))
                (tick-agenda!)
                (iter (- lag tick-interval) (1+ ticks)))
               (else
