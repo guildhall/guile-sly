@@ -62,7 +62,7 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop camera
+(define* (start-game-loop scene
                           #:optional #:key
                           (frame-rate 60)
                           (tick-rate 60)
@@ -85,10 +85,10 @@ unresponsive and possibly crashing."
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-      (signal-let ((camera camera))
-        (if (list? camera)
-            (for-each (cut draw-camera <> alpha) camera)
-            (draw-camera camera alpha)))
+      (signal-let ((scene scene))
+        (if (list? scene)
+            (for-each (cut draw-scene <> alpha) scene)
+            (draw-scene scene alpha)))
       (SDL:gl-swap-buffers))
 
     (define (update lag)
@@ -99,11 +99,10 @@ unused accumulator time."
         (cond ((>= ticks max-ticks-per-frame)
                lag)
               ((>= lag tick-interval)
-               (signal-let ((camera camera))
-                 (if (list? camera)
-                     (for-each (cut update-scene-node <>)
-                               (delete-duplicates (map camera-scene camera) eq?))
-                     (update-scene-node (camera-scene camera))))
+               (signal-let ((scene scene))
+                 (if (list? scene)
+                     (for-each (cut update-scene <>) scene)
+                     (update-scene scene)))
                (tick-agenda!)
                (iter (- lag tick-interval) (1+ ticks)))
               (else

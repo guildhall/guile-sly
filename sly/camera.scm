@@ -27,7 +27,6 @@
   #:use-module (sly wrappers gl)
   #:use-module (sly color)
   #:use-module (sly rect)
-  #:use-module (sly scene)
   #:use-module (sly signal)
   #:use-module (sly transform)
   #:export (make-camera
@@ -40,13 +39,12 @@
             camera-clear-flags
             camera-clear-color
             camera-before-draw-handler camera-after-draw-handler
-            draw-camera))
+            call-with-camera))
 
 (define-record-type <camera>
-  (%make-camera scene location projection viewport clear-flags clear-color
+  (%make-camera location projection viewport clear-flags clear-color
                 before-draw-handler after-draw-handler)
   camera?
-  (scene camera-scene)
   (location camera-location)
   (projection camera-projection)
   (viewport camera-viewport)
@@ -55,28 +53,27 @@
   (before-draw-handler camera-before-draw-handler)
   (after-draw-handler camera-after-draw-handler))
 
-(define* (make-camera scene location projection viewport
+(define* (make-camera location projection viewport
                       #:optional #:key
                       (clear-flags '(color-buffer depth-buffer))
                       (clear-color black)
                       before-draw after-draw)
-  (%make-camera scene location projection viewport clear-flags clear-color
+  (%make-camera location projection viewport clear-flags clear-color
                 before-draw after-draw))
 
-(define* (orthographic-camera scene width height
+(define* (orthographic-camera width height
                               #:optional #:key
                               (z-near 0) (z-far 1)
                               (viewport (make-rect 0 0 width height))
                               #:allow-other-keys #:rest rest)
-  "Return a camera that renders SCENE using an orthographic (2D)
-projection of size WIDTH x HEIGHT.  Optionally, z-axis clipping planes
-Z-NEAR and Z-FAR can be specified, but default to 0 and 1,
-respectively.  By default, the camera's VIEWPORT uses the same
-dimensions as the projection, which is convenient if the dimensions
-are in pixels.  Like 'make-camera', custom CLEAR-COLOR and CLEAR-FLAGS
-can be specified."
+  "Return a camera that uses an orthographic (2D) projection of size
+WIDTH x HEIGHT.  Optionally, z-axis clipping planes Z-NEAR and Z-FAR
+can be specified, but default to 0 and 1, respectively.  By default,
+the camera's VIEWPORT uses the same dimensions as the projection,
+which is convenient if the dimensions are in pixels.  Like
+'make-camera', custom CLEAR-COLOR and CLEAR-FLAGS can be specified."
   (apply make-camera
-         scene identity-transform
+         identity-transform
          (orthographic-projection 0 width 0 height z-near z-far)
          viewport
          rest))
@@ -118,11 +115,11 @@ can be specified."
     (when (procedure? handler)
       (handler))))
 
-(define (draw-camera camera alpha)
-  "Draw SCENE from the perspective of CAMERA with interpolation factor
-ALPHA."
-  ;; Enable texturing, alpha blending, face culling, depth and scissor
-  ;; tests.
+;; emacs: (put 'call-with-camera 'scheme-indent-function 1)
+(define (call-with-camera camera proc)
+  "Setup CAMERA state and apply PROC."
+  ;; Enable texturing, alpha blending, face culling, depth
+  ;; and scissor tests.
   (gl-enable (enable-cap texture-2d))
   (gl-enable (enable-cap blend))
   (gl-enable (enable-cap cull-face))
@@ -132,10 +129,9 @@ ALPHA."
                          (blending-factor-dest one-minus-src-alpha))
   (run-handler camera camera-before-draw-handler)
   (clear-camera camera)
-  (signal-let ((scene (camera-scene camera))
-               (projection (camera-projection camera))
+  (signal-let ((projection (camera-projection camera))
                (location (camera-location camera)))
-    (draw-scene-node scene alpha (transform* projection location)))
+    (proc projection location))
   (run-handler camera camera-after-draw-handler)
   (gl-disable (enable-cap texture-2d))
   (gl-disable (enable-cap blend))

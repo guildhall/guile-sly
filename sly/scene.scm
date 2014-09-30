@@ -24,6 +24,7 @@
 (define-module (sly scene)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
+  #:use-module (sly camera)
   #:use-module (sly mesh)
   #:use-module (sly quaternion)
   #:use-module (sly signal)
@@ -31,11 +32,14 @@
   #:use-module (sly transition)
   #:export (scene-node
             make-scene-node
-            scene-root
             scene-node?
             scene-node-position scene-node-scale scene-node-rotation
             scene-node-uniforms scene-node-children
-            update-scene-node draw-scene-node))
+            update-scene-node draw-scene-node
+            make-scene
+            scene?
+            scene-root
+            update-scene draw-scene))
 
 (define-record-type <scene-node>
   (%make-scene-node position scale rotation uniforms children)
@@ -128,3 +132,28 @@
             (for-each (cut draw-scene-node <> alpha transform
                            (scene-node-uniforms node))
                       children))))))
+
+;;;
+;;; Scene
+;;;
+
+(define-record-type <scene>
+  (make-scene root cameras)
+  scene?
+  (root scene-root)
+  (cameras scene-cameras))
+
+(define (update-scene scene)
+  "Update the nodes within SCENE."
+  (update-scene-node (scene-root scene)))
+
+(define (draw-scene scene alpha)
+  "Draw SCENE from the perspective of CAMERA with interpolation factor
+ALPHA."
+  (for-each (lambda (camera)
+              (call-with-camera camera
+                (lambda (projection location)
+                  (draw-scene-node (scene-root scene)
+                                   alpha
+                                   (transform* projection location)))))
+            (scene-cameras scene)))
