@@ -36,6 +36,7 @@ SOURCES = 					\
   sly/keyboard.scm				\
   sly/live-reload.scm				\
   sly/math.scm					\
+  sly/math/vector.scm				\
   sly/mesh.scm					\
   sly/mouse.scm					\
   sly/quaternion.scm				\
@@ -50,7 +51,6 @@ SOURCES = 					\
   sly/tileset.scm				\
   sly/transform.scm				\
   sly/transition.scm				\
-  sly/vector.scm					\
   sly/window.scm					\
   sly/joystick.scm				\
   $(WRAPPER_SOURCES)

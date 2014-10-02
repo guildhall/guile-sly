@@ -24,7 +24,7 @@
 
 (define-module (sly rect)
   #:use-module (srfi srfi-9)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (<rect>
             make-rect
             null-rect
@@ -93,22 +93,22 @@
 
 (define (rect-position rect)
   "Return the top-left corner of RECT as a vector."
-  (vector (rect-x rect)
-          (rect-y rect)))
+  (vector2 (rect-x rect)
+           (rect-y rect)))
 
 (define rect-top-left rect-position)
 
 (define (rect-top-right rect)
-  (vector (rect-right rect)
-          (rect-top   rect)))
+  (vector2 (rect-right rect)
+           (rect-top   rect)))
 
 (define (rect-bottom-left rect)
-  (vector (rect-left   rect)
-          (rect-bottom rect)))
+  (vector2 (rect-left   rect)
+           (rect-bottom rect)))
 
 (define (rect-bottom-right rect)
-  (vector (rect-right  rect)
-          (rect-bottom rect)))
+  (vector2 (rect-right  rect)
+           (rect-bottom rect)))
 
 (define (rect-center-x rect)
   (+ (rect-x rect) (rect-half-width rect)))
@@ -117,8 +117,8 @@
   (+ (rect-y rect) (rect-half-height rect)))
 
 (define (rect-center rect)
-  (vector (rect-center-x rect)
-          (rect-center-y rect)))
+  (vector2 (rect-center-x rect)
+           (rect-center-y rect)))
 
 (define (rect-half-width rect)
   (/ (rect-width rect) 2))
@@ -128,8 +128,8 @@
 
 (define (rect-size rect)
   "Return the size of RECT as a vector."
-  (vector (rect-width rect)
-          (rect-height rect)))
+  (vector2 (rect-width rect)
+           (rect-height rect)))
 
 (define (%rect-move rect x y)
   "Move RECT by the offset X, Y."

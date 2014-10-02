@@ -1,6 +1,7 @@
 *~
 .#*
 *.go
+*.log
 autom4te.cache/
 build-aux/
 Makefile

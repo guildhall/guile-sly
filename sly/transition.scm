@@ -28,7 +28,7 @@
   #:use-module (sly math)
   #:use-module (sly quaternion)
   #:use-module (sly signal)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (ease-linear
             ease-in-sine ease-out-sine ease-in-out-sine
             ease-in-quad ease-out-quad ease-in-out-quad
@@ -122,7 +122,9 @@ range [0, 1]."
 
   (cond ((both? number?)
          number-interpolate)
-        ((both? vector?)
+        ((or (both? vector2?)
+             (both? vector3?)
+             (both? vector4?))
          vector-interpolate)
         ((both? color?)
          color-interpolate)

@@ -27,7 +27,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
   #:use-module (sly math)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix
             transpose transform-vector2
@@ -92,12 +92,12 @@ column-major format."
   (let ((m (transform-matrix transform))
         (x (vx v))
         (y (vy v)))
-    (vector (+ (* x (array-ref m 0 0))
-               (* y (array-ref m 0 1))
-               (array-ref m 0 3))
-            (+ (* x (array-ref m 1 0))
-               (* y (array-ref m 1 1))
-               (array-ref m 1 3)))))
+    (vector2 (+ (* x (array-ref m 0 0))
+                (* y (array-ref m 0 1))
+                (array-ref m 0 3))
+             (+ (* x (array-ref m 1 0))
+                (* y (array-ref m 1 1))
+                (array-ref m 1 3)))))
 
 (define (transform+ . transforms)
   "Return the sum of all given transformation matrices.  Return
@@ -130,41 +130,48 @@ identity-transform if called without any arguments."
       (%make-transform m3)))
   (reduce mul identity-transform transforms))
 
-(define (translate v)
-  "Return a new transform that translates by the 2D or 3D vector V."
-  (match v
-    (#(x y)
-     (make-transform 1 0 0 0
-                      0 1 0 0
-                      0 0 1 0
-                      x y 0 1))
-    (#(x y z)
-     (make-transform 1 0 0 0
-                      0 1 0 0
-                      0 0 1 0
-                      x y z 1))
-    (_ (error "Invalid translation vector: " v))))
+(define translate
+  (match-lambda
+    ((? vector2? v)
+     (let ((x (vx v))
+           (y (vy v)))
+       (make-transform  1 0 0 0
+                        0 1 0 0
+                        0 0 1 0
+                        x y 0 1)))
+    ((? vector3? v)
+     (let ((x (vx v))
+           (y (vy v))
+           (z (vz v)))
+       (make-transform 1 0 0 0
+                       0 1 0 0
+                       0 0 1 0
+                       x y z 1)))
+    (v (error "Invalid translation vector: " v))))
 
-(define (scale v)
-  "Return a new transform that scales by the 2D vector, 3D vector, or
-scalar V."
-  (match v
+(define scale
+  (match-lambda
    ((? number? v)
     (make-transform v 0 0 0
                     0 v 0 0
                     0 0 v 0
                     0 0 0 1))
-   (#(x y)
-    (make-transform x 0 0 0
-                    0 y 0 0
-                    0 0 1 0
-                    0 0 0 1))
-   (#(x y z)
-    (make-transform x 0 0 0
-                    0 y 0 0
-                    0 0 z 0
-                    0 0 0 1))
-   (_ (error "Invalid scaling vector: " v))))
+   ((? vector2? v)
+    (let ((x (vx v))
+          (y (vy v)))
+      (make-transform x 0 0 0
+                      0 y 0 0
+                      0 0 1 0
+                      0 0 0 1)))
+   ((? vector3? v)
+    (let ((x (vx v))
+          (y (vy v))
+          (z (vz v)))
+      (make-transform x 0 0 0
+                      0 y 0 0
+                      0 0 z 0
+                      0 0 0 1)))
+   (v (error "Invalid scaling vector: " v))))
 
 (define (rotate-x angle)
   "Return a new transform that rotates the X axis by ANGLE radians."
@@ -210,7 +217,7 @@ depth clipping plane NEAR and FAR."
                     0 0 (/ (+ far near) (- near far)) -1
                     0 0 (/ (* 2 far near) (- near far)) 0)))
 
-(define* (look-at eye center #:optional (up #(0 1 0)))
+(define* (look-at eye center #:optional (up (vector3 0 1 0)))
   (let* ((forward (normalize (v- center eye)))
          (side (normalize (vcross forward up)))
          (up (normalize (vcross side forward))))

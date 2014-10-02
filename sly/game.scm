@@ -34,7 +34,7 @@
   #:use-module (sly math)
   #:use-module (sly scene)
   #:use-module (sly signal)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:use-module (sly window)
   #:export (draw-hook
             after-game-loop-error-hook

@@ -25,7 +25,7 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:re-export ((SDL:joystick-name . joystick-name)
@@ -126,7 +126,7 @@ values range from [-32768,32767]."
 (define (make-directional-signal-raw idx x-axis y-axis)
   "Create a signal for a Dpad or Analog stick with X and Y axes;
 values range from [-32768,32767]."
-  (signal-map vector
+  (signal-map vector2
               (axis-value-raw idx x-axis)
               (axis-value-raw idx y-axis)))
 
@@ -148,8 +148,8 @@ values are scaled to [-1,1]."
   "Create a signal for a Dpad or Analog stick with X and Y axes;
 values are scaled to [-1,1]."
   (signal-map (lambda (v)
-                (vector (axis-scale (vx v))
-                        (axis-scale (vy v))))
+                (vector2 (axis-scale (vx v))
+                         (axis-scale (vy v))))
               (make-directional-signal-raw idx x-axis y-axis)))
 
 (define-signal button-last-down

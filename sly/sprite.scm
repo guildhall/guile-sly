@@ -37,7 +37,7 @@
   #:use-module (sly shader)
   #:use-module (sly signal)
   #:use-module (sly texture)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (make-sprite
             load-sprite
             make-animated-sprite))
@@ -67,15 +67,15 @@ custom SHADER can be specified."
      #:texture texture
      #:indices #(0 3 2 0 2 1)
      #:data `(("position" ,(vector
-                            (vector x1 y1 0)
-                            (vector x2 y1 0)
-                            (vector x2 y2 0)
-                            (vector x1 y2 0)))
+                            (vector3 x1 y1 0)
+                            (vector3 x2 y1 0)
+                            (vector3 x2 y2 0)
+                            (vector3 x1 y2 0)))
               ("tex" ,(vector
-                       (vector s1 t1)
-                       (vector s2 t1)
-                       (vector s2 t2)
-                       (vector s1 t2)))))))
+                       (vector2 s1 t1)
+                       (vector2 s2 t1)
+                       (vector2 s2 t2)
+                       (vector2 s1 t2)))))))
 
 (define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
                       (anchor 'center) (color white))

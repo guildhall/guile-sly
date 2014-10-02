@@ -25,7 +25,7 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (key-press-hook
             key-release-hook
             key-last-down
@@ -75,10 +75,10 @@ KEY is pressed or #f otherwise."
 
 (define (key-directions up down left right)
   (signal-map (lambda (up? down? left? right?)
-                (vector (+ (if left? -1 0)
-                           (if right? 1 0))
-                        (+ (if up? -1 0)
-                           (if down? 1 0))))
+                (vector2 (+ (if left? -1 0)
+                            (if right? 1 0))
+                         (+ (if up? -1 0)
+                            (if down? 1 0))))
               (key-down? up)
               (key-down? down)
               (key-down? left)

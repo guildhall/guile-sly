@@ -27,7 +27,7 @@
   #:use-module (gl low-level)
   #:use-module (sly helpers)
   #:use-module (sly transform)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:use-module (sly color)
   #:use-module (sly config)
   #:use-module (sly wrappers gl)

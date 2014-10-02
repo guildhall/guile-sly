@@ -28,7 +28,7 @@
   #:use-module (sly event)
   #:use-module (sly signal)
   #:use-module (sly transform)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (make-window
             window?
             window-title
@@ -53,7 +53,7 @@
 
 (define* (make-window #:optional #:key
                       (title "Sly Window")
-                      (resolution #(640 480))
+                      (resolution (vector2 640 480))
                       (fullscreen? #f))
   (%make-window title resolution fullscreen?))
 
@@ -70,9 +70,8 @@
 
 (define-signal window-size
   (hook->signal window-resize-hook
-                #(0 0)
-                (lambda (width height)
-                  (vector width height))))
+                (vector2 0 0)
+                vector2))
 (define-signal window-width (signal-map vx window-size))
 (define-signal window-height (signal-map vy window-size))
 
@@ -95,7 +94,7 @@
   (let ((flags (if (window-fullscreen? window) '(opengl fullscreen) 'opengl))
         (width (vx (window-resolution window)))
         (height (vy (window-resolution window))))
-    (signal-set! window-size (vector width height))
+    (signal-set! window-size (vector2 width height))
     ;; Initialize everything
     (SDL:enable-unicode #t)
     (SDL:init 'everything)

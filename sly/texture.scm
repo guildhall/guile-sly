@@ -30,7 +30,7 @@
   #:use-module (gl contrib packed-struct)
   #:use-module (sly color)
   #:use-module (sly helpers)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:use-module (sly wrappers gl)
   #:use-module (sly wrappers freeimage)
   #:export (make-texture
@@ -175,23 +175,23 @@ vector to be returned."
   (let ((w (texture-width texture))
         (h (texture-height texture)))
     (match anchor
-      (#(x y)
+      ((? vector2? anchor)
        anchor)
       ('center
-       (vector (/ w 2)
-               (/ h 2)))
+       (vector2 (/ w 2)
+                (/ h 2)))
       ('top-left
-       #(0 0))
+       (vector2 0 0))
       ('top-right
-       (vector w 0))
+       (vector2 w 0))
       ('bottom-left
-       (vector 0 h))
+       (vector2 0 h))
       ('bottom-right
-       (vector w h))
+       (vector2 w h))
       ('top-center
-       (vector (/ w 2) 0))
+       (vector2 (/ w 2) 0))
       ('bottom-center
-       (vector (/ w 2) h))
+       (vector2 (/ w 2) h))
       (_ (error "Invalid anchor type: " anchor)))))
 
 ;;;

@@ -27,7 +27,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (sly math)
   #:use-module (sly transform)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (make-quaternion
             quaternion?
             quaternion-w quaternion-x quaternion-y quaternion-z
@@ -97,20 +97,20 @@ AXIS must be a 3D vector."
   (let* ((cos (cos (/ theta 2)))
          (sin (sin (/ theta 2))))
     (match axis
-      (#(x y z)
-       (make-quaternion cos (* x sin) (* y sin) (* z sin))))))
+      ((? vector3? v)
+       (make-quaternion cos (* (vx v) sin) (* (vy v) sin) (* (vz v) sin))))))
 
 (define (quaternion->vector q)
   "Convert the quaternion Q into a 4D vector."
   (match q
     (($ <quaternion> w x y z)
-     (vector w x y z))))
+     (vector4 w x y z))))
 
 (define (vector->quaternion v)
   "Convert the 4D vector V into a quaternion."
   (match v
-    (#(w x y z)
-     (make-quaternion w x y z))))
+    ((? vector4? v)
+     (make-quaternion (vx v) (vy v) (vz v) (vw v)))))
 
 (define (quaternion->transform q)
   "Convert the quaternion Q into a 4x4 transformation matrix."

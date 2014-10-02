@@ -25,7 +25,7 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
-  #:use-module (sly vector)
+  #:use-module (sly math vector)
   #:export (mouse-move-hook
             mouse-press-hook
             mouse-click-hook
@@ -47,9 +47,8 @@
 
 (define-signal mouse-position
   (hook->signal mouse-move-hook
-                #(0 0)
-                (lambda (x y)
-                  (vector x y))))
+                (vector2 0 0)
+                vector2))
 
 (define-signal mouse-x (signal-map vx mouse-position))
 (define-signal mouse-y (signal-map vy mouse-position))

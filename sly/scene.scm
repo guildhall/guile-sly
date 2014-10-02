@@ -30,6 +30,7 @@
   #:use-module (sly signal)
   #:use-module (sly transform)
   #:use-module (sly transition)
+  #:use-module (sly math vector)
   #:export (scene-node
             make-scene-node
             scene-node?
@@ -51,7 +52,7 @@
   (children scene-node-children))
 
 (define* (make-scene-node #:optional #:key
-                           (position #(0 0))
+                           (position (vector2 0 0))
                            (scale 1)
                            (rotation identity-quaternion)
                            (uniforms '())
