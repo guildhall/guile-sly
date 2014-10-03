@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (sly color)
+  #:use-module (ice-9 match)
   #:use-module (gl)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-1)
@@ -119,53 +120,42 @@ For example: #xffffff will return a color with RGBA values 1, 1, 1,
                (color-component color-code 0)
                1))
 
-(define (color* a b)
-  "Multiply the RGBA channels of colors A and B."
-  (make-color (* (color-r a)
-                 (color-r b))
-              (* (color-g a)
-                 (color-g b))
-              (* (color-b a)
-                 (color-b b))
-              (* (color-a a)
-                 (color-a b))))
+(define color*
+  (match-lambda*
+   ((($ <color> r1 g1 b1 a1) ($ <color> r2 g2 b2 a2))
+    (make-color (* r1 r2)
+                (* g1 g2)
+                (* b1 b2)
+                (* a1 a2)))
+   ((($ <color> r g b a) (? number? k))
+    (make-color (* r k)
+                (* g k)
+                (* b k)
+                (* a k)))))
 
-(define (color-scale c k)
-  "Multiple the RGBA channels of the color C by the scalar K."
-  (make-color (* (color-r c) k)
-              (* (color-g c) k)
-              (* (color-b c) k)
-              (* (color-a c) k)))
+(define color+
+  (match-lambda*
+   ((($ <color> r1 g1 b1 a1) ($ <color> r2 g2 b2 a2))
+    (make-color (+ r1 r2)
+                (+ g1 g2)
+                (+ b1 b2)
+                (+ a1 a2)))))
 
-(define (color+ a b)
-  "Add the RGBA channels of colors A and B."
-  (make-color (+ (color-r a)
-                 (color-r b))
-              (+ (color-g a)
-                 (color-g b))
-              (+ (color-b a)
-                 (color-b b))
-              (+ (color-a a)
-                 (color-a b))))
+(define color-
+  (match-lambda*
+   ((($ <color> r1 g1 b1 a1) ($ <color> r2 g2 b2 a2))
+    (make-color (- r1 r2)
+                (- g1 g2)
+                (- b1 b2)
+                (- a1 a2)))))
 
-(define (color- a b)
-  "Subtract the RGBA channels of colors A and B."
-  (make-color (- (color-r a)
-                 (color-r b))
-              (- (color-g a)
-                 (color-g b))
-              (- (color-b a)
-                 (color-b b))
-              (- (color-a a)
-                 (color-a b))))
-
-(define (color-inverse color)
-  "Create a new color that is the inverse of COLOR.  The alpha channel
-is left unchanged."
-  (make-color (- 1 (color-r color))
-              (- 1 (color-g color))
-              (- 1 (color-b color))
-              (color-a color)))
+(define color-inverse
+  (match-lambda
+   (($ <color> r g b a)
+    (make-color (- 1 r)
+                (- 1 g)
+                (- 1 b)
+                a)))) ; Do not alter alpha channel.
 
 ;;;
 ;;; Pre-defined Colors

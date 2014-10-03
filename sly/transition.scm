@@ -114,7 +114,7 @@ range [0, 1]."
 
 (define number-interpolate (interpolator + *))
 (define vector-interpolate (interpolator v+ v*))
-(define color-interpolate (interpolator color+ color-scale))
+(define color-interpolate (interpolator color+ color*))
 
 (define (guess-interpolator a b)
   (define (both? pred)
