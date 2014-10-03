@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (sly transition)
+  #:use-module (ice-9 match)
   #:use-module (sly agenda)
   #:use-module (sly color)
   #:use-module (sly coroutine)
@@ -100,42 +101,23 @@
 ;; ease-in-out-bounce
 
 ;;;
-;;; Interpolators
-;;;
-
-(define (interpolator + *)
-  "Return a new procedure that accepts three arguments: a, b, and
-delta.  The returned procedure uses the operations + and * to
-interpolate a value between a and b.  Delta should always be in the
-range [0, 1]."
-  (lambda (a b delta)
-    (+ (* a (- 1 delta))
-       (* b delta))))
-
-(define number-interpolate (interpolator + *))
-(define vector-interpolate (interpolator v+ v*))
-(define color-interpolate (interpolator color+ color*))
-
-(define (guess-interpolator a b)
-  (define (both? pred)
-    (and (pred a) (pred b)))
-
-  (cond ((both? number?)
-         number-interpolate)
-        ((or (both? vector2?)
-             (both? vector3?)
-             (both? vector4?))
-         vector-interpolate)
-        ((both? color?)
-         color-interpolate)
-        ((both? quaternion?)
-         quaternion-slerp)
-        (else
-         (error "Failed to guess interpolator: " a b))))
-
-;;;
 ;;; Transitions
 ;;;
+
+(define guess-interpolator
+  (match-lambda*
+   (((? number? _) (? number? _))
+    lerp)
+   ((or ((? vector2? _) (? vector2? _))
+        ((? vector3? _) (? vector3? _))
+        ((? vector4? _) (? vector4? _)))
+    vlerp)
+   (((? color? _) (? color? _))
+    color-lerp)
+   (((? quaternion? _) (? quaternion? _))
+    quaternion-slerp)
+   ((a b)
+    (error "Failed to guess interpolator: " a b))))
 
 (define* (transition start end duration
                      #:optional #:key

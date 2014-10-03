@@ -33,7 +33,7 @@
             vector2? vector3? vector4?
             vx vy vz vw
             v+ v- v* vdot vcross
-            magnitude normalize))
+            magnitude normalize vlerp))
 
 (define-record-type <vector2>
   (vector2 x y)
@@ -153,3 +153,5 @@
            (vector3 (/ x m) (/ y m) (/ z m)))
           (($ <vector4> x y z w)
            (vector4 (/ x m) (/ y m) (/ z m) (/ w m)))))))
+
+(define vlerp (make-lerp v+ v*))

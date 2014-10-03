@@ -30,53 +30,19 @@
   #:export (<color>
             make-color
             color?
-            color-r
-            color-g
-            color-b
-            color-a
-            rgba
-            rgb
-            color*
-            color-scale
-            color+
-            color-
-            color-inverse
-            white
-            black
-            red
-            green
-            blue
-            yellow
-            magenta
-            cyan
-            transparent
-            tango-light-butter
-            tango-butter
-            tango-dark-butter
-            tango-light-orange
-            tango-orange
-            tango-dark-orange
-            tango-light-chocolate
-            tango-chocolate
-            tango-dark-chocolate
-            tango-light-chameleon
-            tango-chameleon
-            tango-dark-chameleon
-            tango-light-sky-blue
-            tango-sky-blue
-            tango-dark-sky-blue
-            tango-light-plum
-            tango-plum
-            tango-dark-plum
-            tango-light-scarlet-red
-            tango-scarlet-red
-            tango-dark-scarlet-red
-            tango-aluminium-1
-            tango-aluminium-2
-            tango-aluminium-3
-            tango-aluminium-4
-            tango-aluminium-5
-            tango-aluminium-6))
+            color-r color-g color-b color-a
+            rgba rgb
+            color* color+ color- color-inverse color-lerp
+            white black red green blue yellow magenta cyan transparent
+            tango-light-butter tango-butter tango-dark-butter
+            tango-light-orange tango-orange tango-dark-orange
+            tango-light-chocolate tango-chocolate tango-dark-chocolate
+            tango-light-chameleon tango-chameleon tango-dark-chameleon
+            tango-light-sky-blue tango-sky-blue tango-dark-sky-blue
+            tango-light-plum tango-plum tango-dark-plum
+            tango-light-scarlet-red tango-scarlet-red tango-dark-scarlet-red
+            tango-aluminium-1 tango-aluminium-2 tango-aluminium-3
+            tango-aluminium-4 tango-aluminium-5 tango-aluminium-6))
 
 (define-record-type <color>
   (%make-color r g b a)
@@ -156,6 +122,8 @@ For example: #xffffff will return a color with RGBA values 1, 1, 1,
                 (- 1 g)
                 (- 1 b)
                 a)))) ; Do not alter alpha channel.
+
+(define color-lerp (make-lerp color+ color*))
 
 ;;;
 ;;; Pre-defined Colors

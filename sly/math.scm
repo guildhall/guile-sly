@@ -33,7 +33,8 @@
             cotan
             clamp
             linear-scale
-            half square))
+            half square
+            make-lerp lerp))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -110,3 +111,14 @@ actually less than MAX."
 
 (define (square x)
   (* x x))
+
+(define (make-lerp + *)
+  "Return a new procedure that accepts three arguments: A, B, and
+ALPHA.  The returned procedure uses the procedures + and * to linearly
+interpolate a value between A and B.  ALPHA should always be in the
+range [0, 1]."
+  (lambda (a b alpha)
+    (+ (* a (- 1 alpha))
+       (* b alpha))))
+
+(define lerp (make-lerp + *))
