@@ -132,21 +132,16 @@ identity-transform if called without any arguments."
 
 (define translate
   (match-lambda
-    ((? vector2? v)
-     (let ((x (vx v))
-           (y (vy v)))
-       (make-transform  1 0 0 0
-                        0 1 0 0
-                        0 0 1 0
-                        x y 0 1)))
-    ((? vector3? v)
-     (let ((x (vx v))
-           (y (vy v))
-           (z (vz v)))
-       (make-transform 1 0 0 0
-                       0 1 0 0
-                       0 0 1 0
-                       x y z 1)))
+    (($ <vector2> x y)
+     (make-transform  1 0 0 0
+                      0 1 0 0
+                      0 0 1 0
+                      x y 0 1))
+    (($ <vector3> x y z)
+     (make-transform 1 0 0 0
+                     0 1 0 0
+                     0 0 1 0
+                     x y z 1))
     (v (error "Invalid translation vector: " v))))
 
 (define scale
@@ -156,21 +151,16 @@ identity-transform if called without any arguments."
                     0 v 0 0
                     0 0 v 0
                     0 0 0 1))
-   ((? vector2? v)
-    (let ((x (vx v))
-          (y (vy v)))
-      (make-transform x 0 0 0
-                      0 y 0 0
-                      0 0 1 0
-                      0 0 0 1)))
-   ((? vector3? v)
-    (let ((x (vx v))
-          (y (vy v))
-          (z (vz v)))
-      (make-transform x 0 0 0
-                      0 y 0 0
-                      0 0 z 0
-                      0 0 0 1)))
+   (($ <vector2> x y)
+    (make-transform x 0 0 0
+                    0 y 0 0
+                    0 0 1 0
+                    0 0 0 1))
+   (($ <vector3> x y z)
+    (make-transform x 0 0 0
+                    0 y 0 0
+                    0 0 z 0
+                    0 0 0 1))
    (v (error "Invalid scaling vector: " v))))
 
 (define (rotate-x angle)

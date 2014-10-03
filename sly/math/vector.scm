@@ -26,9 +26,10 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (sly math)
-  #:export (vector2
-            vector3
-            vector4
+  #:export (<vector2>
+            <vector3>
+            <vector4>
+            vector2 vector3 vector4
             vector2? vector3? vector4?
             vx vy vz vw
             v+ v- v* vdot vcross
@@ -57,27 +58,22 @@
 
 (define vx
   (match-lambda
-   (($ <vector2> x _)
-    x)
-   (($ <vector3> x _ _)
-    x)
-   (($ <vector4> x _ _ _)
+   ((or ($ <vector2> x _)
+        ($ <vector3> x _ _)
+        ($ <vector4> x _ _ _))
     x)))
 
 (define vy
   (match-lambda
-   (($ <vector2> _ y)
-    y)
-   (($ <vector3> _ y _)
-    y)
-   (($ <vector4> _ y _ _)
+   ((or ($ <vector2> _ y)
+        ($ <vector3> _ y _)
+        ($ <vector4> _ y _ _))
     y)))
 
 (define vz
   (match-lambda
-   (($ <vector3> _ _ z)
-    z)
-   (($ <vector4> _ _ z _)
+   ((or ($ <vector3> _ _ z)
+        ($ <vector4> _ _ z _))
     z)))
 
 (define vw vector4-w)
