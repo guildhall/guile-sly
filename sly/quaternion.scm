@@ -34,8 +34,8 @@
             identity-quaternion null-quaternion
             quaternion* quaternion-slerp
             quaternion-magnitude quaternion-normalize
-            vector->quaternion axis-angle->quaternion
-            quaternion->vector quaternion->transform))
+            vector->quaternion axis-angle->quaternion quaternion->vector
+            rotate))
 
 (define-record-type <quaternion>
   (make-quaternion w x y z)
@@ -112,20 +112,22 @@ AXIS must be a 3D vector."
     ((? vector4? v)
      (make-quaternion (vx v) (vy v) (vz v) (vw v)))))
 
-(define (quaternion->transform q)
-  "Convert the quaternion Q into a 4x4 transformation matrix."
-  (match q
-    (($ <quaternion> w x y z)
-     (make-transform
-      (- 1 (* 2 (square y)) (* 2 (square z)))
-      (- (* 2 x y) (* 2 w z))
-      (+ (* 2 x z) (* 2 w y))
-      0
-      (+ (* 2 x y) (* 2 w z))
-      (- 1 (* 2 (square x)) (* 2 (square z)))
-      (- (* 2 y z) (* 2 w x))
-      0
-      (- (* 2 x z) (* 2 w y))
-      (+ (* 2 y z) (* 2 w x))
-      (- 1 (* 2 (square x)) (* 2 (square y)))
-      0 0 0 0 1))))
+(define rotate
+  (match-lambda*
+   ;; Automagically convert axis angles to quaternions.
+   (((? vector3? axis) (? number? theta))
+    (rotate (axis-angle->quaternion axis theta)))
+   ((($ <quaternion> w x y z))
+    (make-transform
+     (- 1 (* 2 (square y)) (* 2 (square z)))
+     (- (* 2 x y) (* 2 w z))
+     (+ (* 2 x z) (* 2 w y))
+     0
+     (+ (* 2 x y) (* 2 w z))
+     (- 1 (* 2 (square x)) (* 2 (square z)))
+     (- (* 2 y z) (* 2 w x))
+     0
+     (- (* 2 x z) (* 2 w y))
+     (+ (* 2 y z) (* 2 w x))
+     (- 1 (* 2 (square x)) (* 2 (square y)))
+     0 0 0 0 1))))
