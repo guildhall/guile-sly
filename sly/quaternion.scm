@@ -94,23 +94,21 @@ Q2 and blending factor DELTA."
 (define (axis-angle->quaternion axis theta)
   "Convert the rotation of THETA radians about AXIS to a quaternion.
 AXIS must be a 3D vector."
-  (let* ((cos (cos (/ theta 2)))
-         (sin (sin (/ theta 2))))
-    (match axis
-      ((? vector3? v)
-       (make-quaternion cos (* (vx v) sin) (* (vy v) sin) (* (vz v) sin))))))
+  (match axis
+    (($ <vector3> x y z)
+     (let* ((theta/2 (/ theta 2))
+            (sin (sin theta/2)))
+       (make-quaternion (cos theta/2) (* x sin) (* y sin) (* z sin))))))
 
-(define (quaternion->vector q)
-  "Convert the quaternion Q into a 4D vector."
-  (match q
+(define quaternion->vector
+  (match-lambda
     (($ <quaternion> w x y z)
      (vector4 w x y z))))
 
-(define (vector->quaternion v)
-  "Convert the 4D vector V into a quaternion."
-  (match v
-    ((? vector4? v)
-     (make-quaternion (vx v) (vy v) (vz v) (vw v)))))
+(define vector->quaternion
+  (match-lambda
+    (($ <vector4> x y z w)
+     (make-quaternion x y z w))))
 
 (define rotate
   (match-lambda*
