@@ -22,19 +22,21 @@
 ;;; Code:
 
 (define-module (sly scene)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:use-module (sly camera)
   #:use-module (sly mesh)
   #:use-module (sly quaternion)
   #:use-module (sly signal)
+  #:use-module (sly texture)
   #:use-module (sly transform)
   #:use-module (sly transition)
   #:use-module (sly math vector)
   #:export (scene-node
             make-scene-node
             scene-node?
-            scene-node-position scene-node-scale scene-node-rotation
+            scene-node-transform scene-node-texture
             scene-node-uniforms scene-node-children
             update-scene-node draw-scene-node
             make-scene
@@ -43,32 +45,32 @@
             update-scene draw-scene))
 
 (define-record-type <scene-node>
-  (%make-scene-node position scale rotation uniforms children)
+  (%make-scene-node transform texture uniforms children)
   scene-node?
-  (position scene-node-position)
-  (scale scene-node-scale)
-  (rotation scene-node-rotation)
+  (transform scene-node-transform)
+  (texture scene-node-texture)
   (uniforms scene-node-uniforms)
   (children scene-node-children))
 
 (define* (make-scene-node #:optional #:key
-                           (position (vector2 0 0))
-                           (scale 1)
-                           (rotation identity-quaternion)
-                           (uniforms '())
-                           (children '())
-                           #:allow-other-keys)
-  (%make-scene-node position scale rotation uniforms children))
+                          (transform identity-transform)
+                          (texture #f)
+                          (uniforms '())
+                          (children '())
+                          #:allow-other-keys)
+  (match children
+    ((or (children ...)
+         (= list children))
+     (%make-scene-node transform texture uniforms children))))
 
 (define-syntax-rule (scene-node (field val) ...)
   (apply make-scene-node
          (append (list (symbol->keyword 'field) val) ...)))
 
-(define (interpolate current prev alpha)
-  (if (or (not prev)
-          (equal? current prev))
-      current
-      (vector-interpolate prev current alpha)))
+(define-syntax-rule (with-texture-maybe texture body ...)
+  (if (texture? texture)
+      (with-texture texture body ...)
+      (begin body ...)))
 
 (define* (draw-scene-node node alpha transform #:optional (uniforms '()))
   (signal-let ((node node))
@@ -76,17 +78,14 @@
         (draw-mesh node `(("mvp" ,transform)
                           ,@uniforms))
         (signal-let ((children (scene-node-children node))
-                     (position (scene-node-position node))
-                     (%scale (scene-node-scale node))
-                     (rotation (scene-node-rotation node)))
-          (let ((node-transform (transform*
-                                 (translate position)
-                                 (scale %scale)
-                                 (quaternion->transform rotation))))
-            (for-each (cut draw-scene-node <> alpha
-                           (transform* transform node-transform)
-                           (scene-node-uniforms node))
-                      children))))))
+                     (local-transform (scene-node-transform node))
+                     (texture (scene-node-texture node)))
+          (with-texture-maybe texture
+            (let ((transform (transform* transform local-transform))
+                  ;; FIXME: properly merge uniform alists together.
+                  (uniforms (append uniforms (scene-node-uniforms node))))
+              (for-each (cut draw-scene-node <> alpha transform uniforms)
+                        children)))))))
 
 ;;;
 ;;; Scene

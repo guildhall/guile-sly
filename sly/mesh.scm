@@ -17,8 +17,7 @@
 
 ;;; Commentary:
 ;;
-;; A mesh is a 2D/3D model comprised of a texture, shader, and vertex
-;; buffers.
+;; A mesh is a 2D/3D model comprised of a shader and vertex buffers.
 ;;
 ;;; Code:
 
@@ -157,14 +156,13 @@
 ;;;
 
 (define-record-type <mesh>
-  (%make-mesh vao length shader texture)
+  (%make-mesh vao length shader)
   mesh?
   (vao mesh-vao)
   (length mesh-length)
-  (shader mesh-shader)
-  (texture mesh-texture))
+  (shader mesh-shader))
 
-(define* (make-mesh #:optional #:key shader texture indices data)
+(define* (make-mesh #:optional #:key shader indices data)
   (let ((vao (generate-vertex-array)))
     (with-vertex-array vao
       (let loop ((data data))
@@ -175,7 +173,7 @@
            (loop rest))
           (() #f)))
       (bind-vertex-buffer (make-vertex-buffer indices #t)))
-    (%make-mesh vao (vector-length indices) shader texture)))
+    (%make-mesh vao (vector-length indices) shader)))
 
 (define (draw-mesh mesh uniforms)
   (define (draw)
@@ -192,6 +190,4 @@
                                  (signal-ref-maybe value)))))
               uniforms)
     (with-vertex-array (mesh-vao mesh)
-      (if (texture? (mesh-texture mesh))
-          (with-texture (mesh-texture mesh) (draw))
-          (draw)))))
+      (draw))))
