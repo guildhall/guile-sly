@@ -23,7 +23,11 @@
 ;;; Code:
 
 (define-module (sly wrappers gl)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-4)
+  #:use-module ((system foreign) #:select (bytevector->pointer))
   #:use-module ((gl low-level) #:renamer (symbol-prefix-proc '%))
+  #:use-module (gl enums)
   #:use-module (gl runtime)
   #:use-module (gl types))
 
@@ -68,13 +72,29 @@
 
 (re-export  (%glTexParameteri . gl-texture-parameter))
 
+(define gl-current-texture
+  (let ((binding-map (list (cons (texture-target texture-1d)
+                                 (get-p-name texture-binding-1d))
+                           (cons (texture-target texture-2d)
+                                 (get-p-name texture-binding-2d))
+                           (cons (texture-target texture-3d-ext)
+                                 (get-p-name texture-binding-3d)))))
+    (lambda (target)
+      "Return the id of the currently bound texture."
+      (let ((bv (make-s32vector 1)))
+        (%glGetIntegerv (assoc-ref binding-map target)
+                        (bytevector->pointer bv))
+        (s32vector-ref bv 0)))))
+
 ;; emacs: (put 'with-gl-bind-texture 'scheme-indent-function 2)
 (define-syntax-rule (with-gl-bind-texture target id body ...)
-  (begin
-    (%glBindTexture target id)
-    body
-    ...
-    (%glBindTexture target 0)))
+  (let ((old-id (gl-current-texture target)))
+    (if (= id old-id)
+        (begin body ...)
+        (begin
+          (%glBindTexture target id)
+          body ...
+          (%glBindTexture target old-id)))))
 
 (export with-gl-bind-texture)
 
