@@ -28,22 +28,34 @@
   #:use-module (sly math)
   #:use-module (sly transform)
   #:use-module (sly math vector)
-  #:export (make-quaternion
+  #:export (make-quaternion quaternion
             quaternion?
             quaternion-w quaternion-x quaternion-y quaternion-z
             identity-quaternion null-quaternion
             quaternion* quaternion-slerp
             quaternion-magnitude quaternion-normalize
-            vector->quaternion axis-angle->quaternion quaternion->vector
+            vector->quaternion quaternion->vector
             rotate))
 
 (define-record-type <quaternion>
-  (make-quaternion w x y z)
+  (%make-quaternion w x y z)
   quaternion?
   (w quaternion-w)
   (x quaternion-x)
   (y quaternion-y)
   (z quaternion-z))
+
+(define make-quaternion
+  (match-lambda*
+   ((($ <vector3> x y z) (? number? theta))
+    ;; Convert an axis angle to a quaternion
+    (let* ((theta/2 (/ theta 2))
+           (sin (sin theta/2)))
+      (%make-quaternion (cos theta/2) (* x sin) (* y sin) (* z sin))))
+   ((w x y z)
+    (%make-quaternion w x y z))))
+
+(define quaternion make-quaternion)
 
 (define identity-quaternion (make-quaternion 1 0 0 0))
 (define null-quaternion (make-quaternion 0 0 0 0))
@@ -91,15 +103,6 @@ Q2 and blending factor DELTA."
                          (/ (quaternion-y q) m)
                          (/ (quaternion-z q) m)))))
 
-(define (axis-angle->quaternion axis theta)
-  "Convert the rotation of THETA radians about AXIS to a quaternion.
-AXIS must be a 3D vector."
-  (match axis
-    (($ <vector3> x y z)
-     (let* ((theta/2 (/ theta 2))
-            (sin (sin theta/2)))
-       (make-quaternion (cos theta/2) (* x sin) (* y sin) (* z sin))))))
-
 (define quaternion->vector
   (match-lambda
     (($ <quaternion> w x y z)
@@ -111,11 +114,8 @@ AXIS must be a 3D vector."
      (make-quaternion x y z w))))
 
 (define rotate
-  (match-lambda*
-   ;; Automagically convert axis angles to quaternions.
-   (((? vector3? axis) (? number? theta))
-    (rotate (axis-angle->quaternion axis theta)))
-   ((($ <quaternion> w x y z))
+  (match-lambda
+   (($ <quaternion> w x y z)
     (make-transform
      (- 1 (* 2 (square y)) (* 2 (square z)))
      (- (* 2 x y) (* 2 w z))
