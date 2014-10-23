@@ -28,7 +28,7 @@
   #:use-module (sly math)
   #:use-module (sly transform)
   #:use-module (sly math vector)
-  #:export (make-quaternion quaternion
+  #:export (<quaternion> make-quaternion quaternion
             quaternion?
             quaternion-w quaternion-x quaternion-y quaternion-z
             identity-quaternion null-quaternion
