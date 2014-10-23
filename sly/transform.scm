@@ -28,11 +28,12 @@
   #:use-module (srfi srfi-42)
   #:use-module (sly math)
   #:use-module (sly math vector)
+  #:use-module (sly quaternion)
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix
             transpose transform-vector2
             transform+ transform*
-            scale translate rotate-x rotate-y rotate-z
+            scale translate rotate-x rotate-y rotate-z rotate
             orthographic-projection perspective-projection
             look-at))
 
@@ -183,6 +184,23 @@ identity-transform if called without any arguments."
                   (sin angle) (cos angle)     0 0
                   0           0               1 0
                   0           0               0 1))
+
+(define rotate
+  (match-lambda
+   (($ <quaternion> w x y z)
+    (make-transform
+     (- 1 (* 2 (square y)) (* 2 (square z)))
+     (- (* 2 x y) (* 2 w z))
+     (+ (* 2 x z) (* 2 w y))
+     0
+     (+ (* 2 x y) (* 2 w z))
+     (- 1 (* 2 (square x)) (* 2 (square z)))
+     (- (* 2 y z) (* 2 w x))
+     0
+     (- (* 2 x z) (* 2 w y))
+     (+ (* 2 y z) (* 2 w x))
+     (- 1 (* 2 (square x)) (* 2 (square y)))
+     0 0 0 0 1))))
 
 (define (orthographic-projection left right top bottom near far)
   "Return a new transform that represents an orthographic projection

@@ -26,7 +26,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (sly math)
-  #:use-module (sly transform)
   #:use-module (sly math vector)
   #:export (<quaternion> make-quaternion quaternion
             quaternion?
@@ -34,8 +33,7 @@
             identity-quaternion null-quaternion
             quaternion* quaternion-slerp
             quaternion-magnitude quaternion-normalize
-            vector->quaternion quaternion->vector
-            rotate))
+            vector->quaternion quaternion->vector))
 
 (define-record-type <quaternion>
   (%make-quaternion w x y z)
@@ -112,20 +110,3 @@ Q2 and blending factor DELTA."
   (match-lambda
     (($ <vector4> x y z w)
      (make-quaternion x y z w))))
-
-(define rotate
-  (match-lambda
-   (($ <quaternion> w x y z)
-    (make-transform
-     (- 1 (* 2 (square y)) (* 2 (square z)))
-     (- (* 2 x y) (* 2 w z))
-     (+ (* 2 x z) (* 2 w y))
-     0
-     (+ (* 2 x y) (* 2 w z))
-     (- 1 (* 2 (square x)) (* 2 (square z)))
-     (- (* 2 y z) (* 2 w x))
-     0
-     (- (* 2 x z) (* 2 w y))
-     (+ (* 2 y z) (* 2 w x))
-     (- 1 (* 2 (square x)) (* 2 (square y)))
-     0 0 0 0 1))))
