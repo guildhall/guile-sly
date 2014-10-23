@@ -34,6 +34,7 @@
             transpose transform-vector2
             transform+ transform*
             scale translate rotate-x rotate-y rotate-z rotate
+            build-transform
             orthographic-projection perspective-projection
             look-at))
 
@@ -201,6 +202,14 @@ identity-transform if called without any arguments."
      (+ (* 2 y z) (* 2 w x))
      (- 1 (* 2 (square x)) (* 2 (square y)))
      0 0 0 0 1))))
+
+(define build-transform
+  (let ((%scale scale))
+    (lambda* (#:optional #:key (position (vector3 0 0 0))
+              (scale 1) (rotation null-quaternion))
+      (transform* (translate position)
+                  (%scale scale)
+                  (rotate rotation)))))
 
 (define (orthographic-projection left right top bottom near far)
   "Return a new transform that represents an orthographic projection
