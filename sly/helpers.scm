@@ -30,7 +30,8 @@
             logand?
             define-guardian
             memoize
-            forever))
+            forever
+            trampoline))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
@@ -69,3 +70,7 @@ same thread that is running the game loop."
 
 (define-syntax-rule (forever body ...)
   (while #t body ...))
+
+(define-syntax-rule (trampoline proc)
+  (lambda args
+    (apply proc args)))
