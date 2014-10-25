@@ -54,6 +54,7 @@ SOURCES = 					\
   sly/window.scm					\
   sly/joystick.scm				\
   sly/render/vertex-array.scm			\
+  sly/render/renderer.scm			\
   $(WRAPPER_SOURCES)
 
 WRAPPER_SOURCES =				\
