@@ -32,7 +32,6 @@
   #:use-module (sly camera)
   #:use-module (sly event)
   #:use-module (sly math)
-  #:use-module (sly scene)
   #:use-module (sly signal)
   #:use-module (sly math vector)
   #:use-module (sly window)
@@ -62,33 +61,25 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop scene
-                          #:optional #:key
+(define* (start-game-loop #:optional #:key
                           (frame-rate 60)
                           (tick-rate 60)
                           (max-ticks-per-frame 4))
-  "Start the game loop.  For each frame, render the scene that is
-looked upon by CAMERA.  CAMERA may be a single camera object, or a
-list of cameras for rendering multiple viewports.  FRAME-RATE
-specifies the optimal number of frames to draw per second.  TICK-RATE
-specifies the optimal game logic updates per second.  Both FRAME-RATE
-and TICK-RATE are 60 by default.  MAX-TICKS-PER-FRAME is the maximum
-number of times the game loop will update game state in a single
-frame.  When this upper bound is reached due to poor performance, the
-game will start to slow down instead of becoming completely
-unresponsive and possibly crashing."
+  "Start the game loop. FRAME-RATE specifies the optimal number of
+frames to draw per second.  TICK-RATE specifies the optimal game logic
+updates per second.  Both FRAME-RATE and TICK-RATE are 60 by default.
+MAX-TICKS-PER-FRAME is the maximum number of times the game loop will
+update game state in a single frame.  When this upper bound is reached
+due to poor performance, the game will start to slow down instead of
+becoming completely unresponsive and possibly crashing."
   (let ((tick-interval (interval tick-rate))
         (frame-interval (interval frame-rate)))
     (define (draw dt alpha)
       "Render a frame."
-      (run-hook draw-hook dt alpha)
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
-      (signal-let ((scene scene))
-        (if (list? scene)
-            (for-each (cut draw-scene <> alpha) scene)
-            (draw-scene scene alpha)))
+      (run-hook draw-hook dt alpha)
       (SDL:gl-swap-buffers))
 
     (define (update lag)
