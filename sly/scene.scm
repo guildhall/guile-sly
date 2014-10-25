@@ -17,97 +17,71 @@
 
 ;;; Commentary:
 ;;
-;; Scene graph
+;; Hierarchy of renderable objects using a directed acyclic graph
+;; structure.
 ;;
 ;;; Code:
 
 (define-module (sly scene)
   #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:use-module (sly camera)
-  #:use-module (sly mesh)
-  #:use-module (sly quaternion)
   #:use-module (sly signal)
-  #:use-module (sly texture)
   #:use-module (sly transform)
-  #:use-module (sly transition)
   #:use-module (sly math vector)
-  #:export (scene-node
-            make-scene-node
+  #:use-module (sly render utils)
+  #:use-module (sly render renderer)
+  #:export (scene-node make-scene-node
             scene-node?
-            scene-node-transform scene-node-texture
-            scene-node-uniforms scene-node-children
-            update-scene-node draw-scene-node
-            make-scene
-            scene?
-            scene-root
-            update-scene draw-scene))
+            scene-node-object scene-node-transform
+            scene-node-visible? scene-node-children
+            scene->render-list))
 
 (define-record-type <scene-node>
-  (%make-scene-node transform texture uniforms children)
+  (%make-scene-node object transform visible? children)
   scene-node?
+  (object scene-node-object)
   (transform scene-node-transform)
-  (texture scene-node-texture)
-  (uniforms scene-node-uniforms)
+  (visible? scene-node-visible?)
   (children scene-node-children))
 
-(define* (make-scene-node #:optional #:key
-                          (transform identity-transform)
-                          (texture #f)
-                          (uniforms '())
-                          (children '())
-                          #:allow-other-keys)
-  (match children
-    ((or (children ...)
-         (= list children))
-     (%make-scene-node transform texture uniforms children))))
+(define* (make-scene-node #:optional object #:key (transform identity-transform)
+                          (visible? #t) (children '()))
+  "Create a new scene node containing OBJECT, a renderable object that
+responds to the 'draw' method.  The node has a local transformation
+matrix TRANSFORM, and a list of CHILDREN. The VISIBLE? flag etermines
+whether to draw the node and all of its children or not."
+  (%make-scene-node object transform visible? children))
 
-(define-syntax-rule (scene-node (field val) ...)
-  (apply make-scene-node
-         (append (list (symbol->keyword 'field) val) ...)))
+(define scene-node make-scene-node)
 
-(define-syntax-rule (with-texture-maybe texture body ...)
-  (if (texture? texture)
-      (with-texture texture body ...)
-      (begin body ...)))
+(define (flatten lst)
+  "Return a list that recursively concatenates all sub-lists of LIST."
+  (fold-right
+   (match-lambda*
+    (((sub-list ...) memo)
+     (append (flatten sub-list) memo))
+    ((elem memo)
+     (cons elem memo)))
+   '() lst))
 
-(define* (draw-scene-node node alpha transform #:optional (uniforms '()))
-  (signal-let ((node node))
-    (if (mesh? node)
-        (draw-mesh node `(("mvp" ,transform)
-                          ,@uniforms))
-        (signal-let ((children (scene-node-children node))
-                     (local-transform (scene-node-transform node))
-                     (texture (scene-node-texture node)))
-          (with-texture-maybe texture
-            (let ((transform (transform* transform local-transform))
-                  ;; FIXME: properly merge uniform alists together.
-                  (uniforms (append uniforms (scene-node-uniforms node))))
-              (for-each (cut draw-scene-node <> alpha transform uniforms)
-                        children)))))))
-
-;;;
-;;; Scene
-;;;
-
-(define-record-type <scene>
-  (make-scene root cameras)
-  scene?
-  (root scene-root)
-  (cameras scene-cameras))
-
-(define (update-scene scene)
-  "Update the nodes within SCENE."
-  (update-scene-node (scene-root scene)))
-
-(define (draw-scene scene alpha)
-  "Draw SCENE from the perspective of CAMERA with interpolation factor
-ALPHA."
-  (for-each (lambda (camera)
-              (call-with-camera camera
-                (lambda (projection location)
-                  (draw-scene-node (scene-root scene)
-                                   alpha
-                                   (transform* projection location)))))
-            (scene-cameras scene)))
+(define (scene->render-list node)
+  "Traverse the scene graph defined by NODE and its children and
+return a list of the render operations needed to display the scene.
+Additionally, NODE or any of its children may be a signal to allow for
+dynamic changes to the scene."
+  (define (iter node parent-transform)
+    (signal-let ((node node))
+      (if (scene-node-visible? node)
+          (let ((transform (transform* parent-transform
+                                       (scene-node-transform node)))
+                (object (scene-node-object node)))
+            (cons (if object
+                      (draw (scene-node-object node) transform)
+                      '())
+                  (map (cut iter <> transform)
+                       (scene-node-children node))))
+          '())))
+  (flatten (iter node identity-transform)))
