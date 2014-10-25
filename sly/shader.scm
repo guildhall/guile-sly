@@ -45,6 +45,8 @@
             shader-id
             make-shader-program
             load-shader-program
+            vertex-position-location
+            vertex-texture-location
             shader-program-uniform-location
             shader-program-attribute-location
             shader-program-id
@@ -196,6 +198,9 @@ in the file FILENAME."
   (uniforms shader-program-uniforms)
   (attributes shader-program-attributes))
 
+(define vertex-position-location 0)
+(define vertex-texture-location 1)
+
 (define (shader-program-uniform-location shader-program uniform-name)
   (let ((uniform (find (match-lambda
                         (($ <uniform> name _)
@@ -248,6 +253,9 @@ VERTEX-SHADER and FRAGMENT-SHADER."
         (for-each (lambda (shader)
                     (glAttachShader id (shader-id shader)))
                   shaders)
+        ;; Bind attribute locations
+        (glBindAttribLocation id vertex-position-location "position")
+        (glBindAttribLocation id vertex-texture-location "tex")
         (glLinkProgram id)
         (unless (shader-program-linked? id)
           (display "Failed to link shader program:\n")
