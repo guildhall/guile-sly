@@ -32,11 +32,13 @@
   #:use-module (sly shader)
   #:use-module (sly texture)
   #:use-module (sly transform)
+  #:use-module (sly math vector)
+  #:use-module (sly render utils)
   #:use-module (sly render vertex-array)
   #:export (make-render-op render-op?
             render-op-transform render-op-vertex-array
             render-op-texture render-op-shader
-            render-op-uniforms
+            render-op-blend-mode render-op-uniforms
             make-renderer renderer?
             renderer-cameras renderer-ops
             render))
@@ -44,25 +46,28 @@
 ;; Representation of a single OpenGL render call.
 (define-record-type <render-op>
   (%make-render-op transform vertex-array texture shader uniforms
-                   depth-test?)
+                   blend-mode depth-test?)
   render-op?
   (transform render-op-transform)
   (vertex-array render-op-vertex-array)
   (texture render-op-texture)
   (shader render-op-shader)
   (uniforms render-op-uniforms)
+  (blend-mode render-op-blend-mode)
   (depth-test? render-op-depth-test?))
 
 (define* (make-render-op #:optional #:key (transform identity-transform)
                          (vertex-array #f) (texture #f) (shader #f)
-                         (uniforms '()) (depth-test? #t))
+                         (uniforms '()) (blend-mode default-blend-mode)
+                         (depth-test? #t))
   "Create a new render operation object.  Optional arguments include:
 TRANSFORM, a model transformation matrix.  VERTEX-ARRAY, the geometry
 container.  TEXTURE, the texture object to bind.  SHADER, the shader
 program to bind.  UNIFORMS, the variables to be passed to the shader.
 And DEPTH-TEST?, a flag that determines whether the depth buffer is
 activated or not."
-  (%make-render-op transform vertex-array texture shader uniforms depth-test?))
+  (%make-render-op transform vertex-array texture shader uniforms
+                   blend-mode depth-test?))
 
 (define-syntax-rule (with-texture-maybe texture body ...)
   (if texture
@@ -74,9 +79,15 @@ activated or not."
 the VIEW transform before rendering and passed to the shader as the
 uniform variable 'mvp'."
   (match op
-    (($ <render-op> transform vertex-array texture shader uniforms depth-test?)
+    (($ <render-op> transform vertex-array texture shader uniforms
+                    blend-mode depth-test?)
      (when depth-test?
        (gl-enable (enable-cap depth-test)))
+     (if blend-mode
+         (begin
+           (gl-enable (enable-cap blend))
+           (apply-blend-mode blend-mode))
+         (gl-disable (enable-cap blend)))
      (with-shader-program shader
        (for-each (lambda (uniform)
                    (match uniform
