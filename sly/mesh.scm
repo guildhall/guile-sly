@@ -40,10 +40,8 @@
   #:use-module (sly render renderer)
   #:export (make-mesh
             mesh?
-            mesh-length
             mesh-shader
-            mesh-texture
-            mesh->render-op))
+            mesh-texture))
 
 ;;;
 ;;; Mesh
