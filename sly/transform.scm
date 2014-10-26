@@ -32,6 +32,7 @@
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix
             transpose transform-vector2
+            transform-position
             transform+ transform*
             scale translate rotate-x rotate-y rotate-z rotate
             build-transform
@@ -100,6 +101,14 @@ column-major format."
              (+ (* x (array-ref m 1 0))
                 (* y (array-ref m 1 1))
                 (array-ref m 1 3)))))
+
+(define (transform-position transform)
+  "Return a vector3 containing the positional data stored in
+TRANSFORM."
+  (let ((matrix (transform-matrix transform)))
+    (vector3 (array-ref matrix 3 0)
+             (array-ref matrix 3 1)
+             (array-ref matrix 3 2))))
 
 (define (transform+ . transforms)
   "Return the sum of all given transformation matrices.  Return
