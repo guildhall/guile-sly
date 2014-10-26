@@ -34,7 +34,6 @@
   #:use-module (sly helpers)
   #:use-module (sly math)
   #:use-module (sly mesh)
-  #:use-module (sly scene)
   #:use-module (sly shader)
   #:use-module (sly signal)
   #:use-module (sly texture)
@@ -63,22 +62,20 @@ custom SHADER can be specified."
          (t1 (texture-t1 texture))
          (s2 (texture-s2 texture))
          (t2 (texture-t2 texture)))
-    (make-scene-node
+    (make-mesh
+     #:shader shader
      #:texture texture
-     #:children
-     (make-mesh
-      #:shader shader
-      #:indices #(0 3 2 0 2 1)
-      #:data `(("position" ,(vector
-                             (vector3 x1 y1 0)
-                             (vector3 x2 y1 0)
-                             (vector3 x2 y2 0)
-                             (vector3 x1 y2 0)))
-               ("tex" ,(vector
-                        (vector2 s1 t1)
-                        (vector2 s2 t1)
-                        (vector2 s2 t2)
-                        (vector2 s1 t2))))))))
+     #:indices #(0 3 2 0 2 1)
+     #:positions (vector
+                  (vector3 x1 y1 0)
+                  (vector3 x2 y1 0)
+                  (vector3 x2 y2 0)
+                  (vector3 x1 y2 0))
+     #:textures (vector
+                 (vector2 s1 t1)
+                 (vector2 s2 t1)
+                 (vector2 s2 t2)
+                 (vector2 s1 t2)))))
 
 (define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
                       (anchor 'center) (color white))
