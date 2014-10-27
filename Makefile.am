@@ -24,7 +24,6 @@ SOURCES = 					\
   sly/agenda.scm 				\
   sly/animation.scm				\
   sly/audio.scm					\
-  sly/camera.scm				\
   sly/color.scm					\
   sly/config.scm					\
   sly/coroutine.scm				\
@@ -54,6 +53,7 @@ SOURCES = 					\
   sly/window.scm					\
   sly/joystick.scm				\
   sly/render/utils.scm				\
+  sly/render/camera.scm				\
   sly/render/vertex-array.scm			\
   sly/render/renderer.scm			\
   $(WRAPPER_SOURCES)

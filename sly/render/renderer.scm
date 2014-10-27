@@ -28,12 +28,12 @@
   #:use-module (srfi srfi-26)
   #:use-module (gl)
   #:use-module (gl low-level)
-  #:use-module (sly camera)
   #:use-module (sly shader)
   #:use-module (sly texture)
   #:use-module (sly transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
+  #:use-module (sly render camera)
   #:use-module (sly render vertex-array)
   #:export (make-render-op render-op?
             render-op-transform render-op-vertex-array
