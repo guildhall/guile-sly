@@ -29,7 +29,6 @@
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (gl)
   #:use-module (sly agenda)
-  #:use-module (sly camera)
   #:use-module (sly event)
   #:use-module (sly math)
   #:use-module (sly signal)
