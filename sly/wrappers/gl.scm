@@ -141,3 +141,76 @@ instanced rendering.")
     (gl-disable-client-state state)))
 
 (export with-gl-client-state)
+
+;;;
+;;; Framebuffers
+;;;
+
+(define-gl-procedure (glGenFramebuffers (n GLsizei)
+                                        (ids GLuint-*)
+                                        -> void)
+  "Generate framebuffer object names.")
+
+(define-gl-procedure (glDeleteFramebuffers (n GLsizei)
+                                           (framebuffers GLuint-*)
+                                           -> void)
+  "Delete framebuffer objects.")
+
+(define-gl-procedure (glBindFramebuffer (target GLenum)
+                                        (framebuffer GLuint)
+                                        -> void)
+  "Bind a framebuffer to a framebuffer target.")
+
+(define-gl-procedure (glFramebufferTexture2D (target GLenum)
+                                             (attachment GLenum)
+                                             (textarget GLenum)
+                                             (texture GLuint)
+                                             (level GLint)
+                                             -> void)
+  "Attach a level of a texture object as a logical buffer to the
+currently bound framebuffer object.")
+
+(define-gl-procedure (glCheckFramebufferStatus (target GLenum)
+                                               -> GLenum)
+  "Return the framebuffer completeness status of a framebuffer
+object.")
+
+(define-gl-procedure (glGenRenderbuffers (n GLsizei)
+                                         (ids GLuint-*)
+                                         -> void)
+  "Generate renderbuffer object names.")
+
+(define-gl-procedure (glDeleteRenderbuffers (n GLsizei)
+                                            (renderbuffers GLuint-*)
+                                            -> void)
+  "Delete renderbuffer objects.")
+
+(define-gl-procedure (glBindRenderbuffer (target GLenum)
+                                         (renderbuffer GLuint)
+                                         -> void)
+  "Bind a named renderbuffer object.")
+
+(define-gl-procedure (glRenderbufferStorage (target GLenum)
+                                            (internalformat GLenum)
+                                            (width GLsizei)
+                                            (height GLsizei)
+                                            -> void)
+  "Create and initialize a renderbuffer object's data store.")
+
+(define-gl-procedure (glFramebufferRenderbuffer (target GLenum)
+                                                (attachment GLenum)
+                                                (renderbuffertarget GLenum)
+                                                (renderbuffer GLuint)
+                                                -> void)
+  "Attach a renderbuffer object to a framebuffer object.")
+
+(export glGenFramebuffers
+        glDeleteFramebuffers
+        glBindFramebuffer
+        glFramebufferTexture2D
+        glCheckFramebufferStatus
+        glGenRenderbuffers
+        glDeleteRenderbuffers
+        glBindRenderbuffer
+        glRenderbufferStorage
+        glFramebufferRenderbuffer)
