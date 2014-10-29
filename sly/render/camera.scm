@@ -33,7 +33,7 @@
   #:use-module (sly transform)
   #:export (make-viewport viewport?
             viewport-area viewport-clear-color viewport-clear-flags
-            apply-viewport
+            %standard-clear-flags apply-viewport
             make-camera camera?
             camera-location camera-projection camera-viewport
             orthographic-camera))
@@ -49,8 +49,10 @@
   (clear-color viewport-clear-color)
   (clear-flags viewport-clear-flags))
 
+(define %standard-clear-flags '(color-buffer depth-buffer))
+
 (define* (make-viewport area #:optional #:key (clear-color black)
-                        (clear-flags '(color-buffer depth-buffer)))
+                        (clear-flags %standard-clear-flags))
   "Create a viewport that covers the rectangle AREA of the window.
 Fill the viewport with CLEAR-COLOR when clearing the screen.  Clear
 the buffers denoted by the list of symbols in CLEAR-FLAGS.  Possible
