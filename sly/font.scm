@@ -22,7 +22,9 @@
 ;;; Code:
 
 (define-module (sly font)
+  #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-2)
+  #:use-module (srfi srfi-4)
   #:use-module (srfi srfi-9)
   #:use-module (system foreign)
   #:use-module ((sdl sdl) #:prefix SDL:)
@@ -66,13 +68,31 @@
 argument with a default value of 12."
   (load-font (string-append %pkgdatadir "/fonts/DejaVuSans.ttf") point-size))
 
+(define (flip-pixels-vertically pixels width height)
+  "Create a new bytevector that reverses the rows in PIXELS, a WIDTH x
+HEIGHT, 32 bit color bytevector."
+  (let ((buffer (make-u8vector (bytevector-length pixels)))
+        (row-width (* width 4))) ; assuming 32 bit color
+    (let loop ((y 0))
+      (when (< y height)
+        (let* ((y* (- height y 1))
+               (source-start (* y row-width))
+               (target-start (* y* row-width)))
+          (bytevector-copy! pixels source-start buffer target-start row-width)
+          (loop (1+ y)))))
+    buffer))
+
 (define (render-text font text)
   "Return a new texture with TEXT rendered using FONT."
   ;; An empty string will result in a surface value of #f, in which we
   ;; want to abort the texture creation process.
   (and-let* ((surface (SDL:render-utf8 (font-ttf font) text
                                        (SDL:make-color 255 255 255) #t))
-             (pixels (SDL:surface-pixels surface))
+             (width (SDL:surface:w surface))
+             (height (SDL:surface:h surface))
+             ;; Need to flip pixels so that origin is on the bottom-left.
+             (pixels (flip-pixels-vertically (SDL:surface-pixels surface)
+                                             width height))
              (texture-id (gl-generate-texture)))
     (with-gl-bind-texture (texture-target texture-2d) texture-id
       (gl-texture-parameter (texture-target texture-2d)
@@ -84,10 +104,10 @@ argument with a default value of 12."
       (gl-texture-image-2d (texture-target texture-2d)
                            0
                            (pixel-format rgba)
-                           (SDL:surface:w surface)
-                           (SDL:surface:h surface)
+                           width
+                           height
                            0
-                           (version-1-2 bgra)
+                           (pixel-format rgba)
                            (color-pointer-type unsigned-byte)
                            pixels))
     (make-texture texture-id #f
