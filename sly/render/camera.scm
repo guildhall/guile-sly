@@ -28,6 +28,7 @@
   #:use-module (gl low-level)
   #:use-module (gl enums)
   #:use-module (sly wrappers gl)
+  #:use-module (sly helpers)
   #:use-module (sly color)
   #:use-module (sly rect)
   #:use-module (sly transform)
@@ -60,15 +61,17 @@ values for CLEAR-FLAGS are 'color-buffer', 'depth-buffer',
 'accum-buffer', and 'stencil-buffer'."
   (%make-viewport area clear-color clear-flags))
 
-(define (clear-buffer-mask flags)
-  (apply logior
-         ;; Map symbols to OpenGL constants.
-         (map (match-lambda
-                ('depth-buffer 256)
-                ('accum-buffer 512)
-                ('stencil-buffer 1024)
-                ('color-buffer 16384))
-              flags)))
+(define clear-buffer-mask
+  (memoize
+   (lambda (flags)
+     (apply logior
+            ;; Map symbols to OpenGL constants.
+            (map (match-lambda
+                  ('depth-buffer 256)
+                  ('accum-buffer 512)
+                  ('stencil-buffer 1024)
+                  ('color-buffer 16384))
+                 flags)))))
 
 (define (apply-viewport viewport)
   "Set the OpenGL state for VIEWPORT.  Clip rendering to the viewport
