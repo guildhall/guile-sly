@@ -151,8 +151,6 @@ that will be rendered, in pixels."
          (bitmap (freeimage-load image-type filename))
          (32bit-bitmap (freeimage-convert-to-32-bits bitmap)))
     (freeimage-unload bitmap)
-    ;; Need to flip because y-axis is reversed.
-    (freeimage-flip-vertical 32bit-bitmap)
     32bit-bitmap))
 
 (define* (load-texture file-name #:optional #:key
