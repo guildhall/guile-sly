@@ -114,6 +114,7 @@ uniform variable 'mvp'."
   "Apply all of the render operations in RENDERER.  The render
 operations are applied once for each camera."
   (define (render-with-camera camera)
+    (apply-viewport (camera-viewport camera))
     (let ((view (transform* (camera-projection camera)
                             (camera-location camera))))
       (for-each (cut apply-render-op view <>)
