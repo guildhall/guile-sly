@@ -31,12 +31,13 @@
   #:use-module (sly transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
+  #:use-module (sly render camera)
   #:use-module (sly render renderer)
   #:export (scene-node make-scene-node
             scene-node?
             scene-node-object scene-node-transform
             scene-node-visible? scene-node-children
-            scene->render-list))
+            draw-scene))
 
 (define-record-type <scene-node>
   (%make-scene-node object transform visible? children)
@@ -66,11 +67,10 @@ whether to draw the node and all of its children or not."
      (cons elem memo)))
    '() lst))
 
-(define (scene->render-list node)
-  "Traverse the scene graph defined by NODE and its children and
-return a list of the render operations needed to display the scene.
-Additionally, NODE or any of its children may be a signal to allow for
-dynamic changes to the scene."
+(define (scene->renderer node camera)
+  "Traverse the scene graph defined by NODE and its children, as seen
+by CAMERA, and return a list of the render operations needed to
+display the scene."
   (define (iter node parent-transform)
     (signal-let ((node node))
       (if (scene-node-visible? node)
@@ -83,4 +83,11 @@ dynamic changes to the scene."
                   (map (cut iter <> transform)
                        (scene-node-children node))))
           '())))
-  (flatten (iter node identity-transform)))
+  (let ((view (transform* (camera-projection camera)
+                          (camera-location camera))))
+    (make-renderer (flatten (iter node view)))))
+
+(define (draw-scene node camera)
+  "Draw the scene defined by NODE, as seen by CAMERA."
+  (apply-viewport (camera-viewport camera))
+  (render (scene->renderer node camera)))

@@ -33,14 +33,13 @@
   #:use-module (sly transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
-  #:use-module (sly render camera)
   #:use-module (sly render vertex-array)
   #:export (make-render-op render-op?
             render-op-transform render-op-vertex-array
             render-op-texture render-op-shader
             render-op-blend-mode render-op-uniforms
             make-renderer renderer?
-            renderer-cameras renderer-ops
+            renderer-ops
             render))
 
 ;; Representation of a single OpenGL render call.
@@ -74,10 +73,9 @@ activated or not."
       (with-texture texture body ...)
       (begin body ...)))
 
-(define (apply-render-op view op)
-  "Render the contents of OP.  The transform of OP is multiplied by
-the VIEW transform before rendering and passed to the shader as the
-uniform variable 'mvp'."
+(define (apply-render-op op)
+  "Render OP by applying its texture, shader, vertex array, uniforms,
+blend mode, etc.."
   (match op
     (($ <render-op> transform vertex-array texture shader uniforms
                     blend-mode depth-test?)
@@ -93,7 +91,7 @@ uniform variable 'mvp'."
                    (match uniform
                      ((name value)
                       (uniform-set! shader name value))))
-                 `(("mvp" ,(transform* view transform))
+                 `(("mvp" ,transform)
                    ,@uniforms))
        (with-vertex-array vertex-array
          (with-texture-maybe texture
@@ -105,18 +103,12 @@ uniform variable 'mvp'."
        (gl-disable (enable-cap depth-test))))))
 
 (define-record-type <renderer>
-  (make-renderer cameras ops)
+  (make-renderer ops)
   renderer?
-  (cameras renderer-cameras)
   (ops renderer-ops))
 
 (define (render renderer)
   "Apply all of the render operations in RENDERER.  The render
 operations are applied once for each camera."
-  (define (render-with-camera camera)
-    (apply-viewport (camera-viewport camera))
-    (let ((view (transform* (camera-projection camera)
-                            (camera-location camera))))
-      (for-each (cut apply-render-op view <>)
-                (renderer-ops renderer))))
-  (for-each render-with-camera (renderer-cameras renderer)))
+  (for-each (cut apply-render-op <>)
+            (renderer-ops renderer)))
