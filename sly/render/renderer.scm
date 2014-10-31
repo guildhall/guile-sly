@@ -38,6 +38,7 @@
             render-op-transform render-op-vertex-array
             render-op-texture render-op-shader
             render-op-blend-mode render-op-uniforms
+            transform-render-op
             make-renderer renderer?
             renderer-ops
             render))
@@ -67,6 +68,15 @@ And DEPTH-TEST?, a flag that determines whether the depth buffer is
 activated or not."
   (%make-render-op transform vertex-array texture shader uniforms
                    blend-mode depth-test?))
+
+(define* (transform-render-op op transform)
+  "Return a new render operation object that is the same as OP, but
+with its transformation matrix multiplied by TRANSFORM."
+  (match op
+    (($ <render-op> local-transform vertex-array texture shader uniforms
+                    blend-mode depth-test?)
+     (%make-render-op (transform* transform local-transform) vertex-array
+                      texture shader uniforms blend-mode depth-test?))))
 
 (define-syntax-rule (with-texture-maybe texture body ...)
   (if texture

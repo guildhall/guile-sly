@@ -78,7 +78,8 @@ display the scene."
                                        (scene-node-transform node)))
                 (object (scene-node-object node)))
             (cons (if object
-                      (draw (scene-node-object node) transform)
+                      (transform-render-op (draw (scene-node-object node))
+                                           transform)
                       '())
                   (map (cut iter <> transform)
                        (scene-node-children node))))
