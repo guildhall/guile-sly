@@ -62,6 +62,7 @@ SOURCES = 					\
 WRAPPER_SOURCES =				\
   sly/wrappers/freeimage.scm			\
   sly/wrappers/gl.scm				\
+  sly/wrappers/gsl.scm				\
   sly/wrappers/util.scm
 
 sly/config.scm: Makefile
