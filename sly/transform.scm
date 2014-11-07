@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (sly transform)
+  #:use-module (system foreign)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
@@ -29,6 +30,7 @@
   #:use-module (sly math)
   #:use-module (sly math vector)
   #:use-module (sly quaternion)
+  #:use-module (sly wrappers gsl)
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix
             transpose transform-vector2
@@ -124,21 +126,20 @@ null-transform if called without any arguments."
       (%make-transform m3)))
   (reduce add null-transform transforms))
 
+(define (transform->pointer t)
+  (bytevector->pointer (array-contents (transform-matrix t))))
+
 (define (transform* . transforms)
   "Return the product of all given transformation matrices.  Return
 identity-transform if called without any arguments."
   (define (mul a b)
-    (let ((m1 (transform-matrix a))
-          (m2 (transform-matrix b))
-          (m3 (make-4x4-matrix)))
-      (do-ec
-            (: r 4) (: c 4)
-            (let ((x (sum-ec
-                      (: k 4)
-                      (* (array-ref m1 r k)
-                         (array-ref m2 k c)))))
-              (array-set! m3 x r c)))
-      (%make-transform m3)))
+    (let ((result (%make-transform (make-4x4-matrix))))
+      (cblas-sgemm cblas-row-major cblas-no-trans cblas-no-trans
+                   4 4 4 1
+                   (transform->pointer a) 4
+                   (transform->pointer b) 4
+                   0 (transform->pointer result) 4)
+      result))
   (reduce mul identity-transform transforms))
 
 (define translate
