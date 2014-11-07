@@ -37,7 +37,7 @@
   #:export (make-vertex-array
             vertex-array?
             vertex-array-id vertex-array-length
-            with-vertex-array))
+            apply-vertex-array with-vertex-array))
 
 ;;;
 ;;; Vertex Buffers
@@ -145,9 +145,12 @@
     (glGenVertexArrays 1 (bytevector->pointer bv))
     (u32vector-ref bv 0)))
 
+(define (apply-vertex-array vao)
+  (glBindVertexArray (vertex-array-id vao)))
+
 (define-syntax-rule (with-vertex-array vao body ...)
   (begin
-    (glBindVertexArray (vertex-array-id vao))
+    (apply-vertex-array vao)
     body ...
     (glBindVertexArray 0)))
 

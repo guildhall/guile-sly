@@ -33,6 +33,7 @@
   #:use-module (sly transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
+  #:use-module (sly render context)
   #:use-module (sly render vertex-array)
   #:export (make-render-op render-op?
             render-op-transform render-op-vertex-array
@@ -78,47 +79,41 @@ with its transformation matrix multiplied by TRANSFORM."
      (%make-render-op (transform* transform local-transform) vertex-array
                       texture shader uniforms blend-mode depth-test?))))
 
-(define-syntax-rule (with-texture-maybe texture body ...)
-  (if texture
-      (with-texture texture body ...)
-      (begin body ...)))
-
-(define (apply-render-op op)
+(define (apply-render-op context op)
   "Render OP by applying its texture, shader, vertex array, uniforms,
 blend mode, etc.."
   (match op
     (($ <render-op> transform vertex-array texture shader uniforms
                     blend-mode depth-test?)
-     (when depth-test?
-       (gl-enable (enable-cap depth-test)))
-     (if blend-mode
-         (begin
-           (gl-enable (enable-cap blend))
-           (apply-blend-mode blend-mode))
-         (gl-disable (enable-cap blend)))
-     (with-shader-program shader
-       (for-each (lambda (uniform)
-                   (match uniform
-                     ((name value)
-                      (uniform-set! shader name value))))
-                 `(("mvp" ,transform)
-                   ,@uniforms))
-       (with-vertex-array vertex-array
-         (with-texture-maybe texture
-           (glDrawElements (begin-mode triangles)
-                           (vertex-array-length vertex-array)
-                           (data-type unsigned-int)
-                           %null-pointer))))
-     (when depth-test?
-       (gl-disable (enable-cap depth-test))))))
+     (set-render-context-depth-test?! context depth-test?)
+     (set-render-context-blend-mode! context blend-mode)
+     (set-render-context-shader! context shader)
+     (set-render-context-vertex-array! context vertex-array)
+     (set-render-context-texture! context texture)
+     (for-each (lambda (uniform)
+                 (match uniform
+                   ((name value)
+                    (uniform-set! shader name value))))
+               `(("mvp" ,transform)
+                 ,@uniforms))
+     (glDrawElements (begin-mode triangles)
+                     (vertex-array-length vertex-array)
+                     (data-type unsigned-int)
+                     %null-pointer))))
 
 (define-record-type <renderer>
-  (make-renderer ops)
+  (%make-renderer context ops)
   renderer?
+  (context renderer-context)
   (ops renderer-ops))
+
+(define (make-renderer ops)
+  (%make-renderer (make-render-context) ops))
 
 (define (render renderer)
   "Apply all of the render operations in RENDERER.  The render
 operations are applied once for each camera."
-  (for-each (cut apply-render-op <>)
-            (renderer-ops renderer)))
+  (let ((context (renderer-context renderer)))
+    (with-render-context context
+      (for-each (cut apply-render-op context <>)
+                (renderer-ops renderer)))))

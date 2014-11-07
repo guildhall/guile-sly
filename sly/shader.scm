@@ -52,6 +52,7 @@
             shader-program-id
             shader-program?
             shader-program-linked?
+            apply-shader-program
             with-shader-program
             load-default-shader
             %uniform-setters
@@ -282,11 +283,14 @@ VERTEX-SHADER and FRAGMENT-SHADER."
 
 (define current-shader-program (make-parameter #f))
 
+(define (apply-shader-program shader-program)
+  (glUseProgram (shader-program-id shader-program)))
+
 (define-syntax-rule (with-shader-program shader-program body ...)
   "Evaluate BODY with SHADER-PROGRAM bound."
   (parameterize ((current-shader-program shader-program))
     (begin
-      (glUseProgram (shader-program-id shader-program))
+      (apply-shader-program shader-program)
       (let ((return-value (begin body ...)))
         (glUseProgram 0)
         return-value))))

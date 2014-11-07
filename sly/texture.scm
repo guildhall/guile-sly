@@ -49,6 +49,7 @@
             texture-vertex
             pack-texture-vertices
             draw-texture-vertices
+            apply-texture
             with-texture))
 
 ;;;
@@ -216,9 +217,12 @@ vector to be returned."
   (pack vertices (+ offset 2) texture-vertex width height s2 t2)
   (pack vertices (+ offset 3) texture-vertex width 0 s2 t1))
 
+(define (apply-texture texture)
+  (glBindTexture (texture-target texture-2d) (texture-id texture)))
+
 (define-syntax-rule (with-texture texture body ...)
   (begin
-    (glBindTexture (texture-target texture-2d) (texture-id texture))
+    (apply-texture texture)
     body
     ...
     (glBindTexture (texture-target texture-2d) 0)))

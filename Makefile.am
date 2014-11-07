@@ -56,6 +56,7 @@ SOURCES = 					\
   sly/render/camera.scm				\
   sly/render/framebuffer.scm			\
   sly/render/vertex-array.scm			\
+  sly/render/context.scm			\
   sly/render/renderer.scm			\
   $(WRAPPER_SOURCES)
 
