@@ -34,6 +34,7 @@ SOURCES = 					\
   sly/game.scm					\
   sly/input/keyboard.scm			\
   sly/input/mouse.scm				\
+  sly/input/joystick.scm			\
   sly/live-reload.scm				\
   sly/math.scm					\
   sly/math/quaternion.scm			\
@@ -44,7 +45,6 @@ SOURCES = 					\
   sly/signal.scm					\
   sly/transition.scm				\
   sly/window.scm					\
-  sly/joystick.scm				\
   sly/render/utils.scm				\
   sly/render/camera.scm				\
   sly/render/framebuffer.scm			\

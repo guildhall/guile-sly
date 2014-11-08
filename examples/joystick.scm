@@ -26,7 +26,7 @@
  (sly repl)
  (sly render sprite)
  (sly render texture)
- (sly joystick)
+ (sly input joystick)
  (sly signal)
  (sly window)
  (sly vector)

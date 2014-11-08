@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly joystick)
+(define-module (sly input joystick)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
