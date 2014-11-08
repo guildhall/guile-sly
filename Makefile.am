@@ -41,7 +41,6 @@ SOURCES = 					\
   sly/rect.scm					\
   sly/repl.scm					\
   sly/scene.scm					\
-  sly/shape.scm					\
   sly/signal.scm					\
   sly/tileset.scm				\
   sly/transform.scm				\
@@ -54,6 +53,7 @@ SOURCES = 					\
   sly/render/mesh.scm				\
   sly/render/texture.scm			\
   sly/render/shader.scm				\
+  sly/render/shape.scm				\
   sly/render/sprite.scm				\
   sly/render/vertex-array.scm			\
   sly/render/context.scm			\
