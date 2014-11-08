@@ -15,7 +15,7 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (sly shader)
+(define-module (sly render shader)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 match)
   #:use-module (system foreign)

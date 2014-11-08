@@ -28,7 +28,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (gl)
   #:use-module (gl low-level)
-  #:use-module (sly shader)
+  #:use-module (sly render shader)
   #:use-module (sly render texture)
   #:use-module (sly transform)
   #:use-module (sly math vector)

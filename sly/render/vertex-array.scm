@@ -33,7 +33,7 @@
   #:use-module (sly wrappers gl)
   #:use-module (sly math vector)
   #:use-module (sly color)
-  #:use-module (sly shader)
+  #:use-module (sly render shader)
   #:export (make-vertex-array
             vertex-array?
             vertex-array-id vertex-array-length
