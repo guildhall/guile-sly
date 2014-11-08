@@ -53,7 +53,8 @@
      ("guile-sdl" ,guile-sdl)
      ("guile-opengl" ,guile-opengl)
      ("gsl" ,gsl)
-     ("freeimage" ,freeimage)))
+     ("freeimage" ,freeimage)
+     ("mesa" ,mesa)))
   (synopsis "2D/3D game engine for GNU Guile")
   (description "Sly is a 2D/3D game engine written in Guile Scheme.
 Sly differs from most game engines in that it emphasizes functional
