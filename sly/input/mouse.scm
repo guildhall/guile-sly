@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly mouse)
+(define-module (sly input mouse)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)

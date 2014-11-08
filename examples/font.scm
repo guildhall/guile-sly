@@ -20,7 +20,7 @@
              (sly color)
              (sly font)
              (sly game)
-             (sly mouse)
+             (sly input mouse)
              (sly signal)
              (sly vector)
              (sly window))
