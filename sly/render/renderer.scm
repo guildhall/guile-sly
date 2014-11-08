@@ -30,7 +30,7 @@
   #:use-module (gl low-level)
   #:use-module (sly render shader)
   #:use-module (sly render texture)
-  #:use-module (sly transform)
+  #:use-module (sly math transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
   #:use-module (sly render context)

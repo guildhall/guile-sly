@@ -34,7 +34,7 @@
   #:use-module (sly render texture)
   #:use-module (sly math vector)
   #:use-module (sly signal)
-  #:use-module (sly transform)
+  #:use-module (sly math transform)
   #:use-module (sly render utils)
   #:use-module (sly render vertex-array)
   #:use-module (sly render renderer)

@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly transform)
+(define-module (sly math transform)
   #:use-module (system foreign)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -35,7 +35,7 @@
             transform? transform-matrix
             transpose transform-vector2
             transform-position
-            transform+ transform*
+            transform+ transform* transform*!
             scale translate rotate-x rotate-y rotate-z rotate
             build-transform
             orthographic-projection perspective-projection
@@ -141,6 +141,13 @@ identity-transform if called without any arguments."
                    0 (transform->pointer result) 4)
       result))
   (reduce mul identity-transform transforms))
+
+(define (transform*! dest a b)
+  (cblas-sgemm cblas-row-major cblas-no-trans cblas-no-trans
+               4 4 4 1
+               (transform->pointer a) 4
+               (transform->pointer b) 4
+               0 (transform->pointer dest) 4))
 
 (define translate
   (match-lambda

@@ -31,7 +31,7 @@
   #:use-module (sly utils)
   #:use-module (sly color)
   #:use-module (sly rect)
-  #:use-module (sly transform)
+  #:use-module (sly math transform)
   #:export (make-viewport viewport?
             viewport-area viewport-clear-color viewport-clear-flags
             %standard-clear-flags apply-viewport

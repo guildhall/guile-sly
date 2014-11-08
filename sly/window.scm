@@ -27,7 +27,7 @@
   #:use-module ((sdl mixer) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
-  #:use-module (sly transform)
+  #:use-module (sly math transform)
   #:use-module (sly math vector)
   #:export (make-window
             window?

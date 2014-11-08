@@ -20,7 +20,7 @@
              (sly rect)
              (sly render scene)
              (sly render sprite)
-             (sly transform)
+             (sly math transform)
              (sly vector)
              (sly window)
              (sly color))

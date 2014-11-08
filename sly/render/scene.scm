@@ -28,7 +28,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:use-module (sly signal)
-  #:use-module (sly transform)
+  #:use-module (sly math transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
   #:use-module (sly render camera)
