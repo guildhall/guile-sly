@@ -19,7 +19,7 @@
              (sly agenda)
              (sly coroutine)
              (sly game)
-             (sly sprite)
+             (sly render sprite)
              (sly render texture)
              (sly vector)
              (sly window))

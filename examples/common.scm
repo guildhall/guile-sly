@@ -21,7 +21,7 @@
              (sly keyboard)
              (sly repl)
              (sly signal)
-             (sly sprite)
+             (sly render sprite)
              (sly window))
 
 (open-window)

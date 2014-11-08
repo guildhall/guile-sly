@@ -16,7 +16,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (use-modules (sly game)
-             (sly sprite)
+             (sly render sprite)
              (sly vector)
              (sly window)
              (sly color)

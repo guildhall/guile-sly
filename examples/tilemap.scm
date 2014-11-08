@@ -20,7 +20,7 @@
              (srfi srfi-9)
              (srfi srfi-42)
              (sly game)
-             (sly sprite)
+             (sly render sprite)
              (sly render texture)
              (sly tileset)
              (sly vector)

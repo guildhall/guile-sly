@@ -19,7 +19,7 @@
              (sly game)
              (sly rect)
              (sly scene)
-             (sly sprite)
+             (sly render sprite)
              (sly transform)
              (sly vector)
              (sly window)

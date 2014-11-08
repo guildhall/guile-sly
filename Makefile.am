@@ -45,7 +45,6 @@ SOURCES = 					\
   sly/shader.scm					\
   sly/shape.scm					\
   sly/signal.scm					\
-  sly/sprite.scm					\
   sly/tileset.scm				\
   sly/transform.scm				\
   sly/transition.scm				\
@@ -55,6 +54,7 @@ SOURCES = 					\
   sly/render/camera.scm				\
   sly/render/framebuffer.scm			\
   sly/render/texture.scm			\
+  sly/render/sprite.scm				\
   sly/render/vertex-array.scm			\
   sly/render/context.scm			\
   sly/render/renderer.scm			\

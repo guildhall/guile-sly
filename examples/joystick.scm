@@ -24,7 +24,7 @@
 (use-modules
  (sly game)
  (sly repl)
- (sly sprite)
+ (sly render sprite)
  (sly render texture)
  (sly joystick)
  (sly signal)

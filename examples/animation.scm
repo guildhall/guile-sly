@@ -17,7 +17,7 @@
 
 (use-modules (sly animation)
              (sly game)
-             (sly sprite)
+             (sly render sprite)
              (sly tileset)
              (sly vector)
              (sly window))

@@ -19,7 +19,7 @@
              (srfi srfi-9)
              (sly agenda)
              (sly game)
-             (sly sprite)
+             (sly render sprite)
              (sly render texture)
              (sly vector)
              (sly window))
