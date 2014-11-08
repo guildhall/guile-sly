@@ -23,7 +23,6 @@ godir=$(libdir)/guile/2.0/ccache
 SOURCES = 					\
   sly/utils.scm					\
   sly/agenda.scm 				\
-  sly/animation.scm				\
   sly/audio.scm					\
   sly/config.scm					\
   sly/coroutine.scm				\
