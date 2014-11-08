@@ -28,7 +28,6 @@ SOURCES = 					\
   sly/config.scm					\
   sly/coroutine.scm				\
   sly/event.scm					\
-  sly/font.scm					\
   sly/fps.scm					\
   sly/game.scm					\
   sly/input/keyboard.scm			\
@@ -47,6 +46,7 @@ SOURCES = 					\
   sly/render/utils.scm				\
   sly/render/color.scm				\
   sly/render/camera.scm				\
+  sly/render/font.scm				\
   sly/render/framebuffer.scm			\
   sly/render/mesh.scm				\
   sly/render/texture.scm			\

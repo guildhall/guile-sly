@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly font)
+(define-module (sly render font)
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-4)

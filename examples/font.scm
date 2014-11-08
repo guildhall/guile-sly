@@ -18,7 +18,7 @@
 (use-modules (sly agenda)
              (sly fps)
              (sly render color)
-             (sly font)
+             (sly render font)
              (sly game)
              (sly input mouse)
              (sly signal)

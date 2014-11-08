@@ -30,7 +30,7 @@
  (sly signal)
  (sly window)
  (sly vector)
- (sly font))
+ (sly render font))
 
 (open-window)
 (start-sly-repl)
