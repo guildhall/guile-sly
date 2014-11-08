@@ -23,7 +23,7 @@
 
 (define-module (sly shape)
   #:use-module (sly math)
-  #:use-module (sly mesh)
+  #:use-module (sly render mesh)
   #:use-module (sly render shader)
   #:use-module (sly render texture)
   #:use-module (sly math vector)

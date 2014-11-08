@@ -36,7 +36,6 @@ SOURCES = 					\
   sly/live-reload.scm				\
   sly/math.scm					\
   sly/math/vector.scm				\
-  sly/mesh.scm					\
   sly/mouse.scm					\
   sly/quaternion.scm				\
   sly/rect.scm					\
@@ -52,6 +51,7 @@ SOURCES = 					\
   sly/render/utils.scm				\
   sly/render/camera.scm				\
   sly/render/framebuffer.scm			\
+  sly/render/mesh.scm				\
   sly/render/texture.scm			\
   sly/render/shader.scm				\
   sly/render/sprite.scm				\

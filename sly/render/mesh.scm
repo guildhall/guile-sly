@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly mesh)
+(define-module (sly render mesh)
   #:use-module (oop goops)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
