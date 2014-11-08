@@ -1,6 +1,6 @@
 dnl -*- Autoconf -*-
 
-AC_INIT(Sly, 0.2.0)
+AC_INIT(Sly, 0.1)
 AC_CONFIG_SRCDIR(sly)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability foreign])
