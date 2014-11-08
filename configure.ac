@@ -16,8 +16,11 @@ GUILE_MODULE_REQUIRED([sdl mixer])
 GUILE_MODULE_REQUIRED([sdl ttf])
 GUILE_MODULE_REQUIRED([gl])
 
+dnl Freeimage doesn't have a pkg-config file, so use this primitive
+dnl test instead.
+AC_CHECK_LIB([freeimage], [FreeImage_GetVersion],,
+  [AC_MSG_ERROR([freeimage not found.])])
+
 PKG_CHECK_MODULES([GSL], [gsl])
-# Why doesn't freeimage have a pkg-config file?
-#PKG_CHECK_MODULES([freeimage], [freeimage >= 3.0])
 
 AC_OUTPUT
