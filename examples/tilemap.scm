@@ -22,7 +22,7 @@
              (sly game)
              (sly render sprite)
              (sly render texture)
-             (sly tileset)
+             (sly render tileset)
              (sly vector)
              (sly window)
              (sly scene)

@@ -22,7 +22,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly tileset)
+(define-module (sly render tileset)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
   #:use-module (sly render texture)
