@@ -36,10 +36,10 @@ SOURCES = 					\
   sly/live-reload.scm				\
   sly/math.scm					\
   sly/math/quaternion.scm			\
+  sly/math/rect.scm				\
   sly/math/transform.scm			\
   sly/math/vector.scm				\
   sly/mouse.scm					\
-  sly/rect.scm					\
   sly/repl.scm					\
   sly/signal.scm					\
   sly/transition.scm				\
