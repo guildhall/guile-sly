@@ -28,7 +28,7 @@
   #:use-module (sly utils)
   #:use-module (sly math transform)
   #:use-module (sly math vector)
-  #:use-module (sly color)
+  #:use-module (sly render color)
   #:use-module (sly config)
   #:use-module (sly wrappers gl)
   #:export (make-shader

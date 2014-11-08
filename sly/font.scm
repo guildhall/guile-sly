@@ -31,7 +31,7 @@
   #:use-module ((sdl ttf) #:prefix SDL:)
   #:use-module (gl)
   #:use-module (sly wrappers gl)
-  #:use-module (sly color)
+  #:use-module (sly render color)
   #:use-module (sly config)
   #:use-module (sly render mesh)
   #:use-module (sly render shader)

@@ -25,7 +25,6 @@ SOURCES = 					\
   sly/agenda.scm 				\
   sly/animation.scm				\
   sly/audio.scm					\
-  sly/color.scm					\
   sly/config.scm					\
   sly/coroutine.scm				\
   sly/event.scm					\
@@ -46,6 +45,7 @@ SOURCES = 					\
   sly/transition.scm				\
   sly/window.scm					\
   sly/render/utils.scm				\
+  sly/render/color.scm				\
   sly/render/camera.scm				\
   sly/render/framebuffer.scm			\
   sly/render/mesh.scm				\

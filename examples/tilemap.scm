@@ -28,7 +28,7 @@
              (sly render scene)
              (sly signal)
              (sly camera)
-             (sly color)
+             (sly render color)
              (sly transition)
              (sly utils)
              (sly input keyboard))

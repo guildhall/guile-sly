@@ -28,7 +28,7 @@
   #:use-module (gl)
   #:use-module (gl contrib packed-struct)
   #:use-module ((sdl sdl) #:prefix SDL:)
-  #:use-module (sly color)
+  #:use-module (sly render color)
   #:use-module (sly config)
   #:use-module (sly agenda)
   #:use-module (sly utils)

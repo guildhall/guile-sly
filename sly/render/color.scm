@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly color)
+(define-module (sly render color)
   #:use-module (ice-9 match)
   #:use-module (gl)
   #:use-module (srfi srfi-9)

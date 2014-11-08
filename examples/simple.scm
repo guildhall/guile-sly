@@ -23,7 +23,7 @@
              (sly math transform)
              (sly vector)
              (sly window)
-             (sly color))
+             (sly render color))
 
 (load "common.scm")
 

@@ -19,7 +19,7 @@
              (sly render sprite)
              (sly vector)
              (sly window)
-             (sly color)
+             (sly render color)
              (sly signal)
              (sly render texture)
              (sly transition))

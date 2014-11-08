@@ -24,7 +24,7 @@
 (define-module (sly transition)
   #:use-module (ice-9 match)
   #:use-module (sly agenda)
-  #:use-module (sly color)
+  #:use-module (sly render color)
   #:use-module (sly coroutine)
   #:use-module (sly math)
   #:use-module (sly math quaternion)

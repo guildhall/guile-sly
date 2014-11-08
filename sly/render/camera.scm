@@ -29,7 +29,7 @@
   #:use-module (gl enums)
   #:use-module (sly wrappers gl)
   #:use-module (sly utils)
-  #:use-module (sly color)
+  #:use-module (sly render color)
   #:use-module (sly math rect)
   #:use-module (sly math transform)
   #:export (make-viewport viewport?
