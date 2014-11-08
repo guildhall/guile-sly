@@ -31,7 +31,7 @@
   #:use-module (sly color)
   #:use-module (sly config)
   #:use-module (sly agenda)
-  #:use-module (sly helpers)
+  #:use-module (sly utils)
   #:use-module (sly math)
   #:use-module (sly mesh)
   #:use-module (sly shader)

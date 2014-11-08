@@ -28,7 +28,7 @@
   #:use-module (gl low-level)
   #:use-module (gl enums)
   #:use-module (sly wrappers gl)
-  #:use-module (sly helpers)
+  #:use-module (sly utils)
   #:use-module (sly color)
   #:use-module (sly rect)
   #:use-module (sly transform)

@@ -21,6 +21,7 @@ moddir=$(prefix)/share/guile/site/2.0
 godir=$(libdir)/guile/2.0/ccache
 
 SOURCES = 					\
+  sly/utils.scm					\
   sly/agenda.scm 				\
   sly/animation.scm				\
   sly/audio.scm					\
@@ -31,7 +32,6 @@ SOURCES = 					\
   sly/font.scm					\
   sly/fps.scm					\
   sly/game.scm					\
-  sly/helpers.scm				\
   sly/keyboard.scm				\
   sly/live-reload.scm				\
   sly/math.scm					\

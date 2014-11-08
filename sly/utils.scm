@@ -22,7 +22,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly helpers)
+(define-module (sly utils)
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
   #:use-module (sly agenda)

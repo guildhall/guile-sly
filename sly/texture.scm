@@ -29,7 +29,7 @@
   #:use-module (gl low-level)
   #:use-module (gl contrib packed-struct)
   #:use-module (sly color)
-  #:use-module (sly helpers)
+  #:use-module (sly utils)
   #:use-module (sly math vector)
   #:use-module (sly wrappers gl)
   #:use-module (sly wrappers freeimage)

@@ -30,7 +30,7 @@
              (sly camera)
              (sly color)
              (sly transition)
-             (sly helpers)
+             (sly utils)
              (sly keyboard))
 
 (load "common.scm")
