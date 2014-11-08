@@ -288,6 +288,15 @@
 
    See =INSTALL.org= for more detailed installation instructions.
 
+** Developing
+
+   Users of GNU Guix can quickly create a development environment by
+   running:
+
+   #+BEGIN_SRC sh
+     guix environment -l package.scm
+   #+END_SRC
+
 ** Running Examples
 
    To run an example when Sly has been installed:
