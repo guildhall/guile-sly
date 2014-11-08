@@ -21,6 +21,7 @@ AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 
 PKG_CHECK_MODULES([SDL], [sdl <= 1.3 sdl >= 1.2])
 PKG_CHECK_MODULES([SDL_tff], [SDL_ttf >= 2.0])
+PKG_CHECK_MODULES([GSL], [gsl])
 # Why doesn't freeimage have a pkg-config file?
 #PKG_CHECK_MODULES([freeimage], [freeimage >= 3.0])
 
