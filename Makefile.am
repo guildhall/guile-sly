@@ -35,9 +35,9 @@ SOURCES = 					\
   sly/keyboard.scm				\
   sly/live-reload.scm				\
   sly/math.scm					\
+  sly/math/quaternion.scm			\
   sly/math/vector.scm				\
   sly/mouse.scm					\
-  sly/quaternion.scm				\
   sly/rect.scm					\
   sly/repl.scm					\
   sly/signal.scm					\

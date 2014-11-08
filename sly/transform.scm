@@ -29,7 +29,7 @@
   #:use-module (srfi srfi-42)
   #:use-module (sly math)
   #:use-module (sly math vector)
-  #:use-module (sly quaternion)
+  #:use-module (sly math quaternion)
   #:use-module (sly wrappers gsl)
   #:export (make-transform null-transform identity-transform
             transform? transform-matrix

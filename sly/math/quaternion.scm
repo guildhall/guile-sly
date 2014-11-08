@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly quaternion)
+(define-module (sly math quaternion)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)

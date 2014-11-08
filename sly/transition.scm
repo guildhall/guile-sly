@@ -27,7 +27,7 @@
   #:use-module (sly color)
   #:use-module (sly coroutine)
   #:use-module (sly math)
-  #:use-module (sly quaternion)
+  #:use-module (sly math quaternion)
   #:use-module (sly signal)
   #:use-module (sly math vector)
   #:export (ease-linear
