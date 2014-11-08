@@ -31,7 +31,7 @@
   #:use-module (sly wrappers gl)
   #:use-module (sly color)
   #:use-module (sly shader)
-  #:use-module (sly texture)
+  #:use-module (sly render texture)
   #:use-module (sly math vector)
   #:use-module (sly signal)
   #:use-module (sly transform)

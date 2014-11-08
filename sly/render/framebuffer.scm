@@ -106,7 +106,7 @@ dimensions WIDTH x HEIGHT."
         (glBindRenderbuffer (version-3-0 renderbuffer) 0)
         (glBindFramebuffer (version-3-0 framebuffer) 0)
         ;; Build high-level framebuffer object.
-        (let ((texture ((@@ (sly texture) %make-texture)
+        (let ((texture ((@@ (sly render texture) %make-texture)
                         texture-id #f width height 0 0 1 1)))
           (%make-framebuffer framebuffer-id renderbuffer-id texture))))))
 

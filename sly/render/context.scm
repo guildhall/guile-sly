@@ -28,7 +28,7 @@
   #:use-module (gl low-level)
   #:use-module (sly wrappers gl)
   #:use-module (sly shader)
-  #:use-module (sly texture)
+  #:use-module (sly render texture)
   #:use-module (sly render utils)
   #:use-module (sly render vertex-array)
   #:export (make-render-context

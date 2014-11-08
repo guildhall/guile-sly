@@ -21,7 +21,7 @@
              (sly window)
              (sly color)
              (sly signal)
-             (sly texture)
+             (sly render texture)
              (sly transition))
 
 (load "common.scm")

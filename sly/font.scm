@@ -36,7 +36,7 @@
   #:use-module (sly mesh)
   #:use-module (sly shader)
   #:use-module (sly sprite)
-  #:use-module (sly texture)
+  #:use-module (sly render texture)
   #:export (enable-fonts
             load-font
             load-default-font

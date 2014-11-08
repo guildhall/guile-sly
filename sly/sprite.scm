@@ -36,7 +36,7 @@
   #:use-module (sly mesh)
   #:use-module (sly shader)
   #:use-module (sly signal)
-  #:use-module (sly texture)
+  #:use-module (sly render texture)
   #:use-module (sly math vector)
   #:export (make-sprite
             load-sprite

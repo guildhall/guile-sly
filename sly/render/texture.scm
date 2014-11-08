@@ -22,7 +22,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly texture)
+(define-module (sly render texture)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
   #:use-module (gl)

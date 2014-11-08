@@ -25,7 +25,7 @@
 (define-module (sly tileset)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
-  #:use-module (sly texture)
+  #:use-module (sly render texture)
   #:export (<tileset>
             make-tileset
             load-tileset

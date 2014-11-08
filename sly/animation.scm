@@ -23,7 +23,7 @@
 
 (define-module (sly animation)
   #:use-module (srfi srfi-9)
-  #:use-module (sly texture))
+  #:use-module (sly render texture))
 
 ;;;
 ;;; Animations

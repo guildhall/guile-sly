@@ -20,7 +20,7 @@
              (sly coroutine)
              (sly game)
              (sly sprite)
-             (sly texture)
+             (sly render texture)
              (sly vector)
              (sly window))
 

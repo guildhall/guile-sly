@@ -25,7 +25,7 @@
  (sly game)
  (sly repl)
  (sly sprite)
- (sly texture)
+ (sly render texture)
  (sly joystick)
  (sly signal)
  (sly window)
