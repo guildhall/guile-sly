@@ -32,7 +32,7 @@ SOURCES = 					\
   sly/font.scm					\
   sly/fps.scm					\
   sly/game.scm					\
-  sly/keyboard.scm				\
+  sly/input/keyboard.scm			\
   sly/live-reload.scm				\
   sly/math.scm					\
   sly/math/quaternion.scm			\

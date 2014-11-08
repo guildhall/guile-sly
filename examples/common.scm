@@ -18,7 +18,7 @@
 (use-modules (sly agenda)
              (sly fps)
              (sly game)
-             (sly keyboard)
+             (sly input keyboard)
              (sly repl)
              (sly signal)
              (sly render sprite)

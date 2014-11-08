@@ -31,7 +31,7 @@
              (sly color)
              (sly transition)
              (sly utils)
-             (sly keyboard))
+             (sly input keyboard))
 
 (load "common.scm")
 

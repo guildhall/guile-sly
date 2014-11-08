@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly keyboard)
+(define-module (sly input keyboard)
   #:use-module ((sdl sdl) #:prefix SDL:)
   #:use-module (sly event)
   #:use-module (sly signal)
