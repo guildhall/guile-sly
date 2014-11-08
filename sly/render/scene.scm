@@ -22,7 +22,7 @@
 ;;
 ;;; Code:
 
-(define-module (sly scene)
+(define-module (sly render scene)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
@@ -67,6 +67,32 @@ whether to draw the node and all of its children or not."
      (cons elem memo)))
    '() lst))
 
+(define (set-identity! t)
+  (let ((matrix (transform-matrix t)))
+    (array-set! matrix 1 0 0)
+    (array-set! matrix 0 0 1)
+    (array-set! matrix 0 0 2)
+    (array-set! matrix 0 0 3)
+    (array-set! matrix 0 1 0)
+    (array-set! matrix 1 1 1)
+    (array-set! matrix 0 1 2)
+    (array-set! matrix 0 1 3)
+    (array-set! matrix 0 2 0)
+    (array-set! matrix 0 2 1)
+    (array-set! matrix 1 2 2)
+    (array-set! matrix 0 2 3)
+    (array-set! matrix 0 3 0)
+    (array-set! matrix 0 3 1)
+    (array-set! matrix 0 3 2)
+    (array-set! matrix 1 3 3)))
+
+(define t (make-transform 0 0 0 0
+                          0 0 0 0
+                          0 0 0 0
+                          0 0 0 0))
+
+(set-identity! t)
+
 (define (scene->renderer node camera)
   "Traverse the scene graph defined by NODE and its children, as seen
 by CAMERA, and return a list of the render operations needed to
@@ -77,6 +103,7 @@ display the scene."
           (let ((transform (transform* parent-transform
                                        (scene-node-transform node)))
                 (object (scene-node-object node)))
+            ;; (transform*! t parent-transform (scene-node-transform node))
             (cons (if object
                       (transform-render-op (draw (scene-node-object node))
                                            transform)

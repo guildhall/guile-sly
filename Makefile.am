@@ -40,7 +40,6 @@ SOURCES = 					\
   sly/quaternion.scm				\
   sly/rect.scm					\
   sly/repl.scm					\
-  sly/scene.scm					\
   sly/signal.scm					\
   sly/transform.scm				\
   sly/transition.scm				\
@@ -51,6 +50,7 @@ SOURCES = 					\
   sly/render/framebuffer.scm			\
   sly/render/mesh.scm				\
   sly/render/texture.scm			\
+  sly/render/scene.scm				\
   sly/render/shader.scm				\
   sly/render/shape.scm				\
   sly/render/sprite.scm				\

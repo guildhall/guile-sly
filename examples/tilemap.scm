@@ -25,7 +25,7 @@
              (sly render tileset)
              (sly vector)
              (sly window)
-             (sly scene)
+             (sly render scene)
              (sly signal)
              (sly camera)
              (sly color)

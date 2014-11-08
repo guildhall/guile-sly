@@ -18,7 +18,7 @@
 (use-modules (sly camera)
              (sly game)
              (sly rect)
-             (sly scene)
+             (sly render scene)
              (sly render sprite)
              (sly transform)
              (sly vector)
