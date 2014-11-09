@@ -25,6 +25,7 @@
              (guix licenses)
              (guix build-system gnu)
              (gnu packages)
+             (gnu packages autotools)
              (gnu packages guile)
              (gnu packages gl)
              (gnu packages pkg-config)
@@ -44,12 +45,13 @@
 (package
   (name "sly")
   (version "0.0")
-  (source ".")
+  (source #f)
   (build-system gnu-build-system)
-  (native-inputs
-   `(("pkg-config" ,pkg-config)))
   (inputs
-   `(("guile" ,guile-2.0)
+   `(("pkg-config" ,pkg-config)
+     ("autoconf" ,autoconf)
+     ("automake" ,automake)
+     ("guile" ,guile-2.0)
      ("guile-sdl" ,guile-sdl)
      ("guile-opengl" ,guile-opengl)
      ("gsl" ,gsl)
