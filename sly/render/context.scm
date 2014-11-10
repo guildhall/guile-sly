@@ -70,7 +70,9 @@
 (define (set-render-context-blend-mode! context blend-mode)
   (unless (equal? (render-context-blend-mode context) blend-mode)
     (if blend-mode
-        (apply-blend-mode blend-mode)
+        (begin
+          (gl-enable (enable-cap blend))
+          (apply-blend-mode blend-mode))
         ;; Turn off blending if there is no blend-mode specified.
         (gl-disable (enable-cap blend)))
     (%set-render-context-blend-mode! context blend-mode)))
