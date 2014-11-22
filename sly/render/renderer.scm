@@ -33,6 +33,7 @@
   #:use-module (sly math transform)
   #:use-module (sly math vector)
   #:use-module (sly render utils)
+  #:use-module (sly render camera)
   #:use-module (sly render context)
   #:use-module (sly render vertex-array)
   #:export (make-render-op render-op?
@@ -79,9 +80,10 @@ with its transformation matrix multiplied by TRANSFORM."
      (%make-render-op (transform* transform local-transform) vertex-array
                       texture shader uniforms blend-mode depth-test?))))
 
-(define (apply-render-op context op)
-  "Render OP by applying its texture, shader, vertex array, uniforms,
-blend mode, etc.."
+(define (apply-render-op context view op)
+  "Render OP by applying its transform (multiplied by VIEW), texture,
+shader, vertex array, uniforms, blend mode, etc. to the render
+CONTEXT."
   (match op
     (($ <render-op> transform vertex-array texture shader uniforms
                     blend-mode depth-test?)
@@ -94,7 +96,7 @@ blend mode, etc.."
                  (match uniform
                    ((name value)
                     (uniform-set! shader name value))))
-               `(("mvp" ,transform)
+               `(("mvp" ,(transform* view transform))
                  ,@uniforms))
      (glDrawElements (begin-mode triangles)
                      (vertex-array-length vertex-array)
@@ -102,18 +104,23 @@ blend mode, etc.."
                      %null-pointer))))
 
 (define-record-type <renderer>
-  (%make-renderer context ops)
+  (%make-renderer context cameras ops)
   renderer?
   (context renderer-context)
+  (cameras renderer-cameras)
   (ops renderer-ops))
 
-(define (make-renderer ops)
-  (%make-renderer (make-render-context) ops))
+(define (make-renderer cameras ops)
+  (%make-renderer (make-render-context) cameras ops))
 
 (define (render renderer)
   "Apply all of the render operations in RENDERER.  The render
 operations are applied once for each camera."
   (let ((context (renderer-context renderer)))
     (with-render-context context
-      (for-each (cut apply-render-op context <>)
-                (renderer-ops renderer)))))
+      (for-each (lambda (camera)
+                  (let ((view (transform* (camera-projection camera)
+                                          (camera-location camera))))
+                    (for-each (cut apply-render-op context view <>)
+                              (renderer-ops renderer))))
+                (renderer-cameras renderer)))))

@@ -111,9 +111,7 @@ display the scene."
                   (map (cut iter <> transform)
                        (scene-node-children node))))
           '())))
-  (let ((view (transform* (camera-projection camera)
-                          (camera-location camera))))
-    (make-renderer (flatten (iter node view)))))
+  (make-renderer (list camera) (flatten (iter node identity-transform))))
 
 (define (draw-scene node camera)
   "Draw the scene defined by NODE, as seen by CAMERA."
