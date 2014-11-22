@@ -33,13 +33,13 @@
              (gnu packages maths)
              (gnu packages image))
 
-;; The development environment needs a tweaked LD_LIBRARY_PATH for
+;; The development environment needs a tweaked LTDL_LIBRARY_PATH for
 ;; finding libfreeimage.
 (define freeimage
   (package (inherit freeimage)
     (native-search-paths
      (list (search-path-specification
-            (variable "LD_LIBRARY_PATH")
+            (variable "LTDL_LIBRARY_PATH")
             (directories '("lib")))))))
 
 (package
