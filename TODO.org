@@ -150,6 +150,10 @@
 
 ** TODO Rename (sly shader) to (sly render shader)
 
+** TODO Nine patches
+    Images that have a resizable central area but fixed width/height
+    edges.
+
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
    that things have changed so drastically and the name has been
