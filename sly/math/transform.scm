@@ -134,11 +134,7 @@ null-transform if called without any arguments."
 identity-transform if called without any arguments."
   (define (mul a b)
     (let ((result (%make-transform (make-4x4-matrix))))
-      (cblas-sgemm cblas-row-major cblas-no-trans cblas-no-trans
-                   4 4 4 1
-                   (transform->pointer a) 4
-                   (transform->pointer b) 4
-                   0 (transform->pointer result) 4)
+      (transform*! result a b)
       result))
   (reduce mul identity-transform transforms))
 
