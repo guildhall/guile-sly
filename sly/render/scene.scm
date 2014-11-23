@@ -93,7 +93,7 @@ whether to draw the node and all of its children or not."
 
 (set-identity! t)
 
-(define (scene->renderer node camera)
+(define (scene->renderer node context camera)
   "Traverse the scene graph defined by NODE and its children, as seen
 by CAMERA, and return a list of the render operations needed to
 display the scene."
@@ -111,9 +111,11 @@ display the scene."
                   (map (cut iter <> transform)
                        (scene-node-children node))))
           '())))
-  (make-renderer (list camera) (flatten (iter node identity-transform))))
+  (make-renderer context
+                 (list camera)
+                 (flatten (iter node identity-transform))))
 
-(define (draw-scene node camera)
+(define (draw-scene node context camera)
   "Draw the scene defined by NODE, as seen by CAMERA."
   (apply-viewport (camera-viewport camera))
-  (render (scene->renderer node camera)))
+  (render (scene->renderer node context camera)))

@@ -104,14 +104,11 @@ CONTEXT."
                      %null-pointer))))
 
 (define-record-type <renderer>
-  (%make-renderer context cameras ops)
+  (make-renderer context cameras ops)
   renderer?
   (context renderer-context)
   (cameras renderer-cameras)
   (ops renderer-ops))
-
-(define (make-renderer cameras ops)
-  (%make-renderer (make-render-context) cameras ops))
 
 (define (render renderer)
   "Apply all of the render operations in RENDERER.  The render
