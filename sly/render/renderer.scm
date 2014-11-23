@@ -80,28 +80,36 @@ with its transformation matrix multiplied by TRANSFORM."
      (%make-render-op (transform* transform local-transform) vertex-array
                       texture shader uniforms blend-mode depth-test?))))
 
-(define (apply-render-op context view op)
-  "Render OP by applying its transform (multiplied by VIEW), texture,
+(define apply-render-op
+  ;; Rendering should only ever happen from the main thread, so
+  ;; mutating this transform is just fine.
+  (let ((mvp (make-transform 0 0 0 0
+                             0 0 0 0
+                             0 0 0 0
+                             0 0 0 0)))
+    (lambda (context view op)
+      "Render OP by applying its transform (multiplied by VIEW), texture,
 shader, vertex array, uniforms, blend mode, etc. to the render
 CONTEXT."
-  (match op
-    (($ <render-op> transform vertex-array texture shader uniforms
-                    blend-mode depth-test?)
-     (set-render-context-depth-test?! context depth-test?)
-     (set-render-context-blend-mode! context blend-mode)
-     (set-render-context-shader! context shader)
-     (set-render-context-vertex-array! context vertex-array)
-     (set-render-context-texture! context texture)
-     (for-each (lambda (uniform)
-                 (match uniform
-                   ((name value)
-                    (uniform-set! shader name value))))
-               `(("mvp" ,(transform* view transform))
-                 ,@uniforms))
-     (glDrawElements (begin-mode triangles)
-                     (vertex-array-length vertex-array)
-                     (data-type unsigned-int)
-                     %null-pointer))))
+      (match op
+        (($ <render-op> transform vertex-array texture shader uniforms
+                        blend-mode depth-test?)
+         (set-render-context-depth-test?! context depth-test?)
+         (set-render-context-blend-mode! context blend-mode)
+         (set-render-context-shader! context shader)
+         (set-render-context-vertex-array! context vertex-array)
+         (set-render-context-texture! context texture)
+         (transform*! mvp transform view)
+         (for-each (lambda (uniform)
+                     (match uniform
+                       ((name value)
+                        (uniform-set! shader name value))))
+                   `(("mvp" ,mvp)
+                     ,@uniforms))
+         (glDrawElements (begin-mode triangles)
+                         (vertex-array-length vertex-array)
+                         (data-type unsigned-int)
+                         %null-pointer))))))
 
 (define-record-type <renderer>
   (make-renderer context cameras ops)
@@ -110,14 +118,20 @@ CONTEXT."
   (cameras renderer-cameras)
   (ops renderer-ops))
 
-(define (render renderer)
-  "Apply all of the render operations in RENDERER.  The render
+(define render
+  (let ((view (make-transform 0 0 0 0
+                              0 0 0 0
+                              0 0 0 0
+                              0 0 0 0)))
+    (lambda (renderer)
+      "Apply all of the render operations in RENDERER.  The render
 operations are applied once for each camera."
-  (let ((context (renderer-context renderer)))
-    (with-render-context context
-      (for-each (lambda (camera)
-                  (let ((view (transform* (camera-projection camera)
-                                          (camera-location camera))))
-                    (for-each (cut apply-render-op context view <>)
-                              (renderer-ops renderer))))
-                (renderer-cameras renderer)))))
+      (let ((context (renderer-context renderer)))
+        (with-render-context context
+          (for-each (lambda (camera)
+                      (transform*! view
+                                   (camera-location camera)
+                                   (camera-projection camera))
+                      (for-each (cut apply-render-op context view <>)
+                                (renderer-ops renderer)))
+                    (renderer-cameras renderer)))))))
