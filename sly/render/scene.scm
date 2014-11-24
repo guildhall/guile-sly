@@ -79,7 +79,7 @@ display the scene."
              (map (cut iter <> transform) (scene-node-children node)))
            '()))
       (object
-       (transform-render-op (draw object) parent-transform))))
+       (draw object parent-transform))))
 
   (make-renderer context
                  (list camera)

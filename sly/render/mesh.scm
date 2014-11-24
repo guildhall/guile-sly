@@ -58,8 +58,9 @@
   (%make-mesh (make-vertex-array indices positions textures)
               shader texture))
 
-(define-method (draw (mesh <<mesh>>))
+(define-method (draw (mesh <<mesh>>) transform)
   (make-render-op #:vertex-array (mesh-vao mesh)
                   #:texture (mesh-texture mesh)
                   #:shader (mesh-shader mesh)
+                  #:transform transform
                   #:uniforms `(("color" ,white))))

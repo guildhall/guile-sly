@@ -71,15 +71,6 @@ activated or not."
   (%make-render-op transform vertex-array texture shader uniforms
                    blend-mode depth-test?))
 
-(define* (transform-render-op op transform)
-  "Return a new render operation object that is the same as OP, but
-with its transformation matrix multiplied by TRANSFORM."
-  (match op
-    (($ <render-op> local-transform vertex-array texture shader uniforms
-                    blend-mode depth-test?)
-     (%make-render-op (transform* transform local-transform) vertex-array
-                      texture shader uniforms blend-mode depth-test?))))
-
 (define apply-render-op
   ;; Rendering should only ever happen from the main thread, so
   ;; mutating this transform is just fine.
