@@ -40,20 +40,19 @@
             draw-scene))
 
 (define-record-type <scene-node>
-  (%make-scene-node object transform visible? children)
+  (%make-scene-node transform visible? children)
   scene-node?
-  (object scene-node-object)
   (transform scene-node-transform)
   (visible? scene-node-visible?)
   (children scene-node-children))
 
-(define* (make-scene-node #:optional object #:key (transform identity-transform)
+(define* (make-scene-node #:optional #:key (transform identity-transform)
                           (visible? #t) (children '()))
   "Create a new scene node containing OBJECT, a renderable object that
 responds to the 'draw' method.  The node has a local transformation
 matrix TRANSFORM, and a list of CHILDREN. The VISIBLE? flag etermines
 whether to draw the node and all of its children or not."
-  (%make-scene-node object transform visible? children))
+  (%make-scene-node transform visible? children))
 
 (define scene-node make-scene-node)
 
@@ -72,19 +71,16 @@ whether to draw the node and all of its children or not."
 by CAMERA, and return a list of the render operations needed to
 display the scene."
   (define (iter node parent-transform)
-    (signal-let ((node node))
-      (if (scene-node-visible? node)
-          (let ((transform (transform* parent-transform
-                                       (scene-node-transform node)))
-                (object (scene-node-object node)))
-            ;; (transform*! t parent-transform (scene-node-transform node))
-            (cons (if object
-                      (transform-render-op (draw (scene-node-object node))
-                                           transform)
-                      '())
-                  (map (cut iter <> transform)
-                       (scene-node-children node))))
-          '())))
+    (match (signal-ref-maybe node)
+      ((? scene-node? node)
+       (if (scene-node-visible? node)
+           (let ((transform (transform* parent-transform
+                                        (scene-node-transform node))))
+             (map (cut iter <> transform) (scene-node-children node)))
+           '()))
+      (object
+       (transform-render-op (draw object) parent-transform))))
+
   (make-renderer context
                  (list camera)
                  (flatten (iter node identity-transform))))
