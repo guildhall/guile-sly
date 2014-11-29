@@ -48,6 +48,8 @@ SOURCES = 					\
   sly/render/font.scm				\
   sly/render/framebuffer.scm			\
   sly/render/mesh.scm				\
+  sly/render/model.scm				\
+  sly/render/group.scm				\
   sly/render/texture.scm			\
   sly/render/scene.scm				\
   sly/render/shader.scm				\
