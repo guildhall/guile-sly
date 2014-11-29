@@ -51,7 +51,6 @@ SOURCES = 					\
   sly/render/model.scm				\
   sly/render/group.scm				\
   sly/render/texture.scm			\
-  sly/render/scene.scm				\
   sly/render/shader.scm				\
   sly/render/shape.scm				\
   sly/render/sprite.scm				\
