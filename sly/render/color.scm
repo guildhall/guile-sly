@@ -31,7 +31,7 @@
             make-color
             color?
             color-r color-g color-b color-a
-            rgba rgb
+            rgba rgb transparency
             color* color+ color- color-inverse color-lerp
             white black red green blue yellow magenta cyan transparent
             tango-light-butter tango-butter tango-dark-butter
@@ -85,6 +85,11 @@ For example: #xffffff will return a color with RGBA values 1, 1, 1,
                (color-component color-code 8)
                (color-component color-code 0)
                1))
+
+(define (transparency alpha)
+  "Create a new color that is white with a transparency value of
+ALPHA.  ALPHA is clamped to the range [0, 1]."
+  (make-color 1 1 1 alpha))
 
 (define color*
   (match-lambda*
