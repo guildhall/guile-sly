@@ -37,7 +37,7 @@
   #:use-module (sly render camera)
   #:use-module (sly render color)
   #:use-module (sly render context)
-  #:use-module (sly render vertex-array)
+  #:use-module (sly render mesh)
   #:export (make-model model model-inherit
             model?
             model-mesh model-texture model-shader model-color
@@ -49,8 +49,6 @@
 (define-record-type <model>
   (%make-model mesh texture shader color blend-mode depth-test?)
   model?
-  ;; This is a vertex array.
-  ;; TODO: Rename <vertex-array> to mesh and remove old mesh type.
   (mesh model-mesh)
   (texture model-texture)
   (shader model-shader)
@@ -103,13 +101,13 @@ CONTEXT."
        (set-render-context-depth-test?! context depth-test?)
        (set-render-context-blend-mode! context blend-mode)
        (set-render-context-shader! context shader)
-       (set-render-context-vertex-array! context mesh)
+       (set-render-context-mesh! context mesh)
        (set-render-context-texture! context texture)
        ;; TODO: Support user-defined uniforms.
        (uniform-set! shader "mvp" mvp)
        (uniform-set! shader "color" color)
        (glDrawElements (begin-mode triangles)
-                       (vertex-array-length mesh)
+                       (mesh-length mesh)
                        (data-type unsigned-int)
                        %null-pointer)))))
 

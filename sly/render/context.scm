@@ -33,7 +33,7 @@
   #:use-module (sly render shader)
   #:use-module (sly render texture)
   #:use-module (sly render utils)
-  #:use-module (sly render vertex-array)
+  #:use-module (sly render mesh)
   #:export (make-render-context
             render-context?
             with-render-context with-temp-transform
@@ -41,17 +41,17 @@
             render-context-depth-test? set-render-context-depth-test?!
             render-context-texture set-render-context-texture!
             render-context-shader set-render-context-shader!
-            render-context-vertex-array set-render-context-vertex-array!))
+            render-context-mesh set-render-context-mesh!))
 
 (define-record-type <render-context>
   (%make-render-context blend-mode depth-test? texture shader
-                        vertex-array transform-stack)
+                        mesh transform-stack)
   render-context?
   (blend-mode render-context-blend-mode %set-render-context-blend-mode!)
   (depth-test? render-context-depth-test? %set-render-context-depth-test?!)
   (texture render-context-texture %set-render-context-texture!)
   (shader render-context-shader %set-render-context-shader!)
-  (vertex-array render-context-vertex-array %set-render-context-vertex-array!)
+  (mesh render-context-mesh %set-render-context-mesh!)
   (transform-stack render-context-transform-stack))
 
 (define (make-null-transform)
@@ -79,7 +79,7 @@
   (glUseProgram 0)
   (%set-render-context-shader! context #f)
   (glBindVertexArray 0)
-  (%set-render-context-vertex-array! context #f))
+  (%set-render-context-mesh! context #f))
 
 (define-syntax-rule (with-render-context context body ...)
   (begin (render-context-reset! context) body ...))
@@ -118,10 +118,10 @@
     (apply-shader-program shader)
     (%set-render-context-shader! context shader)))
 
-(define (set-render-context-vertex-array! context vertex-array)
-  (unless (equal? (render-context-vertex-array context) vertex-array)
-    (apply-vertex-array vertex-array)
-    (%set-render-context-vertex-array! context vertex-array)))
+(define (set-render-context-mesh! context mesh)
+  (unless (equal? (render-context-mesh context) mesh)
+    (apply-mesh mesh)
+    (%set-render-context-mesh! context mesh)))
 
 ;; emacs: (put 'with-temp-transform 'scheme-indent-function 2)
 (define-syntax-rule (with-temp-transform context name body ...)

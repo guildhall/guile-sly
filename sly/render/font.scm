@@ -116,7 +116,7 @@ HEIGHT, 32 bit color bytevector."
                   0 0 1 1)))
 
 (define* (make-label font text #:optional #:key
-                     (anchor 'top-left) (color white)
+                     (anchor 'top-left)
                      (shader (load-default-shader)))
   (let ((texture (render-text font text)))
-    (make-sprite texture #:shader shader #:anchor anchor #:color color)))
+    (make-sprite texture #:shader shader #:anchor anchor)))

@@ -55,7 +55,6 @@ SOURCES = 					\
   sly/render/shape.scm				\
   sly/render/sprite.scm				\
   sly/render/tileset.scm			\
-  sly/render/vertex-array.scm			\
   sly/render/context.scm			\
   $(WRAPPER_SOURCES)
 

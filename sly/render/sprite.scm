@@ -34,6 +34,7 @@
   #:use-module (sly utils)
   #:use-module (sly math)
   #:use-module (sly render mesh)
+  #:use-module (sly render model)
   #:use-module (sly render shader)
   #:use-module (sly signal)
   #:use-module (sly render texture)
@@ -48,8 +49,7 @@
 
 (define* (make-sprite texture #:optional #:key
                       (shader (load-default-shader))
-                      (anchor 'center)
-                      (color white))
+                      (anchor 'center))
   "Return a 2D rectangular mesh that displays the image TEXTURE.  The
 size of the mesh is the size of TEXTURE, in pixels.  Optionally, a
 custom SHADER can be specified."
@@ -61,28 +61,27 @@ custom SHADER can be specified."
          (s1 (texture-s1 texture))
          (t1 (texture-t1 texture))
          (s2 (texture-s2 texture))
-         (t2 (texture-t2 texture)))
-    (make-mesh
-     #:shader shader
-     #:texture texture
-     #:indices #(0 3 2 0 2 1)
-     #:positions (vector
-                  (vector3 x1 y1 0)
-                  (vector3 x2 y1 0)
-                  (vector3 x2 y2 0)
-                  (vector3 x1 y2 0))
-     #:textures (vector
-                 (vector2 s1 t1)
-                 (vector2 s2 t1)
-                 (vector2 s2 t2)
-                 (vector2 s1 t2)))))
+         (t2 (texture-t2 texture))
+         (mesh (make-mesh #(0 3 2 0 2 1)
+                          (vector
+                           (vector3 x1 y1 0)
+                           (vector3 x2 y1 0)
+                           (vector3 x2 y2 0)
+                           (vector3 x1 y2 0))
+                          (vector
+                           (vector2 s1 t1)
+                           (vector2 s2 t1)
+                           (vector2 s2 t2)
+                           (vector2 s1 t2)))))
+    (make-model #:shader shader
+                #:texture texture
+                #:mesh mesh)))
 
 (define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
-                      (anchor 'center) (color white))
+                      (anchor 'center))
   "Return a sprite mesh for the texture loaded from FILE-NAME.
 Optionally, a custom SHADER can be specified."
-  (make-sprite (load-texture file-name) #:shader shader
-               #:anchor anchor #:color color))
+  (make-sprite (load-texture file-name) #:shader shader #:anchor anchor))
 
 (define* (make-animated-sprite textures frame-duration #:optional #:key
                                (loop? #t)
