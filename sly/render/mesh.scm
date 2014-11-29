@@ -37,30 +37,9 @@
   #:use-module (sly math transform)
   #:use-module (sly render utils)
   #:use-module (sly render vertex-array)
-  #:use-module (sly render renderer)
-  #:export (make-mesh
-            mesh?
-            mesh-shader
-            mesh-texture))
-
-;;;
-;;; Mesh
-;;;
-
-(define-record-type <mesh>
-  (%make-mesh vao shader texture)
-  mesh?
-  (vao mesh-vao)
-  (shader mesh-shader)
-  (texture mesh-texture))
+  #:use-module (sly render model)
+  #:export (make-mesh))
 
 (define* (make-mesh #:optional #:key shader texture indices positions textures)
-  (%make-mesh (make-vertex-array indices positions textures)
-              shader texture))
-
-(define-method (draw (mesh <<mesh>>) transform)
-  (make-render-op #:vertex-array (mesh-vao mesh)
-                  #:texture (mesh-texture mesh)
-                  #:shader (mesh-shader mesh)
-                  #:transform transform
-                  #:uniforms `(("color" ,white))))
+  (make-model #:shader shader #:texture texture
+              #:mesh (make-vertex-array indices positions textures)))
