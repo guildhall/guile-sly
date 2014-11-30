@@ -29,33 +29,33 @@
              (srfi srfi-9)
              (srfi srfi-11)
              (srfi srfi-26)
-             (srfi srfi-42)
              (ice-9 match)
-             (ice-9 rdelim)
-             (gl)
-             (sly audio)
-             (sly camera)
-             (sly color)
-             (sly font)
-             (sly game)
-             (sly keyboard)
-             (sly rect)
-             (sly scene)
-             (sly signal)
-             (sly sprite)
-             (sly texture)
-             (sly transition)
-             (sly vector)
-             (sly window)
-             (sly quaternion)
+             (sly utils)
              (sly math)
+             (sly math rect)
+             (sly math transform)
+             (sly math tween)
+             (sly math vector)
+             (sly render camera)
+             (sly render color)
+             (sly render context)
+             (sly render font)
+             (sly render group)
+             (sly render model)
+             (sly render sprite)
+             (sly render texture)
+             (sly input keyboard)
+             (sly game)
+             (sly signal)
+             (sly window)
+             (sly audio)
              (sly repl))
+
+(set! *random-state* (random-state-from-platform))
+
 ;;;
 ;;; Helpers
 ;;;
-
-(define* (flat-map proc lst . rest)
-  (concatenate (apply map proc lst rest)))
 
 (define (enumerate lst)
   (zip (iota (length lst)) lst))
@@ -121,12 +121,12 @@
            (list (first merged) (reverse (second merged)))))
        board))
 
-(define (board-shift-up board)
+(define (board-shift-down board)
   (let-values (((points board)
                 (unzip2 (board-shift-left (transpose board)))))
     (zip points (transpose board))))
 
-(define (board-shift-down board)
+(define (board-shift-up board)
   (let-values (((points board)
                 (unzip2 (board-shift-right (transpose board)))))
     (zip points (transpose board))))
@@ -199,8 +199,7 @@
 ;;;
 
 (define save-file
-  (string-join (list (getenv "HOME") ".guile-2048")
-               file-name-separator-string))
+  (string-append (getenv "HOME") "/.guile-2048"))
 
 (define-record-type <2048>
   (make-2048 board score best-score)
@@ -219,14 +218,14 @@
   (if (file-exists? save-file)
       (with-input-from-file save-file
         (lambda ()
-          (let ((score (string->number (read-string))))
+          (let ((score (read)))
             (if (number? score) score 0))))
       0))
 
 (define (save-best-score state)
   (with-output-to-file save-file
     (lambda ()
-      (format #t "~d" (choose-best-score state)))))
+      (write (choose-best-score state)))))
 
 (define (choose-best-score state)
   (max (2048-score state) (2048-best-score state)))
@@ -315,30 +314,23 @@
 (define (tile-text-color n)
   (assoc-ref (assoc-ref tile-properties n) 'text-color))
 
-(define tile-sprite (make-sprite tile-texture #:anchor #(0 0)))
+(define tile-sprite (make-sprite tile-texture #:anchor (vector2 0 0)))
 
 (define tile-label-cache
   (map (lambda (n)
-         (cons n (make-label font (number->string n)
-                             #:anchor 'center)))
+         (cons n (label font (number->string n) #:anchor 'center)))
        '(2 4 8 16 32 64 128 256 512 1024 2048)))
 
 (define (make-tile x y n)
   (let* ((w (texture-width tile-texture))
          (h (texture-height tile-texture)))
-    (scene-node
-     (position (vector (* x w) (* y h)))
-     (uniforms `(("color" ,(tile-bg-color n))))
-     (children
-      `(,tile-sprite
-        ,@(if (zero? n)
-              '()
-              (list
-               (scene-node
-                (position (vector (/ w 2) (/ h 2)))
-                (uniforms `(("color" ,(tile-text-color n))))
-                (children
-                 (list (assoc-ref tile-label-cache n)))))))))))
+    (apply move (vector2 (* x w) (* y h))
+           (paint (tile-bg-color n) tile-sprite)
+           (if (zero? n)
+               '()
+               (list (move (vector2 (/ w 2) (/ h 2))
+                           (paint (tile-text-color n)
+                                  (assoc-ref tile-label-cache n))))))))
 
 (define window-width 640)
 (define window-height 480)
@@ -347,30 +339,23 @@
 (define board-height
   (* board-size (texture-height tile-texture)))
 (define center-pos
-  (vector (/ (- window-width board-width) 2)
-          (- window-height board-height 8)))
-
-(define (center v)
-  (v+ v center-pos))
+  (vector2 (/ (- window-width board-width) 2) 8))
 
 (define (enumerate-board board)
   (enumerate (map (cut enumerate <>) board)))
 
-;; Transform board into a list of tile objects.
 (define-signal tiles
-  (signal-map
-   (lambda (board)
-     (flat-map
-      (lambda (row)
-        (let ((y (first row))
-              (row (second row)))
-          (map (lambda (cell)
-                 (let ((x (first cell))
-                       (n (second cell)))
-                   (make-tile x y n)))
-               row)))
-      (enumerate-board board)))
-   board))
+  (signal-map (lambda (board)
+                (make-group
+                 (append-map
+                  (match-lambda
+                   ((y (row ...))
+                    (map (match-lambda
+                          ((x n)
+                           (make-tile x y n)))
+                         row)))
+                  (enumerate-board board))))
+              board))
 
 (define play-again-font (load-default-font 16))
 
@@ -381,22 +366,15 @@
                      ((board-lose? board) "GAME OVER")
                      ((board-win? board) "YOU WIN!")
                      (else #f))))
-       (scene-node
-        (position (center
-                   (vector (/ board-width 2)
-                           (/ board-height 2))))
-        (uniforms `(("color" ,black)))
-        (children
-         (if message
-             (list
-              (make-label font message
-                          #:color black
-                          #:anchor 'bottom-center)
-              (make-label play-again-font
-                          "Press N to play again"
-                          #:color black
-                          #:anchor 'top-center))
-             '())))))
+       (apply move (vector2 (/ board-width 2)
+                            (/ board-height 2))
+              (if message
+                  (list (paint black (label font message
+                                            #:anchor 'bottom-center))
+                        (paint black (label play-again-font
+                                            "Press N to play again"
+                                            #:anchor 'top-center)))
+                  '()))))
    board))
 
 (define instruction-font (load-default-font 16))
@@ -405,67 +383,57 @@
   "Use the arrow keys to join the numbers and get to the 2048 tile!")
 
 (define-signal instructions
-  (scene-node
-   (position (vector (/ window-width 2) 0))
-   (uniforms `(("color" ,text-color-1)))
-   (children
-    (list
-     (make-label instruction-font
-                 instruction-text
-                 #:color text-color-1
-                 #:anchor 'top-center)))))
+  (move (vector2 (/ board-width 2) (- window-height (vy center-pos)))
+        (paint text-color-1
+               (label instruction-font instruction-text
+                      #:anchor 'top-center))))
 
 (define score-header-font (load-default-font 14))
 (define score-font (load-default-font 22))
 
-(define (score-label position label score)
-  (scene-node
-   (position position)
-   (uniforms `(("color" ,text-color-1)))
-   (children
-    (list
-     (make-label score-header-font label
-                 #:color text-color-1
-                 #:anchor 'top-center)
-     (signal-map
-      (lambda (score)
-        (scene-node
-         (position (let ((pos #(0 32)))
-                     (transition (v- pos #(0 8)) pos 15)))
-         (uniforms `(("color" ,(transition transparent text-color-1 15))))
-         (children
-          (list
-           (make-label score-font (number->string score)
-                       #:color text-color-1
-                       #:anchor 'center)))))
-      (signal-drop-repeats score =))))))
+(define (score-label text score x)
+  (let* ((duration 15)
+         (position-tween (let* ((to (vector2 0 -32))
+                                (from (v- to (vector2 0 -8))))
+                           (tween vlerp ease-linear from to duration)))
+         (color-tween (tween color-lerp ease-linear
+                             transparent text-color-1 duration))
+         (score (signal-drop-repeats score)))
+    (signal-map (lambda (score timer)
+                  (move (vector2 x (- window-height 28))
+                        (paint text-color-1
+                               (label score-header-font text
+                                      #:anchor 'top-center))
+                        (move (position-tween timer)
+                              (paint (color-tween timer)
+                                     (label score-font (number->string score)
+                                            #:anchor 'center)))))
+                score
+                (signal-drop (lambda (t) (> t duration))
+                             0 (signal-since 1 score)))))
 
 (define-signal score
-  (score-label (vector (+ (vx center-pos) (/ board-width 4)) 24)
-               "SCORE" (signal-map 2048-score 2048-state)))
+  (score-label "SCORE" (signal-map 2048-score 2048-state) (/ board-width 4)))
 
 (define-signal best-score
-  (score-label (vector (+ (vx center-pos)
-                          (- board-width (/ board-width 4)))
-                       24)
-               "BEST" (signal-map 2048-best-score 2048-state)))
+  (score-label "BEST" (signal-map 2048-best-score 2048-state)
+               (- board-width (/ board-width 4))))
 
 (define-signal 2048-scene
-  (scene-root
-   (scene-node
-    (position (center #(0 0)))
-    (children tiles))
-   instructions
-   score
-   best-score
-   status-message))
+  (signal-map (cut move center-pos <>)
+              (signal-map group instructions tiles score
+                          best-score status-message)))
 
-(define-signal camera
-  (orthographic-camera 2048-scene window-width window-height
-                       #:clear-flags '(depth-buffer)
-                       #:clear-color background
-                       #:before-draw (lambda ()
-                                       (gl-disable (enable-cap depth-test)))))
+(define camera
+  (orthographic-camera window-width window-height
+                       #:viewport (make-viewport (make-rect 0 0 640 480)
+                                                 #:clear-color background)))
+
+(define draw-2048
+  (let ((context (make-render-context)))
+    (lambda (dt alpha)
+      (signal-let ((scene 2048-scene))
+        (draw-group scene camera context)))))
 
 ;;;
 ;;; Initialization
@@ -474,10 +442,10 @@
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
-;; (add-hook! draw-hook (lambda (dt alpha) (render)))
+(add-hook! draw-hook (trampoline draw-2048))
 
 (with-window (make-window #:title "2048")
-  (start-game-loop camera))
+  (start-game-loop))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile 2048"
