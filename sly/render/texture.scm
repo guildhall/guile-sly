@@ -178,17 +178,17 @@ vector to be returned."
        (vector2 (/ w 2)
                 (/ h 2)))
       ('top-left
-       (vector2 0 0))
-      ('top-right
-       (vector2 w 0))
-      ('bottom-left
        (vector2 0 h))
-      ('bottom-right
+      ('top-right
        (vector2 w h))
+      ('bottom-left
+       (vector2 0 0))
+      ('bottom-right
+       (vector2 w 0))
       ('top-center
-       (vector2 (/ w 2) 0))
-      ('bottom-center
        (vector2 (/ w 2) h))
+      ('bottom-center
+       (vector2 (/ w 2) 0))
       (_ (error "Invalid anchor type: " anchor)))))
 
 ;;;
