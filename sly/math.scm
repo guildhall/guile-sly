@@ -34,7 +34,8 @@
             clamp
             linear-scale
             half square
-            make-lerp lerp))
+            make-lerp lerp
+            modulo*))
 
 ;; Dave was editing this module on Pi Approximation Day.
 ;;
@@ -122,3 +123,8 @@ range [0, 1]."
        (* b alpha))))
 
 (define lerp (make-lerp + *))
+
+(define (modulo* x y)
+  "Return the remainder of X / Y.  X and Y may be exact integers,
+rational numbers, or inexact numbers."
+  (- x (* (floor (/ x y)) y)))
