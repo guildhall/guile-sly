@@ -75,7 +75,8 @@ custom SHADER can be specified."
                            (vector2 s1 t2)))))
     (make-model #:shader shader
                 #:texture texture
-                #:mesh mesh)))
+                #:mesh mesh
+                #:depth-test? #f)))
 
 (define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
                       (anchor 'center))
