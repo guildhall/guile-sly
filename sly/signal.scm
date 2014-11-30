@@ -48,7 +48,7 @@
             signal-constant
             signal-count
             signal-tap
-            signal-timestamp
+            signal-timestamp signal-time
             signal-sample
             signal-every signal-since
             signal-delay
@@ -318,6 +318,11 @@ of SIGNAL."
   (signal-map (cut cons (agenda-time) <>) signal))
 
 (define (signal-sample delay signal)
+(define (signal-time signal)
+  "Create a new signal whose value is the time that the latest value
+of SIGNAL was received."
+  (signal-map (lambda _ (agenda-time)) signal))
+
   "Create a new signal that emits the value contained within SIGNAL
 every DELAY ticks of the current agenda."
   ;; To prevent memory leaks, the new signal is stored within a weak
