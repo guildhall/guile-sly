@@ -127,11 +127,17 @@ instanced rendering.")
                                         -> void)
   "Generate N vertex arrays.")
 
+(define-gl-procedure (glDeleteVertexArrays (n GLsizei)
+                                           (arrays GLuint-*)
+                                           -> void)
+  "Delete vertex array objects.")
+
 (define-gl-procedure (glBindVertexArray (array GLuint)
                                         -> void)
   "Bind vertex array object ARRAY.")
 
 (export glGenVertexArrays
+        glDeleteVertexArrays
         glBindVertexArray)
 
 (define-syntax-rule (with-gl-client-state state body ...)

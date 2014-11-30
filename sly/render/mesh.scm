@@ -29,6 +29,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (gl)
   #:use-module (gl low-level)
+  #:use-module (sly utils)
   #:use-module (sly wrappers gl)
   #:use-module (sly math vector)
   #:use-module (sly render color)
@@ -134,10 +135,19 @@
 ;;;
 
 (define-record-type <mesh>
-  (%make-mesh id length)
+  (%make-mesh id length vbos)
   mesh?
   (id mesh-id)
-  (length mesh-length))
+  (length mesh-length)
+  (vbos mesh-vbos))
+
+(define-guardian mesh-guardian
+  (lambda (mesh)
+    ;; Delete vertex array and vertex buffers.
+    (glDeleteVertexArrays 1 (u32vector (mesh-id mesh)))
+    (let ((buffers (mesh-vbos mesh)))
+      (glDeleteBuffers (length buffers)
+                       (list->u32vector (map vertex-buffer-id buffers))))))
 
 (define (generate-vertex-array)
   (let ((bv (u32vector 1)))
@@ -161,13 +171,15 @@
                            (data-type float) #f 0 %null-pointer)))
 
 (define (make-mesh indices positions textures)
-  (let ((mesh (%make-mesh (generate-vertex-array)
-                          (vector-length indices)))
-        (positions (make-vertex-buffer positions))
-        (textures (make-vertex-buffer textures)))
+  (let* ((positions (make-vertex-buffer positions))
+         (textures (make-vertex-buffer textures))
+         (mesh (%make-mesh (generate-vertex-array)
+                           (vector-length indices)
+                           (list positions textures))))
     (with-mesh mesh
       (vertex-attrib-pointer vertex-position-location positions)
       (if textures
           (vertex-attrib-pointer vertex-texture-location textures))
       (bind-vertex-buffer (make-vertex-buffer indices #t)))
+    (mesh-guardian mesh)
     mesh))
