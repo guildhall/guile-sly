@@ -105,10 +105,7 @@ that will be rendered, in pixels."
   (lambda (texture)
     ;; Do not reap texture regions
     (unless (texture-region? texture)
-      ;; When attempting to reap structures upon guile exit, the
-      ;; dynamic pointer to gl-delete-textures becomes invalid. So, we
-      ;; ignore the error and move on.
-      (false-if-exception (gl-delete-texture (texture-id texture))))))
+      (gl-delete-texture (texture-id texture)))))
 
 (define (bitmap->texture bitmap min-filter mag-filter)
   "Translates a freeimage bitmap into an OpenGL texture."
