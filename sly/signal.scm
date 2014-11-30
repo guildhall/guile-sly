@@ -50,6 +50,7 @@
             signal-tap
             signal-timestamp
             signal-sample
+            signal-every signal-since
             signal-delay
             signal-throttle
             signal-generator))
@@ -347,6 +348,17 @@ every DELAY ticks of the current agenda."
   "Create a new signal that delays propagation of SIGNAL by DELAY
 ticks of the current agenda."
   (make-boxed-signal (signal-ref signal)
+(define (signal-every step)
+  "Create a new signal that emits STEP every STEP ticks."
+  (signal-sample step (make-signal step)))
+
+(define (signal-since step signal)
+  "Create a new signal that emits the time since the last value was
+received from SIGNAL in STEP increments."
+  (signal-map (lambda (time)
+                (- (agenda-time) time))
+              (signal-sample step (signal-time signal))))
+
                      (lambda (self value)
                        (schedule
                         (lambda ()
