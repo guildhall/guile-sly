@@ -92,28 +92,9 @@ HEIGHT, 32 bit color bytevector."
              (height (SDL:surface:h surface))
              ;; Need to flip pixels so that origin is on the bottom-left.
              (pixels (flip-pixels-vertically (SDL:surface-pixels surface)
-                                             width height))
-             (texture-id (gl-generate-texture)))
-    (with-gl-bind-texture (texture-target texture-2d) texture-id
-      (gl-texture-parameter (texture-target texture-2d)
-                            (texture-parameter-name texture-min-filter)
-                            (texture-min-filter linear))
-      (gl-texture-parameter (texture-target texture-2d)
-                            (texture-parameter-name texture-mag-filter)
-                            (texture-mag-filter linear))
-      (gl-texture-image-2d (texture-target texture-2d)
-                           0
-                           (pixel-format rgba)
-                           width
-                           height
-                           0
-                           (pixel-format rgba)
-                           (color-pointer-type unsigned-byte)
-                           pixels))
-    (make-texture texture-id #f
-                  (SDL:surface:w surface)
-                  (SDL:surface:h surface)
-                  0 0 1 1)))
+                                             width height)))
+    ;; Need to flip pixels so that origin is on the bottom-left.
+    (bytevector->texture pixels width height 'linear 'linear)))
 
 (define* (make-label font text #:optional #:key
                      (anchor 'top-left)

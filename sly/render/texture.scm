@@ -35,6 +35,7 @@
   #:use-module (sly wrappers freeimage)
   #:export (make-texture
             make-texture-region
+            bytevector->texture
             load-texture
             texture?
             texture-region?
@@ -107,13 +108,14 @@ that will be rendered, in pixels."
     (unless (texture-region? texture)
       (gl-delete-texture (texture-id texture)))))
 
-(define (bitmap->texture bitmap min-filter mag-filter)
-  "Translates a freeimage bitmap into an OpenGL texture."
-  (let ((texture-id (gl-generate-texture))
-        (pixels (freeimage-get-bits bitmap)))
+(define* (bytevector->texture pixels width height min-filter mag-filter
+                              #:optional (format (pixel-format rgba)))
+  "Translate the bytevector PIXELS into an OpenGL texture with
+dimensions WIDTHxHEIGHT where each pixel corresponds to the given
+OpenGL pixel FORMAT.  The generated textured uses MIN-FILTER for
+downscaling and MAG-FILTER for upscaling."
+  (let ((texture-id (gl-generate-texture)))
     (with-gl-bind-texture (texture-target texture-2d) texture-id
-      ;; Use "nearest" scaling method so that pixel art doesn't become
-      ;; blurry when scaled.
       (gl-texture-parameter (texture-target texture-2d)
                             (texture-parameter-name texture-min-filter)
                             (match min-filter
@@ -125,19 +127,18 @@ that will be rendered, in pixels."
                               ('nearest (texture-mag-filter nearest))
                               ('linear (texture-mag-filter linear))))
       (gl-texture-image-2d (texture-target texture-2d)
-                           0
-                           (pixel-format rgba)
-                           (freeimage-get-width bitmap)
-                           (freeimage-get-height bitmap)
-                           0
-                           (version-1-2 bgra)
+                           0 (pixel-format rgba) width height 0 format
                            (color-pointer-type unsigned-byte)
                            pixels))
-    (make-texture texture-id
-                  #f
-                  (freeimage-get-width bitmap)
-                  (freeimage-get-height bitmap)
-                  0 0 1 1)))
+    (make-texture texture-id #f width height 0 0 1 1)))
+
+(define (bitmap->texture bitmap min-filter mag-filter)
+  "Translates a freeimage bitmap into an OpenGL texture."
+  (bytevector->texture (freeimage-get-bits bitmap)
+                       (freeimage-get-width bitmap)
+                       (freeimage-get-height bitmap)
+                       min-filter mag-filter
+                       (version-1-2 bgra)))
 
 (define (load-bitmap filename)
   ;; Throw an error if image file does not exist or else we will
