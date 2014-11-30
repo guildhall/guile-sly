@@ -36,7 +36,7 @@
   (modulo* alpha 1))
 
 (define (ease-reflect alpha)
-  (let* ((cycle (modulo* alpha 2)))
+  (let ((cycle (modulo* alpha 2)))
     (if (< cycle 1) cycle (- 2 cycle))))
 
 (define (ease-linear alpha)
