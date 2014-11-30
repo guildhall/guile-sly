@@ -42,7 +42,7 @@
             signal-negate
             signal-fold
             signal-filter
-            signal-reject
+            signal-drop
             signal-drop-repeats
             signal-switch
             signal-constant
@@ -261,7 +261,7 @@ DEFAULT when the predicate is never satisfied."
                          (%signal-set! self value)))
                      (list signal)))
 
-(define (signal-reject predicate default signal)
+(define (signal-drop predicate default signal)
   "Create a new signal that does not keep an incoming value from
 SIGNAL when it satisfies the procedure PREDICATE.  The value of the
 signal is DEFAULT when the predicate is never satisfied."
@@ -271,15 +271,15 @@ signal is DEFAULT when the predicate is never satisfied."
   "Create a new signal that filters out new values from SIGNAL that
 are equivalent to the current value.  By default, equal? is used for
 testing equivalence."
-  (signal-reject (let ((prev (signal-ref signal)))
-                   (lambda (current)
-                     (if (equal? prev current)
-                         #t
-                         (begin
-                           (set! prev current)
-                           #f))))
-                 (signal-ref signal)
-                 signal))
+  (signal-drop (let ((prev (signal-ref signal)))
+                 (lambda (current)
+                   (if (equal? prev current)
+                       #t
+                       (begin
+                         (set! prev current)
+                         #f))))
+               (signal-ref signal)
+               signal))
 
 (define (signal-switch pred on off)
   "Create a new signal whose value is that of the signal ON when the
