@@ -317,14 +317,14 @@ time that the value of SIGNAL was received and whose cdr is the value
 of SIGNAL."
   (signal-map (cut cons (agenda-time) <>) signal))
 
-(define (signal-sample delay signal)
 (define (signal-time signal)
   "Create a new signal whose value is the time that the latest value
 of SIGNAL was received."
   (signal-map (lambda _ (agenda-time)) signal))
 
+(define (signal-sample step signal)
   "Create a new signal that emits the value contained within SIGNAL
-every DELAY ticks of the current agenda."
+every STEP ticks of the current agenda."
   ;; To prevent memory leaks, the new signal is stored within a weak
   ;; value hash table and never bound to a variable within the main
   ;; body of the procedure.  When this signal is GC'd, the sampling
@@ -334,25 +334,19 @@ every DELAY ticks of the current agenda."
       (hash-ref container 'signal))
 
     (define (sample!)
-      (let ((sampler (get)))
-        (if sampler
-            (begin
-              (signal-set! sampler (signal-ref signal))
-              #t)
-            #f)))
+      (and=> (get)
+             (lambda (sampler)
+               (signal-set! sampler (signal-ref signal))
+               #t)))
 
     (hash-set! container 'signal (make-signal (signal-ref signal)))
     (coroutine
      (let loop ()
-       (wait delay)
+       (wait step)
        (when (sample!)
          (loop))))
     (get)))
 
-(define (signal-delay delay signal)
-  "Create a new signal that delays propagation of SIGNAL by DELAY
-ticks of the current agenda."
-  (make-boxed-signal (signal-ref signal)
 (define (signal-every step)
   "Create a new signal that emits STEP every STEP ticks."
   (signal-sample step (make-signal step)))
@@ -364,6 +358,10 @@ received from SIGNAL in STEP increments."
                 (- (agenda-time) time))
               (signal-sample step (signal-time signal))))
 
+(define (signal-delay delay signal)
+  "Create a new signal that delays propagation of SIGNAL by DELAY
+ticks of the current agenda."
+  (make-boxed-signal (signal-ref signal)
                      (lambda (self value)
                        (schedule
                         (lambda ()
