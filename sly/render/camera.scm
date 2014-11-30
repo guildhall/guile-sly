@@ -107,5 +107,5 @@ size WIDTH x HEIGHT.  Optionally, z-axis clipping planes Z-NEAR and
 Z-FAR can be specified, but default to 0 and 1, respectively.  By
 default, the camera's VIEWPORT is WIDTH x HEIGHT, which is convenient if
 the dimensions are measured in pixels."
-  (let ((projection (orthographic-projection 0 width 0 height z-near z-far)))
+  (let ((projection (orthographic-projection 0 width height 0 z-near z-far)))
     (make-camera identity-transform projection viewport)))
