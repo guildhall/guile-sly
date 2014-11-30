@@ -37,10 +37,10 @@ SOURCES = 					\
   sly/math/quaternion.scm			\
   sly/math/rect.scm				\
   sly/math/transform.scm			\
+  sly/math/tween.scm				\
   sly/math/vector.scm				\
   sly/repl.scm					\
   sly/signal.scm					\
-  sly/transition.scm				\
   sly/window.scm					\
   sly/render/utils.scm				\
   sly/render/color.scm				\
