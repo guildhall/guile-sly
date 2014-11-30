@@ -42,7 +42,7 @@
             load-default-font
             font?
             font-point-size
-            make-label))
+            make-label label))
 
 ;;;
 ;;; Font
@@ -84,8 +84,8 @@ HEIGHT, 32 bit color bytevector."
 
 (define (render-text font text)
   "Return a new texture with TEXT rendered using FONT."
-  ;; An empty string will result in a surface value of #f, in which we
-  ;; want to abort the texture creation process.
+  ;; An empty string will result in a surface value of #f, in which
+  ;; case we want to abort the texture creation process.
   (and-let* ((surface (SDL:render-utf8 (font-ttf font) text
                                        (SDL:make-color 255 255 255) #t))
              (width (SDL:surface:w surface))
@@ -101,3 +101,5 @@ HEIGHT, 32 bit color bytevector."
                      (shader (load-default-shader)))
   (let ((texture (render-text font text)))
     (make-sprite texture #:shader shader #:anchor anchor)))
+
+(define label make-label)
