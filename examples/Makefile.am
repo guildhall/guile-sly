@@ -18,11 +18,12 @@
 examplesdir = $(pkgdatadir)/examples
 examples_DATA =					\
 	animation.scm				\
-	coroutine.scm				\
+	common.scm				\
 	font.scm				\
-	particles.scm				\
+	joystick.scm				\
 	simple.scm				\
-	tilemap.scm
+	tilemap.scm				\
+	2048/2048
 
 imagedir = $(pkgdatadir)/examples/images
 image_DATA = 					\
@@ -30,4 +31,5 @@ image_DATA = 					\
 	images/p1_front.png			\
 	images/princess.png			\
 	images/stars.png			\
-	images/tiles.png
+	images/tiles.png			\
+	2048/tile.png
