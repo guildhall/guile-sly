@@ -43,7 +43,7 @@
             model-mesh model-texture model-shader model-color
             model-blend-mode model-depth-test?
             draw-model
-            paint blend))
+            model-paint model-blend))
 
 ;; Representation of a single OpenGL render call.
 (define-record-type <model>
@@ -115,10 +115,10 @@ CONTEXT."
 ;;; Utility Procedures
 ;;;
 
-(define (paint color model)
+(define (model-paint color model)
   "Create a copy of MODEL, but with a new COLOR."
   (model-inherit model #:color color))
 
-(define (blend blend-mode model)
+(define (model-blend blend-mode model)
   "Create a copy of MODEL, but with a new BLEND-MODE."
   (model-inherit model #:blend-mode blend-mode))
