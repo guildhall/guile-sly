@@ -41,13 +41,16 @@ filename string."
       (apply proc filename args))
 
     (define (current-mtime)
-      (stat:mtime (stat filename)))
+      (let ((info (stat filename)))
+        (max (stat:mtime info) (stat:ctime info))))
 
     (let ((asset (make-signal (load-asset))))
      (coroutine
       (let loop ((last-mtime (current-mtime)))
         (wait live-reload-interval)
-        (let ((mtime (current-mtime)))
+        (let ((mtime (if (file-exists? filename)
+                         (current-mtime)
+                         last-mtime)))
           (when (> mtime last-mtime)
             (signal-set! asset (load-asset)))
           (loop mtime))))
