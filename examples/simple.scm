@@ -15,34 +15,25 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly camera)
-             (sly game)
-             (sly math rect)
-             (sly render scene)
-             (sly render sprite)
-             (sly math transform)
-             (sly vector)
+(use-modules (sly game)
              (sly window)
-             (sly render color))
+             (sly math vector)
+             (sly render camera)
+             (sly render group)
+             (sly render sprite))
 
 (load "common.scm")
 
 (define scene
-  (scene-root
-   (scene-node
-    (position #(320 240))
-    (uniforms `(("color" ,white)))
-    (children
-     (list (load-sprite "images/p1_front.png"))))))
+  (group-move (vector2 320 240)
+              (group (load-sprite "images/p1_front.png"))))
 
-(define camera
-  (make-camera scene
-               identity-transform
-               (orthographic-projection 0 640 0 480 0 1)
-               (make-rect 0 0 640 480)))
+(define camera (orthographic-camera 640 480))
+
+(add-hook! draw-hook (lambda _ (draw-group scene camera)))
 
 (with-window (make-window #:title "Simple Sprite Demo")
-  (start-game-loop camera))
+  (start-game-loop))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile simple.scm"

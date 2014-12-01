@@ -15,33 +15,52 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly animation)
-             (sly game)
+(use-modules (sly game)
+             (sly window)
+             (sly signal)
+             (sly math)
+             (sly math tween)
+             (sly math vector)
+             (sly render camera)
+             (sly render group)
              (sly render sprite)
-             (sly render tileset)
-             (sly vector)
-             (sly window))
+             (sly render tileset))
 
 (load "common.scm")
 
-(define (make-demo-animation)
-  "Load a texture, split it into 64x64 tiles, and build an animated
-sprite out of it."
-  (let* ((tiles (load-tileset "images/princess.png" 64 64))
-         (frames (vector (tileset-ref tiles 19)
-                         (tileset-ref tiles 20)
-                         (tileset-ref tiles 21)
-                         (tileset-ref tiles 22)
-                         (tileset-ref tiles 23)
-                         (tileset-ref tiles 24)
-                         (tileset-ref tiles 25)
-                         (tileset-ref tiles 26))))
-    (make-animation frames 6 #t)))
+(define walk-cycle
+  (let ((tiles (load-tileset "images/princess.png" 64 64)))
+    (list->vector
+     (map (lambda (id)
+            (sprite (tileset-ref tiles id)))
+          '(19 20 21 22 23 24 25 26)))))
 
-(define sprite (make-sprite (make-demo-animation)
-                            #:position #(320 240)))
+(define position-tween
+  (tween vlerp (compose ease-linear ease-loop)
+         (vector2 480 240) (vector2 160 240) 120))
 
-(add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
+(define frame-tween
+  (let* ((frame-count (vector-length walk-cycle))
+         (frame-rate (/ 60 frame-count)))
+    (tween (compose floor lerp) (compose ease-linear ease-loop)
+           0 frame-count (* frame-count frame-rate))))
+
+(define-signal timer
+  (signal-fold + 0 (signal-every 1)))
+
+(define-signal scene
+  (signal-map (lambda (time)
+                (group-move (position-tween time)
+                            (group (vector-ref walk-cycle (frame-tween time)))))
+              timer))
+
+(define camera (orthographic-camera 640 480))
+
+(add-hook! draw-hook (lambda _ (draw-group (signal-ref scene) camera)))
 
 (with-window (make-window #:title "Animation")
   (start-game-loop))
+
+;;; Local Variables:
+;;; compile-command: "../pre-inst-env guile animation.scm"
+;;; End:

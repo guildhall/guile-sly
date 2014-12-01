@@ -327,12 +327,14 @@
          (label (assoc-ref tile-label-cache n))
          (label-color (tile-text-color n))
          (bg-color (tile-bg-color n)))
-    (apply group-move (vector2 (* x w) (* y h))
-           (model-paint bg-color tile-sprite)
-           (if (zero? n)
-               '()
-               (list (group-move (vector2 (/ w 2) (/ h 2))
-                                 (model-paint label-color label)))))))
+    (group-move (vector2 (* x w) (* y h))
+                (make-group
+                 (cons (model-paint bg-color tile-sprite)
+                       (if (zero? n)
+                           '()
+                           (list (group-move (vector2 (/ w 2) (/ h 2))
+                                             (group (model-paint label-color
+                                                                 label))))))))))
 
 (define window-width 640)
 (define window-height 480)
@@ -362,22 +364,25 @@
 (define play-again-font (load-default-font 16))
 
 (define-signal status-message
-  (signal-map
-   (lambda (board)
-     (let ((message (cond
-                     ((board-lose? board) "GAME OVER")
-                     ((board-win? board) "YOU WIN!")
-                     (else #f))))
-       (apply group-move (vector2 (/ board-width 2)
-                                  (/ board-height 2))
-              (if message
-                  (list (model-paint black (label font message
-                                                  #:anchor 'bottom-center))
-                        (model-paint black (label play-again-font
-                                                  "Press N to play again"
-                                                  #:anchor 'top-center)))
-                  '()))))
-   board))
+  (let ((play-again (model-paint black (label play-again-font
+                                              "Press N to play again"
+                                              #:anchor 'top-center)))
+        (game-over (model-paint black (label font "GAME OVER"
+                                             #:anchor 'bottom-center)))
+        (you-win (model-paint black (label font "YOU WIN!"
+                                           #:anchor 'bottom-center))))
+    (signal-map
+           (lambda (board)
+             (let ((message (cond
+                             ((board-lose? board) game-over)
+                             ((board-win? board) you-win)
+                             (else #f))))
+               (group-move (vector2 (/ board-width 2)
+                                    (/ board-height 2))
+                           (make-group (if message
+                                           (list message play-again)
+                                           '())))))
+           board)))
 
 (define instruction-font (load-default-font 16))
 
@@ -386,9 +391,10 @@
 
 (define-signal instructions
   (group-move (vector2 (/ board-width 2) (- window-height (vy center-pos)))
-              (model-paint text-color-1
-                           (label instruction-font instruction-text
-                                  #:anchor 'top-center))))
+              (group
+               (model-paint text-color-1
+                            (label instruction-font instruction-text
+                                   #:anchor 'top-center)))))
 
 (define score-header-font (load-default-font 14))
 (define score-font (load-default-font 22))
@@ -406,10 +412,12 @@
                   (let ((score (label score-font (number->string score)
                                       #:anchor 'center)))
                     (group-move (vector2 x (- window-height 28))
-                                (model-paint text-color-1 header)
-                                (group-move (position-tween timer)
-                                            (model-paint (color-tween timer)
-                                                         score)))))
+                                (group
+                                 (model-paint text-color-1 header)
+                                 (group-move (position-tween timer)
+                                             (group
+                                              (model-paint (color-tween timer)
+                                                           score)))))))
                 score
                 (signal-drop (lambda (t) (> t duration))
                              0 (signal-since 1 score)))))
