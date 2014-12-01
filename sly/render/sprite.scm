@@ -39,8 +39,7 @@
   #:use-module (sly signal)
   #:use-module (sly render texture)
   #:use-module (sly math vector)
-  #:export (make-sprite
-            load-sprite
+  #:export (make-sprite sprite load-sprite
             make-animated-sprite))
 
 ;;;
@@ -77,6 +76,8 @@ custom SHADER can be specified."
                 #:texture texture
                 #:mesh mesh
                 #:depth-test? #f)))
+
+(define sprite make-sprite)
 
 (define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
                       (anchor 'center))
