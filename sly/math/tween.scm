@@ -23,6 +23,7 @@
 
 (define-module (sly math tween)
   #:use-module (sly math)
+  #:use-module (sly utils)
   #:export (ease-loop ease-reflect ease-linear
             ease-in-sine ease-out-sine ease-in-out-sine
             ease-in-quad ease-out-quad ease-in-out-quad
@@ -103,5 +104,10 @@ ticks.  The value returned for a given time is determined by applying
 EASE with the time ratio to acquire an 'alpha' value, and then
 applying INTERPOLATOR with START, END, and alpha.  Alpha is a rational
 number in the range [0, 1]."
+  (define interpolate
+    (memoize
+     (lambda (alpha)
+       (interpolator start end alpha))))
+
   (lambda (time)
-    (interpolator start end (clamp 0 1 (ease (/ time duration))))))
+    (interpolate (clamp 0 1 (ease (/ time duration))))))
