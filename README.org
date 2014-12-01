@@ -1,29 +1,28 @@
-* Sly
+* Sly - The Living, Breathing Game Engine
 
-  Sly is a free software game engine written in GNU Guile Scheme.  It
+  Sly is a free software game engine written in [[https://gnu.org/software/guile][Guile Scheme]].  It
   provides an abstraction layer above SDL and OpenGL for common game
   programming requirements such as:
 
-  - Meshes
+  - Animation
   - Shaders
   - Sprites
-  - Animation
   - Tilesets
   - Scene graph
-  - Keyboard/mouse input
+  - Keyboard/mouse/joystick input
   - Scripting
 
-  Sly differentiates itself from other game engines by providing an
-  interactive development environment via Guile's read-eval-print-loop
-  (REPL), exposing a functional API instead of an object-oriented one,
-  and encouraging reactive programming.
+  Sly differentiates itself from most other game engines by
+  encouraging [[http://toplap.org/about/][live coding]] and emphasizing [[http://elm-lang.org/learn/What-is-FRP.elm][functional reactive
+  programming]].
 
 ** Inspiration
 
    Every programming language should have a fun, easy to use game
-   library.  Sly draws its inspiration from great libraries/engines
-   such as [[http://love2d.org/][LÖVE]], [[http://pygame.org/][Pygame]], and [[http://pyglet.org/][Pyglet]].  Sly's functional reactive nature
-   is heavily inspired by the [[http://elm-lang.org/][Elm]] programming language.
+   library.  Guile is no exception.  Sly draws its inspiration from
+   easy-to-use libraries/engines such as [[http://love2d.org/][LÖVE]], [[http://pygame.org/][Pygame]], and [[http://pyglet.org/][Pyglet]].
+   Sly's functional reactive nature is heavily inspired by the [[http://elm-lang.org/][Elm]]
+   programming language.
 
 ** Example
 
@@ -31,17 +30,22 @@
 
    #+BEGIN_SRC scheme
      (use-modules (sly game)
-                  (sly sprite)
-                  (sly window))
+                  (sly window)
+                  (sly math vector)
+                  (sly render camera)
+                  (sly render group)
+                  (sly render sprite))
 
-     (define sprite
-       (load-sprite "images/p1_front.png"
-                    #:position #(320 240)))
+     (define scene
+       (group-move (vector2 320 240)
+                   (group (load-sprite "gnu.png"))))
 
-     (add-hook! draw-hook (lambda (dt alpha) (draw-sprite sprite)))
+     (define camera (orthographic-camera 640 480))
 
-     (with-window (make-window #:title "Simple Sprite Demo")
-       (run-game-loop))
+     (add-hook! draw-hook (lambda _ (draw-group scene camera)))
+
+     (with-window (make-window #:title "Hello, world!")
+       (start-game-loop))
    #+END_SRC
 
 ** Features
@@ -68,164 +72,30 @@
         (start-game-loop))
     #+END_SRC
 
-*** Sprites
-
-    Sprites encapsulate the presentation of an image or a region of an
-    image.
-
-    The simplest way to get started with sprites is to use the
-    =load-sprite= procedure. All arguments except the filename are
-    optional keyword arguments.
-
-    Sly uses the FreeImage library and can load many different image
-    formats. See the FreeImage [[http://freeimage.sourceforge.net/features.html][features page]] for a full list of
-    supported formats.
-
-    #+BEGIN_SRC scheme
-      (use-modules (sly sprite))
-
-      (define sprite
-        (load-sprite "cirno.png"
-                     #:position #(320 240)
-                     #:scale #(1 1)
-                     #:rotation 45
-                     #:color white
-                     #:anchor 'center))
-    #+END_SRC
-
-    Alternatively, you can make a sprite from an existing texture. The
-    same keyword arguments in =load-sprite= are also available here.
-
-    #+BEGIN_SRC scheme
-      (define sprite (make-sprite (load-texture "cirno.png")))
-    #+END_SRC
-
-    Position, scale, rotation, color, and anchor are mutable.
-
-    #+BEGIN_SRC scheme
-      (set-sprite-position! sprite #(100 100))
-    #+END_SRC
-
-    Drawing a sprite is simple.
-
-    #+BEGIN_SRC scheme
-      (draw-sprite sprite)
-    #+END_SRC
-
-*** Keyboard and Mouse Input
-
-    There are hooks within the =(sly keyboard)= and =(sly mouse)=
-    modules that can be used to respond to user input.
-
-    #+BEGIN_SRC scheme
-      (use-modules (sly keyboard)
-                   (sly mouse))
-
-      ;; Quit when ESC is pressed.
-      (add-hook! key-press-hook
-                 (lambda (key unicode)
-                   (when (eq? key 'escape)
-                     (quit-game))))
-
-      ;; Print coordinates when the mouse is moved.
-      (add-hook! mouse-move-hook
-                 (lambda (x y)
-                   (format #t "pos: (~d, ~d)\n" x y)))
-    #+END_SRC
-
-    In the future, there will be more convenient ways to respond to
-    user input similar to how keymaps work in Emacs.
-
-*** Coroutines and the Agenda
-
-    The ability to write scripts is very important for most games. A
-    script for an RPG NPC could look like this:
-
-    #+BEGIN_SRC scheme
-      ;; Walk up one tile and then down one tile, forever.
-      (while #t
-        (walk 'up)
-        (walk 'down))
-    #+END_SRC
-
-    Unfortunately, running this script as it is means completely
-    locking up the program in an unbounded loop. However, coroutines
-    (and a scheduler known as the "agenda") are here to save the day!
-    Coroutines are procedures that can be exited at any point and
-    resumed later.
-
-    It would be nice if after every call to =walk=, the NPC would wait
-    for one second before taking its next step. This is where the
-    agenda comes in. The agenda is used to schedule procedures to be
-    run after an arbitrary number of game updates (1 by
-    default). Since coroutines and the agenda go hand in hand, there
-    exists a =wait= procedure to pause a coroutine and schedule it to
-    be resumed later.
-
-    Using a coroutine and the agenda, the NPC script can be rewritten
-    such that it does not halt further program execution.
-
-    #+BEGIN_SRC scheme
-      (use-modules (sly agenda)
-                   (sly coroutine))
-
-      (coroutine
-       (while #t
-         (walk 'up)
-         (wait 60)
-         (walk 'down)
-         (wait 60)))
-    #+END_SRC
-
-    =coroutine= is a useful macro that evaluates a block of code as a
-    coroutine.  =wait= aborts the procedure and schedules the
-    continuation inside of the agenda.  In this example, the script is
-    paused for 1 second after each step.  Since Sly enforces a fixed
-    timestep and updates 60 times per second by default, 60 ticks is
-    equivalent to 1 second.
-
-    You can also use the agenda to schedule the evaluation of any
-    thunk even if it isn't a coroutine.
-
-    #+BEGIN_SRC scheme
-      (define (hello)
-        (display "Hello, world!  Sorry I'm late!\n"))
-
-      (schedule hello 600)
-    #+END_SRC
-
-    =schedule= accepts a thunk (a procedure that takes no arguments)
-    and schedules it to be applied after a certain number of ticks, or
-    after 1 tick by default.  In this example, the text "Hello, world!
-    Sorry I'm late!" is displayed after 10 seconds.  There are other
-    ways to schedule procedures, too.  =schedule-interval= applies a
-    thunk periodically, and =schedule-each= applies a thunk upon every
-    tick.
-
 *** Functional Reactive Programming
 
-    Games are composed of values that evolve as time passes.  The
-    player's score, the current stage, an enemy's hit points, etc. all
-    change in response to events that happen at discrete points in
-    time.  Typically, this means that a number of callback procedures
-    are registered to react to events which mutate data structures
-    and/or assign to variables.  However, this approach, while simple
-    and effective, comes at the price of readability and
-    comprehension.  Instead of explicitly mutating data and entering
-    "callback hell", Sly abstracts and formalizes the process using a
-    functional reactive programming style.
+    Game state is a function of time.  The player's score, the current
+    stage, an enemy's hit points, etc. all change in response to
+    events that happen at discrete points in time.  Typically, this
+    means that a number of callback procedures are registered to
+    respond to events which mutate the relevant data structures.
+    However, this approach, while simple and effective, comes at the
+    price of readability, comprehension, and expression.  Instead of
+    explicitly mutating data and entering "callback hell", Sly
+    abstracts and formalizes the process using a functional reactive
+    programming style.
 
-    Time-varying values are called "signals", and they are created in
-    a declarative and functional manner.  Rather than describing the
-    process of mutation procedurally, one describes the relationship
-    between signals instead.  Signal relationships are described in a
-    functional style using =signal-map=, =signal-fold=,
+    In Sly, time-varying values are called "signals", and they are
+    defined in a declarative and functional manner.  Rather than
+    describing the process of mutation procedurally, one describes the
+    relationship between signals instead.  Signal relationships are
+    described in a functional style using =signal-map=, =signal-fold=,
     =signal-filter=, and others.
 
     Example:
     #+BEGIN_SRC scheme
       (define-signal position
-        (signal-fold v+ #(320 240)
+        (signal-fold v+ (vector2 320 240)
                      (signal-map (lambda (v) (v* v 4))
                                  (signal-sample 1 key-arrows))))
     #+END_SRC
@@ -235,7 +105,7 @@
     to trigger a signal update upon every game tick that provides the
     current state of the arrow keys.  =key-arrows= is a vector that
     maps to the current state of the arrow keys, allowing for 8
-    direction movement.  This vector is then scaled 4x to make the
+    directional movement.  This vector is then scaled 4x to make the
     player move faster.  Finally, the scaled vector is added to the
     previous player position via =signal-fold=.  The player's position
     is at (320, 240) initially.  As you can see, there are no
@@ -250,15 +120,15 @@
 
 *** REPL Driven Development
 
-   The read-eval-print-loop present in Guile allows you to develop
-   your game while it is running! This allows you to see in real time
-   what your changes do to the game without having to restart the
-   program every time.
+   Guile's read-eval-print-loop allows you to develop your game while
+   it is running!  This allows you to see in real-time what your
+   changes do to the game without having to kill, recompile, and
+   restart the program every time a change is made.
 
-   Sly integrates Guile's cooperative REPL server with the game loop.
+   Sly integrates Guile's [[https://gnu.org/software/guile/manual/html_node/Cooperative-REPL-Servers.html][cooperative REPL server]] into the game loop.
    To activate this feature, import the =(sly repl)= module and call
    =(start-sly-repl)=.  To connect to the REPL server, use the [[http://www.nongnu.org/geiser/][Geiser]]
-   extension for GNU Emacs or telnet.
+   extension for GNU Emacs.
 
    *Geiser*
 
@@ -266,13 +136,7 @@
     M-x connect-to-guile
    #+END_SRC
 
-   Use the default host and port settings.
-
-   *Telnet*
-
-   #+BEGIN_SRC sh
-     telnet localhost 37146
-   #+END_SRC
+   Use the default host and port settings when prompted.
 
 ** Building
 
@@ -337,6 +201,7 @@
    - [[https://www.gnu.org/software/guile-sdl/index.html][guile-sdl]] >= 0.5.0
    - SDL 1.2
    - FreeImage >= 3.0
+   - GNU Scientific Library (GSL)
 
 ** Community
 
