@@ -43,7 +43,7 @@
    - [ ] Create a generic tilemap module
    - [ ] Create a loader for Tiled .tmx map files.
 
-** TODO Scene graph
+** DONE Scene graph
    A tree structure that is traversed when rendering a game scene.
    The graph is composed of groups and nodes. Transformations are
    accumulated as the tree is walked.
@@ -55,13 +55,13 @@
    - [X] Coroutines
    - [X] Agenda
 
-** TODO Vectors and matrices
+** DONE Vectors and matrices
    Vectors and matrices are needed constantly for games. Provide an
    easy-to-use module that provides procedures for common
    vector/matrix math operations
 
    - [X] Vectors
-   - [ ] Matrices
+   - [X] Matrices
 
 ** DONE Fonts
    - [X] Write wrappers for needed FTGL functions
@@ -131,10 +131,6 @@
        main thread
      - Will be available in Guile 2.0.10!
 
-** TODO Scene Graph
-   Provide a reactive scene graph for representing the renderable
-   objects in a game.
-
 ** TODO Shaders
    - [ ] Scheme -> GLSL compiler
      Port http://wiki.call-cc.org/eggref/4/glls to guile?
@@ -142,17 +138,16 @@
 ** TODO Upgrade to SDL2
    Guile bindings needed.
 
-** TODO Rename (sly helpers) to (sly utils)
-
-** TODO Rename (sly transform) to (sly math transform)
-
-** TODO Rename (sly quaternion) to (sly math quaternion)
-
-** TODO Rename (sly shader) to (sly render shader)
-
 ** TODO Nine patches
     Images that have a resizable central area but fixed width/height
     edges.
+
+** TODO Job control for agenda
+   Allow for pausing and cancelling jobs.
+
+** TODO Async/threaded signals
+   Not sure how to do this as some things, such as SDL and OpenGL
+   calls *must* be done in the main thread.
 
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
