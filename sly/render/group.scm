@@ -112,17 +112,25 @@ render CONTEXT."
   "Create a new group containing the list of CHILDREN."
   (make-group children))
 
-(define (group-move position . children)
+(define (group-move position group)
   "Create a new group in which the list of CHILDREN are translated by
 the vector POSITION."
-  (make-group children #:transform (translate position)))
+  (match group
+    (($ <group> transform visible? children)
+     (%make-group (transform* transform (translate position))
+                  visible? children))))
 
-(define (group-place transform . children)
+(define (group-place transform group)
   "Create a new group in which the tranformation matrices of the
 CHILDREN are multiplied by TRANSFORM."
-  (make-group children #:transform transform))
+  (match group
+    (($ <group> original-transform visible? children)
+     (%make-group (transform* original-transform transform)
+                  visible? children))))
 
-(define (group-show visible? . children)
+(define (group-show visible? group)
   "Create a new group in which the visibility of the list of
 CHILDREN is determined by the VISIBLE? flag."
-  (make-group children #:visible? visible?))
+  (match group
+    (($ <group> transform _ children)
+     (%make-group transform visible? children))))
