@@ -21,66 +21,59 @@
 ;;
 ;;; Code:
 
-(use-modules
- (sly game)
- (sly repl)
- (sly render sprite)
- (sly render texture)
- (sly input joystick)
- (sly signal)
- (sly window)
- (sly vector)
- (sly render font))
+(use-modules (sly game)
+             (sly signal)
+             (sly window)
+             (sly math vector)
+             (sly input joystick)
+             (sly render camera)
+             (sly render model)
+             (sly render group)
+             (sly render sprite)
+             (sly render texture)
+             (sly render font))
 
-(open-window)
-(start-sly-repl)
-(enable-sprites)
+(load "common.scm")
+
 (enable-joystick)
 (enable-fonts)
 
-(define default-font (load-default-font))
+(define font (load-default-font 18))
 
-(define resolution (vector 640 480))
+(define resolution (vector2 640 480))
 
-(add-hook! window-close-hook stop-game-loop)
+(define player (load-sprite "images/p1_front.png"))
 
-(define p1-texture (load-texture "images/p1_front.png"))
-
-(define-signal p1-position
-  (signal-fold v+ (vector 320 240)
-               (signal-map
-                (lambda (v)
-                  (v* (vector 8 8) v))
-                (signal-sample 1
-                               (make-directional-signal 0 0 1)))))
+(define-signal player-position
+  (signal-fold v+ (vector2 320 240)
+               (signal-map (lambda (v) (v* v 8))
+                           (signal-sample 1 (make-directional-signal 0 0 1)))))
 
 (define* (button-caption-signal text button #:optional (joystick 0))
-  (signal-map (lambda (x)
-                (if x text ""))
-              (button-down? joystick button)))
+  (let ((false-message (format #f "Released button ~d" button)))
+    (signal-map (lambda (x) (if x text false-message))
+                (button-down? joystick button))))
 
-(define-signal p1-caption
-  (signal-map (lambda (text pos)
-                (make-label default-font
-                            text
-                            (v+ (vector -76 -90) pos)))
+(define-signal caption
+  (signal-map (lambda (text)
+                (group-move (vector2 -76 -90)
+                            (group (label font text))))
               (signal-merge
+               (make-signal "Press a button")
                (button-caption-signal "Hello there" 0)
                (button-caption-signal "Thanks for pressing button 1" 1)
                (button-caption-signal "This is the other caption" 2)
-               (button-caption-signal "This is the other other caption" 3))
-              p1-position))
+               (button-caption-signal "This is the other other caption" 3))))
 
-(define (draw-p1-caption dt alpha)
-  (draw-label (signal-ref p1-caption)))
+(define-signal scene
+  (signal-map (lambda (position caption)
+                (group-move position
+                            (group player caption)))
+              player-position caption))
 
-(define (draw-p1 dt alpha)
-  (draw-sprite (make-sprite p1-texture
-                            #:position (signal-ref p1-position))))
+(define camera (orthographic-camera (vx resolution) (vy resolution)))
 
-(add-hook! draw-hook draw-p1)
-
-(add-hook! draw-hook draw-p1-caption)
+(add-hook! draw-hook (lambda _ (draw-group (signal-ref scene) camera)))
 
 (add-hook! joystick-axis-hook
            (lambda (which axis value)
@@ -100,3 +93,7 @@
 (with-window (make-window #:title "Joystick test"
                           #:resolution resolution)
              (start-game-loop))
+
+;;; Local Variables:
+;;; compile-command: "../pre-inst-env guile joystick.scm"
+;;; End:
