@@ -20,17 +20,18 @@
              (srfi srfi-9)
              (srfi srfi-42)
              (sly game)
+             (sly window)
+             (sly signal)
+             (sly utils)
+             (sly render camera)
+             (sly render color)
+             (sly render group)
+             (sly render model)
              (sly render sprite)
              (sly render texture)
              (sly render tileset)
-             (sly vector)
-             (sly window)
-             (sly render scene)
-             (sly signal)
-             (sly camera)
-             (sly render color)
-             (sly transition)
-             (sly utils)
+             (sly math vector)
+             (sly math tween)
              (sly input keyboard))
 
 (load "common.scm")
@@ -47,14 +48,14 @@
 (define map-width 8)
 (define map-height 8)
 (define map-tiles
-  #2((00 01 01 01 01 01 01 02)
-     (16 17 17 17 17 17 17 18)
-     (16 17 17 17 17 17 17 18)
-     (16 17 17 48 49 17 17 18)
-     (16 17 17 64 65 17 17 18)
-     (16 17 17 17 17 17 17 18)
-     (16 17 17 17 17 17 17 18)
-     (32 33 33 33 33 33 33 34)))
+  #2((208 209 209 209 209 209 209 210)
+     (224 225 225 225 225 225 225 226)
+     (224 225 225 225 225 225 225 226)
+     (224 225 225 176 177 225 225 226)
+     (224 225 225 192 193 225 225 226)
+     (224 225 225 225 225 225 225 226)
+     (224 225 225 225 225 225 225 226)
+     (240 241 241 241 241 241 241 242)))
 
 (define tile-width 32)
 (define tile-height 32)
@@ -71,38 +72,32 @@
     (memoize
      (lambda (tile-index)
        (let ((texture (tileset-ref tileset tile-index)))
-         (make-sprite texture #:anchor #(0 0))))))
+         (sprite texture #:anchor 'bottom-left)))))
 
   (define (build-tile x y)
-    (scene-node
-     (position (vector (* x (tileset-width tileset))
-                       (* y (tileset-height tileset))))
-     (uniforms `(("color" ,white)))
-     (children (list (build-sprite (array-ref tiles y x))))))
+    (group-move (vector2 (* x (tileset-width tileset))
+                         (* y (tileset-height tileset)))
+                (group (build-sprite (array-ref tiles y x)))))
 
   (match (array-dimensions tiles)
     ((height width)
-     (scene-node
-      (children
-       (list-ec (: x width) (: y height)
-                (build-tile x y)))))))
+     (make-group (list-ec (: x width) (: y height)
+                          (build-tile x y))))))
 
 (define tileset (load-tileset "images/tiles.png" 32 32))
 
-(define-signal map-scene
-  (scene-root
-   (scene-node
-    (position
-     (vector (- 320 (* tile-width 4))
-             (- 240 (* tile-height 4))))
-    (children
-     (list (build-map-layer map-tiles tileset))))))
+(define scene
+  (group-move (v- (vector2 320 240)
+                  (v* (vector2 tile-width tile-height) 4))
+              (group (build-map-layer map-tiles tileset))))
 
-(define-signal camera
-  (orthographic-camera map-scene 640 480))
+(define camera
+  (orthographic-camera 640 480))
+
+(add-hook! draw-hook (lambda _ (draw-group scene camera)))
 
 (with-window (make-window #:title "Tilemap")
-  (start-game-loop camera))
+  (start-game-loop))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile tilemap.scm"
