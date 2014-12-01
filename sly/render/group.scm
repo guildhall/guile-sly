@@ -90,17 +90,19 @@ or not to render child nodes."
     (array-set! matrix 0 3 2)
     (array-set! matrix 1 3 3)))
 
-(define (draw-group group camera context)
-  "Draw the scene defined by GROUP as viewed by CAMERA, with the given
+(define draw-group
+  (let ((context (make-render-context)))
+    (lambda* (group camera #:optional (context context))
+      "Draw the scene defined by GROUP as viewed by CAMERA, with the given
 render CONTEXT."
-  (with-temp-transform context view
-    (transform*! view
-                 (camera-location camera)
-                 (camera-projection camera))
-    (with-temp-transform context base-transform
-      (set-transform-identity! base-transform)
-      (apply-viewport (camera-viewport camera))
-      (%draw-group group base-transform view context))))
+      (with-temp-transform context view
+        (transform*! view
+                     (camera-location camera)
+                     (camera-projection camera))
+        (with-temp-transform context base-transform
+          (set-transform-identity! base-transform)
+          (apply-viewport (camera-viewport camera))
+          (%draw-group group base-transform view context))))))
 
 ;;;
 ;;; Utility Procedures
