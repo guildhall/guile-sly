@@ -80,7 +80,8 @@
    efficient implementation that uses quad trees.
 
    - [X] Rect module
-   - [ ] Quadtree module
+   - [ ] Quadtree module (needs more thought, a purely functional data
+     structure would be preferable)
 
 ** TODO Particle systems
    Provide a highly configurible particle simulation system.
@@ -147,7 +148,7 @@
 
 ** TODO Async/threaded signals
    Not sure how to do this as some things, such as SDL and OpenGL
-   calls *must* be done in the main thread.
+   calls, *must* be done in the main thread.
 
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
@@ -162,4 +163,4 @@
    - [X] Add GLSL shaders
    - [X] Finish FRP module
    - [X] Make basic webpage with HTML docs
-   - [ ] Basic scene graph (must support sprites and text)
+   - [X] Basic scene graph (must support sprites and text)
