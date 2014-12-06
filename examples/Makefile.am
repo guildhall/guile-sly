@@ -23,7 +23,8 @@ examples_DATA =					\
 	joystick.scm				\
 	simple.scm				\
 	tilemap.scm				\
-	2048/2048
+	2048/2048				\
+	mines/mines.scm
 
 imagedir = $(pkgdatadir)/examples/images
 image_DATA = 					\
@@ -32,4 +33,18 @@ image_DATA = 					\
 	images/princess.png			\
 	images/stars.png			\
 	images/tiles.png			\
-	2048/tile.png
+	2048/tile.png				\
+	mines/images/1-mine.png			\
+	mines/images/2-mines.png		\
+	mines/images/3-mines.png		\
+	mines/images/4-mines.png		\
+	mines/images/5-mines.png		\
+	mines/images/6-mines.png		\
+	mines/images/7-mines.png		\
+	mines/images/8-mines.png		\
+	mines/images/exploded.png		\
+	mines/images/flag.png			\
+	mines/images/maybe.png			\
+	mines/images/mine.png			\
+	mines/images/tile-down.png		\
+	mines/images/tile-up.png
