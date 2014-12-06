@@ -31,7 +31,8 @@
             define-guardian
             memoize
             forever
-            trampoline))
+            trampoline
+            chain* chain))
 
 (define (any-equal? elem . args)
   "Return #t if ELEM equals any of the elements in the list ARGS."
@@ -74,3 +75,17 @@ same thread that is running the game loop."
 (define-syntax-rule (trampoline proc)
   (lambda args
     (apply proc args)))
+
+;; Handy macro for flattening nested procedure calls where the output
+;; of an inner call is the last argument to the outer call.
+(define-syntax chain*
+  (syntax-rules ()
+    ((_ args (proc ...))
+     (apply proc ... args))
+    ((_ args (proc ...) . rest)
+     (chain* (call-with-values
+                 (lambda () (apply proc ... args))
+               list) . rest))))
+
+(define-syntax-rule (chain arg (proc ...) . rest)
+  (chain* (list arg) (proc ...) . rest))
