@@ -23,6 +23,7 @@
 
 (define-module (sly input mouse)
   #:use-module ((sdl sdl) #:prefix SDL:)
+  #:use-module (sly window)
   #:use-module (sly event)
   #:use-module (sly signal)
   #:use-module (sly math vector)
@@ -48,7 +49,10 @@
 (define-signal mouse-position
   (hook->signal mouse-move-hook
                 (vector2 0 0)
-                vector2))
+                ;; Sly uses the bottom-left as the origin, so invert
+                ;; the y-axis for convenience.
+                (lambda (x y)
+                  (vector2 x (- (signal-ref window-height) y)))))
 
 (define-signal mouse-x (signal-map vx mouse-position))
 (define-signal mouse-y (signal-map vy mouse-position))
