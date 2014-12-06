@@ -95,14 +95,15 @@ or not to render child nodes."
     (lambda* (group camera #:optional (context context))
       "Draw the scene defined by GROUP as viewed by CAMERA, with the given
 render CONTEXT."
-      (with-temp-transform context view
-        (transform*! view
-                     (camera-location camera)
-                     (camera-projection camera))
-        (with-temp-transform context base-transform
-          (set-transform-identity! base-transform)
-          (apply-viewport (camera-viewport camera))
-          (%draw-group group base-transform view context))))))
+      (with-render-context context
+        (with-temp-transform context view
+          (transform*! view
+                       (camera-location camera)
+                       (camera-projection camera))
+          (with-temp-transform context base-transform
+            (set-transform-identity! base-transform)
+            (apply-viewport (camera-viewport camera))
+            (%draw-group group base-transform view context)))))))
 
 ;;;
 ;;; Utility Procedures
