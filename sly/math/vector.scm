@@ -32,7 +32,7 @@
             vector2 vector3 vector4
             vector2? vector3? vector4?
             vx vy vz vw
-            v+ v- v* vdot vcross
+            vmap v+ v- v* vdot vcross
             magnitude normalize vlerp))
 
 (define-record-type <vector2>
@@ -77,6 +77,17 @@
     z)))
 
 (define vw vector4-w)
+
+(define (vmap proc v)
+  "Return a new vector that is the result of applying PROC to each
+element of the 2D/3D/4D vector V."
+  (match v
+    (($ <vector2> x y)
+     (vector2 (proc x) (proc y)))
+    (($ <vector3> x y z)
+     (vector3 (proc x) (proc y) (proc z)))
+    (($ <vector4> x y z w)
+     (vector4 (proc x) (proc y) (proc z) (proc w)))))
 
 (define-syntax-rule (vector-lambda proc)
   (match-lambda*
