@@ -23,7 +23,9 @@
 ;;; Code:
 
 (define-module (sly math rect)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
+  #:use-module (sly math)
   #:use-module (sly math vector)
   #:export (<rect>
             make-rect
@@ -87,9 +89,9 @@
 
 (define rect-left rect-x)
 
-(define rect-top rect-y)
+(define rect-bottom rect-y)
 
-(define (rect-bottom rect)
+(define (rect-top rect)
   (+ (rect-y rect) (rect-height rect)))
 
 (define (rect-position rect)
@@ -97,15 +99,15 @@
   (vector2 (rect-x rect)
            (rect-y rect)))
 
-(define rect-top-left rect-position)
+(define rect-bottom-left rect-position)
 
 (define (rect-top-right rect)
   (vector2 (rect-right rect)
            (rect-top   rect)))
 
-(define (rect-bottom-left rect)
+(define (rect-top-left rect)
   (vector2 (rect-left   rect)
-           (rect-bottom rect)))
+           (rect-top rect)))
 
 (define (rect-bottom-right rect)
   (vector2 (rect-right  rect)
@@ -169,19 +171,19 @@ and y coordinates as separate arguments."
 
 (define (rect-union rect1 rect2)
   "Return a rect that covers the area of RECT1 and RECT2."
-  (let ((x1 (min (rect-left   rect1) (rect-left   rect2)))
-        (x2 (max (rect-right  rect1) (rect-right  rect2)))
-        (y1 (min (rect-top    rect1) (rect-top    rect2)))
-        (y2 (max (rect-bottom rect1) (rect-bottom rect2))))
+  (let ((x1 (min (rect-left rect1) (rect-left rect2)))
+        (x2 (max (rect-right rect1) (rect-right rect2)))
+        (y1 (min (rect-bottom rect1) (rect-bottom rect2)))
+        (y2 (max (rect-top rect1) (rect-top rect2))))
     (make-rect x1 y1 (- x2 x1) (- y2 y1))))
 
 (define (rect-clip rect1 rect2)
   "Return the overlapping region of RECT1 and RECT2. If the rects do
 not overlap, a rect of size 0 is returned."
-  (let ((x1 (max (rect-left   rect1) (rect-left   rect2)))
-        (x2 (min (rect-right  rect1) (rect-right  rect2)))
-        (y1 (max (rect-top    rect1) (rect-top    rect2)))
-        (y2 (min (rect-bottom rect1) (rect-bottom rect2))))
+  (let ((x1 (max (rect-left rect1) (rect-left rect2)))
+        (x2 (min (rect-right rect1) (rect-right rect2)))
+        (y1 (max (rect-bottom rect1) (rect-bottom rect2)))
+        (y2 (min (rect-top rect1) (rect-top rect2))))
     (make-rect x1 y1 (max (- x2 x1) 0) (max (- y2 y1) 0))))
 
 (define rect-clamp
@@ -192,23 +194,23 @@ not overlap, a rect of size 0 is returned."
 
 (define (rect-within? rect1 rect2)
   "Return #t if RECT2 is completely within RECT1."
-  (and (>= (rect-left   rect2) (rect-left   rect1))
-       (<= (rect-right  rect2) (rect-right  rect1))
-       (>= (rect-top    rect2) (rect-top    rect1))
-       (<= (rect-bottom rect2) (rect-bottom rect1))))
+  (and (>= (rect-left rect2) (rect-left rect1))
+       (<= (rect-right rect2) (rect-right rect1))
+       (>= (rect-bottom rect2) (rect-bottom rect1))
+       (<= (rect-top rect2) (rect-top rect1))))
 
 (define (rect-intersects? rect1 rect2)
   "Return #t if RECT2 overlaps RECT1."
-  (and (< (rect-left   rect1) (rect-right  rect2))
-       (> (rect-right  rect1) (rect-left   rect2))
-       (< (rect-top    rect1) (rect-bottom rect2))
-       (> (rect-bottom rect1) (rect-top    rect2))))
+  (and (< (rect-left rect1) (rect-right rect2))
+       (> (rect-right rect1) (rect-left rect2))
+       (< (rect-bottom rect1) (rect-top rect2))
+       (> (rect-top rect1) (rect-bottom rect2))))
 
 (define (%rect-contains? rect x y)
-  (and (>= x (rect-left   rect))
-       (<= x (rect-right  rect))
-       (>= y (rect-top    rect))
-       (<= y (rect-bottom rect))))
+  (and (>= x (rect-left rect))
+       (< x (rect-right rect))
+       (>= y (rect-bottom rect))
+       (< y (rect-top rect))))
 
 (define rect-contains?
   (case-lambda
