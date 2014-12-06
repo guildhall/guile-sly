@@ -53,8 +53,8 @@
 size of the mesh is the size of TEXTURE, in pixels.  Optionally, a
 custom SHADER can be specified."
   (let* ((anchor (anchor-texture texture anchor))
-         (x1 (- (vx anchor)))
-         (y1 (- (vy anchor)))
+         (x1 (- (floor (vx anchor))))
+         (y1 (- (floor (vy anchor))))
          (x2 (+ x1 (texture-width texture)))
          (y2 (+ y1 (texture-height texture)))
          (s1 (texture-s1 texture))
