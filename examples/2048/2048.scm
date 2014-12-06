@@ -1,6 +1,3 @@
-#! /usr/bin/env guile
-!#
-
 ;;; 2048
 ;;; Copyright (C) 2014 David Thompson <dthompson2@worcester.edu>
 ;;; Copyright (C) 2014 Jordan Russell <jordan.likes.curry@gmail.com>
@@ -439,11 +436,9 @@
                        #:viewport (make-viewport (make-rect 0 0 640 480)
                                                  #:clear-color background)))
 
-(define draw-2048
-  (let ((context (make-render-context)))
-    (lambda (dt alpha)
-      (signal-let ((scene 2048-scene))
-        (draw-group scene camera context)))))
+(define (draw-2048 dt alpha)
+  (signal-let ((scene 2048-scene))
+    (draw-group scene camera)))
 
 ;;;
 ;;; Initialization
@@ -458,5 +453,5 @@
   (start-game-loop))
 
 ;;; Local Variables:
-;;; compile-command: "../../pre-inst-env guile 2048"
+;;; compile-command: "../../pre-inst-env guile 2048.scm"
 ;;; End:

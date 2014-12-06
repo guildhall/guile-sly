@@ -23,7 +23,7 @@ examples_DATA =					\
 	joystick.scm				\
 	simple.scm				\
 	tilemap.scm				\
-	2048/2048				\
+	2048/2048.scm				\
 	mines/mines.scm
 
 imagedir = $(pkgdatadir)/examples/images
