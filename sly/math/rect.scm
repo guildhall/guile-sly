@@ -52,6 +52,7 @@
             rect-inflate
             rect-union
             rect-clip
+            rect-clamp
             rect-within?
             rect-intersects?
             rect-contains?))
@@ -182,6 +183,12 @@ not overlap, a rect of size 0 is returned."
         (y1 (max (rect-top    rect1) (rect-top    rect2)))
         (y2 (min (rect-bottom rect1) (rect-bottom rect2))))
     (make-rect x1 y1 (max (- x2 x1) 0) (max (- y2 y1) 0))))
+
+(define rect-clamp
+  (match-lambda*
+   ((($ <rect> rx ry width height) ($ <vector2> x y))
+    (vector2 (clamp rx (+ rx width) x)
+             (clamp ry (+ ry height) y)))))
 
 (define (rect-within? rect1 rect2)
   "Return #t if RECT2 is completely within RECT1."
