@@ -36,11 +36,9 @@
   #:use-module (sly render mesh)
   #:use-module (sly render model)
   #:use-module (sly render shader)
-  #:use-module (sly signal)
   #:use-module (sly render texture)
   #:use-module (sly math vector)
-  #:export (make-sprite sprite load-sprite
-            make-animated-sprite))
+  #:export (make-sprite sprite load-sprite))
 
 ;;;
 ;;; Sprites
@@ -84,23 +82,3 @@ custom SHADER can be specified."
   "Return a sprite mesh for the texture loaded from FILE-NAME.
 Optionally, a custom SHADER can be specified."
   (make-sprite (load-texture file-name) #:shader shader #:anchor anchor))
-
-(define* (make-animated-sprite textures frame-duration #:optional #:key
-                               (loop? #t)
-                               (shader (load-default-shader)))
-  "Return a signal that iterates through the list TEXTURES and
-displays them each for FRAME-DURATION ticks.  The optional LOOP? flag
-specifies if the animation should play once or indefinitely.
-Optionally, a SHADER can be specified, otherwise the default mesh
-shader is used."
-  (let ((frames (map (cut make-sprite <> #:shader shader) textures)))
-    (signal-generator
-     (define (animate)
-       (for-each (lambda (frame)
-                   (yield frame)
-                   (wait frame-duration))
-                 frames))
-
-     (if loop?
-         (forever (animate))
-         (animate)))))
