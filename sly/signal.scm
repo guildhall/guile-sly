@@ -39,7 +39,7 @@
             signal-proc
             signal-merge
             signal-zip
-            signal-map
+            signal-map signal-sample-on
             signal-negate
             signal-fold
             signal-filter
@@ -238,6 +238,11 @@ or more SIGNALS."
                        (lambda (self value)
                          (%signal-set! self (current-value)))
                        inputs)))
+
+(define (signal-sample-on value-signal sample-signal)
+  "Create a new signal that takes on the value of VALUE-SIGNAL
+whenever SAMPLE-SIGNAL is updated."
+  (signal-map (lambda _ (signal-ref value-signal)) sample-signal))
 
 (define (signal-negate signal)
   "Create a new signal whose value is the 'not' of the value of
