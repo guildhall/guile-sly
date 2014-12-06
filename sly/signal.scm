@@ -24,6 +24,7 @@
 (define-module (sly signal)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (sly agenda)
   #:use-module (sly coroutine)
@@ -76,6 +77,15 @@
   (make-signal-box signal)
   signal-box?
   (signal signal-unbox signal-box-set!))
+
+;; The user always sees the boxes, so let's hide the underlying
+;; details.
+(set-record-type-printer!
+ <signal-box>
+ (lambda (box port)
+   (let ((signal (signal-unbox box)))
+     (format port "#<signal value: ~a inputs: ~a>"
+             (%signal-ref signal) (signal-inputs signal)))))
 
 ;; Alternate spelling of signal-box? for the public API.
 (define signal? signal-box?)
