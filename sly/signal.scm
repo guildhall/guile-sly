@@ -95,9 +95,9 @@
     (for-each (cut signal-connect! signal <>) inputs)
     signal))
 
-(define (make-signal init)
-  "Return a signal box with initial value INIT."
-  (make-signal-box (%make-signal init #f '())))
+(define (make-signal value)
+  "Wrap VALUE in a signal."
+  (make-signal-box (%make-signal value #f '())))
 
 (define (make-boxed-signal init proc inputs)
   "Return a signal box containing a signal with value INIT, updating
@@ -109,14 +109,13 @@ procedure PROC, and a list of INPUTS."
 SIGNAL-BOX-IN changes, the value will be propagated to SIGNAL-OUT."
   (hashq-set! (signal-outputs (signal-unbox signal-box-in)) signal-out #f))
 
-(define (signal-ref signal-box)
-  "Return the current value of the signal contained within
-SIGNAL-BOX."
-  (%signal-ref (signal-unbox signal-box)))
+(define (signal-ref signal)
+  "Return the value stored within SIGNAL."
+  (%signal-ref (signal-unbox signal)))
 
 (define (signal-ref-maybe object)
-  "Retrieves the signal value from OBJECT if it is a signal and or
-simply returns OBJECT otherwise."
+  "Return the value stored within OBJECT if OBJECT is a signal.
+Otherwise, return OBJECT."
   (if (signal-box? object)
       (signal-ref object)
       object))
@@ -134,9 +133,11 @@ all output signals."
   (signal-propagate! signal)
   *unspecified*)
 
-(define (signal-set! signal-box value)
-  "Change the current value contained within SIGNAL-BOX to VALUE."
-  (%signal-set! (signal-unbox signal-box) value))
+(define (signal-set! signal value)
+  "Change the contents of SIGNAL to VALUE.  This procedure should
+almost never be used, except to bootstrap a root node of a signal
+graph."
+  (%signal-set! (signal-unbox signal) value))
 
 (define (splice-signals! to from)
   "Replace the contents of the signal TO with the contents of the
@@ -209,17 +210,17 @@ run."
 
 (define (signal-merge signal1 signal2 . rest)
   "Create a new signal whose value is the that of the most recently
-changed signal in SIGNALs.  The initial value is that of the first
-signal in SIGNALS."
-  (let ((inputs (append (list signal1 signal2) rest)))
+changed signal in SIGNAL1, SIGNAL2, etc.  The initial value is that of
+SIGNAL1."
+  (let ((inputs (cons* signal1 signal2 rest)))
     (make-boxed-signal (signal-ref (car inputs))
                        (lambda (self value)
                          (%signal-set! self value))
                        inputs)))
 
 (define (signal-zip . signals)
-  "Create a new signal whose value is a list of the values stored in
-the given signals."
+  "Create a new signal whose value is a list of the values stored
+SIGNALS."
   (define (current-value)
     (map signal-ref signals))
   (make-boxed-signal (current-value)
@@ -229,7 +230,7 @@ the given signals."
 
 (define (signal-map proc signal . rest)
   "Create a new signal that applies PROC to the values stored in one
-or more SIGNALS."
+or more SIGNALs."
   (let ((inputs (cons signal rest)))
     (define (current-value)
       (apply proc (map signal-ref inputs)))
@@ -240,7 +241,7 @@ or more SIGNALS."
 
 (define (signal-sample-on value-signal sample-signal)
   "Create a new signal that takes on the value of VALUE-SIGNAL
-whenever SAMPLE-SIGNAL is updated."
+whenever SAMPLE-SIGNAL receives a new value."
   (signal-map (lambda _ (signal-ref value-signal)) sample-signal))
 
 (define (signal-negate signal)
@@ -265,8 +266,8 @@ previously computed value, or INIT for the first call."
 
 (define (signal-filter predicate default signal)
   "Create a new signal that keeps an incoming value from SIGNAL when
-it satifies the procedure PREDICATE.  The value of the signal is
-DEFAULT when the predicate is never satisfied."
+it satisfies the procedure PREDICATE.  The value of the signal is
+DEFAULT in the case that the predicate is never satisfied."
   (make-boxed-signal (if (predicate (signal-ref signal))
                          (signal-ref signal)
                          default)
@@ -282,8 +283,8 @@ signal is DEFAULT when the predicate is never satisfied."
   (signal-filter (lambda (x) (not (predicate x))) default signal))
 
 (define* (signal-drop-repeats signal #:optional (equal? equal?))
-  "Create a new signal that filters out new values from SIGNAL that
-are equivalent to the current value.  By default, equal? is used for
+  "Create a new signal that drops the value received from SIGNAL when
+it is equivalent to the current value.  By default, equal? is used for
 testing equivalence."
   (signal-drop (let ((prev (signal-ref signal)))
                  (lambda (current)
@@ -295,17 +296,17 @@ testing equivalence."
                (signal-ref signal)
                signal))
 
-(define (signal-switch pred on off)
+(define (signal-switch predicate on off)
   "Create a new signal whose value is that of the signal ON when the
 signal PRED is true, or the value of the signal OFF otherwise."
   (define (current-value)
-    (if (signal-ref pred)
+    (if (signal-ref predicate)
         (signal-ref on)
         (signal-ref off)))
   (make-boxed-signal (current-value)
                      (lambda (self value)
                        (%signal-set! self (current-value)))
-                     (list pred)))
+                     (list predicate)))
 
 (define (signal-constant constant signal)
   "Create a new signal whose value is always CONSTANT no matter the
@@ -337,8 +338,8 @@ of SIGNAL was received."
   (signal-map (lambda _ (agenda-time)) signal))
 
 (define (signal-sample step signal)
-  "Create a new signal that emits the value contained within SIGNAL
-every STEP ticks of the current agenda."
+  "Create a new signal that takes on the value of SIGNAL every STEP
+ticks."
   ;; To prevent memory leaks, the new signal is stored within a weak
   ;; value hash table and never bound to a variable within the main
   ;; body of the procedure.  When this signal is GC'd, the sampling
@@ -366,15 +367,15 @@ every STEP ticks of the current agenda."
   (signal-sample step (make-signal step)))
 
 (define (signal-since step signal)
-  "Create a new signal that emits the time since the last value was
-received from SIGNAL in STEP increments."
+  "Create a new signal that emits the time since SIGNAL was updated
+every STEP ticks."
   (signal-map (lambda (time)
                 (- (agenda-time) time))
               (signal-sample step (signal-time signal))))
 
 (define (signal-delay delay signal)
   "Create a new signal that delays propagation of SIGNAL by DELAY
-ticks of the current agenda."
+ticks."
   (make-boxed-signal (signal-ref signal)
                      (lambda (self value)
                        (schedule
@@ -385,7 +386,7 @@ ticks of the current agenda."
 
 (define (signal-throttle delay signal)
   "Return a new signal that propagates SIGNAL at most once every DELAY
-ticks of the current agenda."
+ticks."
   (make-boxed-signal (signal-ref signal)
                      (let ((last-time (agenda-time)))
                        (lambda (self value)
