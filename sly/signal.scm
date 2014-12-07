@@ -36,7 +36,6 @@
             signal-ref
             signal-ref-maybe
             signal-set!
-            signal-proc
             signal-merge
             signal-zip
             signal-map signal-sample-on
