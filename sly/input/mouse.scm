@@ -17,7 +17,7 @@
 
 ;;; Commentary:
 ;;
-;; Keyboard signals.
+;; Mouse signals.
 ;;
 ;;; Code:
 
