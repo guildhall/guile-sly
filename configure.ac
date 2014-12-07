@@ -9,6 +9,7 @@ AM_SILENT_RULES([yes])
 AC_CONFIG_FILES([Makefile doc/Makefile examples/Makefile data/Makefile])
 AC_CONFIG_FILES([env], [chmod +x env])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
+AC_CONFIG_FILES([sly/config.scm])
 
 GUILE_PROGS([2.0.11])
 GUILE_MODULE_REQUIRED([sdl sdl])
