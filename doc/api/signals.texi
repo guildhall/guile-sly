@@ -1,0 +1,214 @@
+@node Signals
+@section Signals
+
+Game state is a function of time.  The player's score, the current
+stage, an enemy's hit points, etc. all change in response to events
+that happen at discrete points in time.  Typically, this means that a
+number of callback procedures are registered to respond to events
+which mutate the relevant data structures.  However, this approach,
+while simple and effective, comes at the price of readability,
+reproducibility, and expression.  Instead of explicitly mutating data
+and entering ``callback hell'', Sly abstracts and formalizes the
+process using a functional reactive programming style.
+
+In Sly, time-varying values are called ``signals'', and they are
+defined in a declarative and functional manner.  Rather than
+describing the process of mutation procedurally, one describes the
+relationships between signals instead.  The result is a ``signal
+graph'', a directed acyclic graph of event responses.
+
+@example
+(define-signal position
+  (signal-fold v+ (vector2 320 240)
+               (signal-map (lambda (v) (v* v 4))
+                           (signal-sample 1 key-arrows))))
+@end example
+
+This signal describes a relationship between the arrow keys on the
+keyboard and the position of the player.  @code{signal-sample} is used
+to trigger a signal update upon every game tick that provides the
+current state of the arrow keys.  @code{key-arrows} is a 2D vector
+that maps to the current state of the arrow keys, allowing for 8
+directional movement.  This vector is then scaled 4x to make the
+player move faster.  Finally, the scaled vector is added to the
+previous player position via @code{signal-fold}.  The player's
+position is at (320, 240) initially.  As you can see, there are no
+callbacks and explicit mutation needed, and the position seems to
+magically change with the passage of time.
+
+@deffn {Scheme Procedure} signal? @var{obj}
+Return @code{#t} if @var{obj} is a signal.
+@end deffn
+
+@deffn {Scheme Procedure} make-signal @var{value}
+Wrap @var{value} in a signal.
+@end deffn
+
+@deffn {Scheme Syntax} define-signal @var{name} @var{value}
+Create a top-level signal variable called @var{name}.  If the variable
+already exists and refers to a signal then its outputs will be spliced
+into the new signal.  If the given value is not a signal then it will
+be put into one via @code{make-signal}.
+
+@code{define-signal} is particularly useful when working at the REPL.
+A top-level signal variable defined by @code{define-signal} can be
+redefined at runtime, and the signals that depended on the old signal
+will continue to work with the new signal.
+@end deffn
+
+@deffn {Scheme Procedure} signal-ref @var{signal}
+Return the value stored within @var{signal}.
+@end deffn
+
+@deffn {Scheme Procedure} signal-ref-maybe object
+Return the value stored within @var{object} if @var{object} is a
+signal.  Otherwise, return @var{object}.
+@end deffn
+
+@deffn {Scheme Syntax} signal-let ((@var{var} @var{signal}) @dots{}) @var{body} @dots{}
+Evaluate @var{body} in the context of the local bindings defined by
+the two-element lists @code{((var signal) @dots{})}.
+@code{signal-let} works like regular @code{let}, except that it
+derefences @var{signal} before binding to @var{var}.
+@end deffn
+
+@deffn {Scheme Syntax} signal-let* ((@var{var} @var{signal}) @dots{}) @var{body} @dots{}
+Similar to @code{signal-let}, but the variable bindings are performed
+sequentially.  This means that all initialization expressions are
+allowed to use the variables defined to the their left in the binding
+list.
+@end deffn
+
+@deffn {Scheme Procedure} signal-set! signal-box value
+Change the contents of @var{signal} to @var{value}.  This procedure
+should almost never be used, except to bootstrap a root node of a
+signal graph.
+@end deffn
+
+@deffn {Scheme Procedure} hook->signal @var{hook} @var{init} @var{proc}
+Create a new signal whose initial value is @var{init} and whose future
+values are calculated by applying @var{proc} to the arguments passed
+when @var{hook} is run.
+@end deffn
+
+@deffn {Scheme Procedure} signal-merge @var{signal1} @var{signal2} . @var{rest}
+Create a new signal whose value is the that of the most recently
+updated signal in @var{signal1}, @var{signal2}, etc.  The initial
+value is that of @var{signal1}.
+@end deffn
+
+@deffn {Scheme Procedure} signal-zip . @var{signals}
+Create a new signal whose value is a list of the values stored in
+@var{signals}.
+@end deffn
+
+@deffn {Scheme Procedure} signal-map @var{proc} @var{signal} . @var{rest}
+Create a new signal that applies @var{proc} to the values of
+@var{SIGNAL}.  More than one input signal may be specified, in which
+case @var{proc} must accept as many arguments as there are input
+signals.
+@end deffn
+
+@deffn {Scheme Procedure} signal-sample-on @var{value-signal} @var{sample-signal}
+Create a new signal that takes on the value of @var{value-signal}
+whenever @var{sample-signal} receives a new value.
+@end deffn
+
+@deffn {Scheme Procedure} signal-negate @var{signal}
+Create a new signal whose value is the negation of @var{signal} by
+applying @code{not} to each value received.
+@end deffn
+
+@deffn {Scheme Procedure} signal-fold @var{proc} @var{init} @var{signal} . @var{rest}
+Create a new signal that applies @var{proc} with the value received
+from @var{signal} and the past value of itself, starting with
+@var{init}.  Like @code{signal-map}, more than one input signal may be
+given.
+@end deffn
+
+@deffn {Scheme Procedure} signal-filter @var{predicate} @var{default} @var{signal}
+Create a new signal that takes on the value received from @var{signal}
+when it satisfies the procedure @var{predicate}.  The value of the
+signal is @var{default} in the case that the predicate is never
+satisfied.
+@end deffn
+
+@deffn {Scheme Procedure} signal-drop @var{predicate} @var{default} @var{signal}
+Create a new signal that takes on the value received from @var{signal}
+when it does @emph{not} satisfy the procedure @var{predicate}.  The
+value of the signal is @var{default} in the case that the predicate is
+never satisfied.
+@end deffn
+
+@deffn {Scheme Procedure} signal-drop-repeats @var{signal} [@var{equal?}]
+Create a new signal that drops the value received from @var{signal}
+when it is equivalent to the current value.  By default, @code{equal?}
+is used for testing equivalence.
+@end deffn
+
+@deffn {Scheme Procedure} signal-switch @var{predicate} @var{on} @var{off}
+Create a new signal whose value is that of the signal @var{on} when
+the signal @var{predicate} is true, or the value of the signal
+@var{off} otherwise.
+@end deffn
+
+@deffn {Scheme Procedure} signal-constant @var{constant} @var{signal}
+Create a new signal whose value is always @var{constant} no matter the
+value received from @var{signal}.
+@end deffn
+
+@deffn {Scheme Procedure} signal-count @var{signal} [@var{start}] [@var{step}]
+Create a new signal that increments a counter by @var{step} when a
+value from @var{signal} is received, starting from @var{start}.  By
+default, @var{start} is 0 and @var{step} is 1.
+@end deffn
+
+@deffn {Scheme Procedure} signal-tap @var{proc} @var{signal}
+Create a new signal that applies @var{proc} for side-effects when a
+value from @var{signal} is received.  The value of the new signal will
+always be the value of @var{signal}.  This signal is a convenient way
+to sneak in a procedure that with a side-effect into a signal graph.
+Such a signal might write text to a file, or play a sound.
+@end deffn
+
+@deffn {Scheme Procedure} signal-timestamp @var{signal}
+Create a new signal whose value is a pair, the car of which is the
+time that the value of @var{signal} was received and the cdr of which
+is the received value.
+@end deffn
+
+@deffn {Scheme Procedure} signal-time @var{signal}
+Create a new signal whose value is the time that the value of
+@var{signal} was received.
+@end deffn
+
+@deffn {Scheme Procedure} signal-sample @var{step} @var{signal}
+Create a new signal that takes on the value of @var{signal} every
+@var{step} ticks.
+@end deffn
+
+@deffn {Scheme Procedure} signal-every @var{step}
+Create a new signal that emits @var{step} every @var{step} ticks.
+@end deffn
+
+@deffn {Scheme Procedure} signal-since @var{step} @var{signal}
+Create a new signal that emits the time since @var{signal} was updated
+ever @var{step} ticks.
+@end deffn
+
+@deffn {Scheme Procedure} signal-delay @var{delay} @var{signal}
+Create a new signal that delays propagation of @var{signal} by
+@var{delay} ticks..
+@end deffn
+
+@deffn {Scheme Procedure} signal-throttle delay signal
+Create a new signal that propagates @var{signal} at most once every
+@var{delay} ticks.
+@end deffn
+
+@deffn {Scheme Syntax} signal-generator @var{body} @dots{}
+Create a new signal whose value is the most recently yielded value of
+the coroutine defined by @var{body}.  A special @code{yield} syntax is
+available within @var{body} to specify which values are passed to the
+signal.
+@end deffn

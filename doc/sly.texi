@@ -4,9 +4,7 @@
 @settitle Sly
 @c %**end of header
 @copying
-Sly is a 2D game development framework for GNU Guile.
-
-Copyright @copyright{} 2013  David Thompson
+Copyright @copyright{} 2013, 2014  David Thompson @email{davet@@gnu.org}
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -28,8 +26,8 @@ The document was typeset with
 
 @titlepage
 @title Sly 0.1
-@subtitle Sly is a 2D game development framework for GNU Guile
-@author David Thompson <dthompson@@member.fsf.org>
+@subtitle Using the Sly game engine
+@author David Thompson
 @page
 @vskip 0pt plus 1filll
 @insertcopying
@@ -47,24 +45,128 @@ The document was typeset with
 
 @c Generate the nodes for this menu with `C-c C-u C-m'.
 @menu
-* Introduction::
-* Games and Scenes::
-* Graphics::
-* Audio::
-* Scripting::
-* Math::
-* Copying This Manual::
+* Introduction::                About Sly.
+* Installation::                Installing Sly.
+* Getting Started::             Writing your first Sly program.
+* API Reference::               Sly programming interface.
+* Contributing::                Help improve Sly!
+* Copying This Manual::         The license of this manual.
 * Index::
 @end menu
 
 @c Update all node entries with `C-c C-u C-n'.
 @c Insert new nodes with `C-c C-c n'.
-@include introduction.texi
-@include game.texi
-@include graphics.texi
-@include audio.texi
-@include scripting.texi
-@include math.texi
+
+@node Introduction
+@chapter Introduction
+
+Sly is a 2D/3D game engine written in the GNU Guile dialect of the
+Scheme programming language.  With the help of Guile, Sly provides all
+of the essential building blocks for making video games, such as:
+window management, input even handling, rendering, linear algebra, and
+powerful scripting capabilities.  Sly differentiates itself from
+traditional game engines by providing a dynamic live coding
+environment, functional reactive programming, and a declarative scene
+graph.
+
+Live coding is the practice of improvised interactive programming.
+Sly provides a suitable environment for live coding by leveraging
+Emacs, Geiser, and Guile's cooperative REPL server.  With these tools,
+programmers may evaluate arbitrary code and see the effects of their
+modifications in real time.  This tight feedback loop allows for
+faster prototyping, greater productivity, and most importantly, more
+fun.
+
+Functional reactive programming (FRP) is a technique used to model
+time-varying values with pure functions.  A pure function is a
+function that produces no side-effects, such as calling 'set!' on a
+variable or writing to the contents of an array.  Sly encapsulates
+time-varying values in ``signals'', a high-level data structure for
+controlling the flow of events.  Unlike imperative event callbacks,
+signals can easily be composed to form new signals.  By modeling game
+state with pure functions and immutable data, a game can be seen as a
+function of time, in the mathematical sense.  Constructing a game this
+way allows for deterministic behavior that is easier to reason about
+than the accumulation of side-effects seen in traditional game
+engines.
+
+A scene graph is a data structure for positioning renderable objects
+relative to one another.  Child nodes inherit the transformations
+applied to their parent, making it easy to move a large amount of
+objects around as a group rather than individually.  Sly's implements
+a declarative scene graph API, which means that the programmer
+describes @emph{what} to render, rather than @emph{how} to render it.
+
+These three major components form a powerful, high-level environment
+for building video games.
+
+@node Installation
+@chapter Installation
+
+Sly is available for download from its website at
+@url{sly.dthompson.us}.  This section describes the software
+requirements of Sly, as well as how to install it.
+
+The build procedure for Sly is the same as for GNU software packages,
+and is not covered here.  Please see the files @file{README.org} and
+@file{INSTALL.org} for additional details.
+
+@menu
+* Requirements::                Software needed to build and run Sly.
+* Examples::                    Run example programs.
+@end menu
+
+@node Requirements
+@section Requirements
+
+Sly depends on the following packages:
+
+@itemize
+@item @url{https://gnu.org/software/guile, GNU Guile}, version 2.0.11 or later;
+@item @url{https://gnu.org/software/guile-opengl, GNU guile-opengl}, version 0.1 or later.
+@item @url{https://gnu.org/software/guile-sdl, GNU guile-sdl}, version 0.5.0 or later;
+@item @url{https://gnu.org/software/gsl, GNU Scientific Library}, version 1.16 or later;
+@item @url{http://freeimage.sourceforge.net/, FreeImage}, version 3 or later
+@end itemize
+
+@node Examples
+@section Examples
+
+To test your Sly installation, try running some of the included
+example programs.  Examples can be found in the
+@file{share/sly/examples} directory, relative to the installation
+prefix.
+
+To run an example, invoke Guile with the relevant file, such as:
+@code{guile simple.scm}.  If successful, a window with a sprite in the
+center will open.
+
+A more complex example can further test your installation and show off
+what Sly can do.  Try running the ``2048'' example in
+@file{share/sly/examples/2048} with @code{guile 2048.scm}.
+
+@node Getting Started
+@chapter Getting Started
+
+@node API Reference
+@chapter API Reference
+
+@menu
+* Signals::                     Functional reactive programming.
+@end menu
+
+@include api/signals.texi
+
+@node Contributing
+@chapter Contributing
+
+This project is a cooperative effort, and we need your help to make it
+grow!  Please get in touch with us on @code{#sly} on the Freenode IRC
+network.  We welcome ideas, bug reports, patches, and anything that
+may be helpful to the project.
+
+The git source code repository can be found on Gitorious at
+@url{https://gitorious.org/sly/sly}.
 
 @node Copying This Manual
 @appendix Copying This Manual
@@ -81,7 +183,9 @@ The document was typeset with
 @node Index
 @unnumbered Index
 
-@printindex cp
+@syncodeindex tp fn
+@syncodeindex vr fn
+@printindex fn
 
 @bye
 
