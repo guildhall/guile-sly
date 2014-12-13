@@ -95,7 +95,7 @@
   (+ (rect-y rect) (rect-height rect)))
 
 (define (rect-position rect)
-  "Return the top-left corner of RECT as a vector."
+  "Return the bottom-left corner of RECT."
   (vector2 (rect-x rect)
            (rect-y rect)))
 
@@ -161,16 +161,15 @@ its current center."
 
 (define rect-inflate
   (case-lambda
-    "Create a new rectangle by growing RECT by the given amount
-without changing the center point. rect-inflate accepts a vector or x
-and y coordinates as separate arguments."
+    "Create a new rectangle by growing RECT by the 2D vector SIZE (or
+WIDTH and HEIGHT) without changing the center point."
     ((rect v)
      (%rect-inflate rect (vx v) (vy v)))
     ((rect x y)
      (%rect-inflate rect x y))))
 
 (define (rect-union rect1 rect2)
-  "Return a rect that covers the area of RECT1 and RECT2."
+  "Create a new rectangle that covers the area of RECT1 and RECT2."
   (let ((x1 (min (rect-left rect1) (rect-left rect2)))
         (x2 (max (rect-right rect1) (rect-right rect2)))
         (y1 (min (rect-bottom rect1) (rect-bottom rect2)))
@@ -178,8 +177,8 @@ and y coordinates as separate arguments."
     (make-rect x1 y1 (- x2 x1) (- y2 y1))))
 
 (define (rect-clip rect1 rect2)
-  "Return the overlapping region of RECT1 and RECT2. If the rects do
-not overlap, a rect of size 0 is returned."
+  "Create a new rectangle that is the overlapping region of RECT1 and
+RECT2. If the rects do not overlap, a rect of size 0 is returned."
   (let ((x1 (max (rect-left rect1) (rect-left rect2)))
         (x2 (min (rect-right rect1) (rect-right rect2)))
         (y1 (max (rect-bottom rect1) (rect-bottom rect2)))
@@ -214,7 +213,7 @@ not overlap, a rect of size 0 is returned."
 
 (define rect-contains?
   (case-lambda
-    "Return #t if the given point is within RECT."
+    "Return #t if the 2D vector V (or the coordinates X and Y) is within RECT."
     ((rect v)
      (%rect-contains? rect (vx v) (vy v)))
     ((rect x y)
