@@ -114,13 +114,13 @@ actually less than MAX."
   (* x x))
 
 (define (make-lerp + *)
-  "Return a new procedure that accepts three arguments: A, B, and
-ALPHA.  The returned procedure uses the procedures + and * to linearly
-interpolate a value between A and B.  ALPHA should always be in the
-range [0, 1]."
-  (lambda (a b alpha)
-    (+ (* a (- 1 alpha))
-       (* b alpha))))
+  "Return a new procedure that accepts three arguments: START, END,
+and ALPHA.  The returned procedure uses the procedures + and * to
+linearly interpolate a value between START and END.  ALPHA should
+always be in the range [0, 1]."
+  (lambda (start end alpha)
+    (+ (* start (- 1 alpha))
+       (* end alpha))))
 
 (define lerp (make-lerp + *))
 
