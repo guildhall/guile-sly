@@ -1,0 +1,13 @@
+@node Booting
+@section Booting
+
+@menu
+* Window Creation::             Opening a window.
+* The Game Loop::               The core of the engine.
+@end menu
+
+@node Window Creation
+@subsection Window Creation
+
+@node The Game Loop
+@subsection The Game Loop

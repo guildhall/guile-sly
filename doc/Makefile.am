@@ -4,4 +4,9 @@ info_TEXINFOS = sly.texi
 
 sly_TEXINFOS =					\
   fdl.texi					\
-  api/signals.texi
+  api/init.texi					\
+  api/math.texi					\
+  api/time.texi					\
+  api/input.texi				\
+  api/rendering.texi				\
+  api/utils.texi

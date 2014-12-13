@@ -114,6 +114,7 @@ and is not covered here.  Please see the files @file{README.org} and
 @menu
 * Requirements::                Software needed to build and run Sly.
 * Examples::                    Run example programs.
+* Development Environment::     The ideal development environment.
 @end menu
 
 @node Requirements
@@ -145,17 +146,46 @@ A more complex example can further test your installation and show off
 what Sly can do.  Try running the ``2048'' example in
 @file{share/sly/examples/2048} with @code{guile 2048.scm}.
 
+@node Development Environment
+@section Development Environment
+
+The ideal tools to use for developing Sly applications are:
+
+@itemize
+@item @url{https://gnu.org/software/emacs, GNU Emacs}, version 24 or later
+@item @url{http://mumble.net/~campbell/emacs/paredit/, Paredit}, version 23 or later
+@item @url{http://nongnu.org/geiser/, Geiser}, version 0.6 or later;
+@end itemize
+
+See their respective home pages for installation and usage instructions.
+
 @node Getting Started
 @chapter Getting Started
+
+@c @menu
+@c * Open a window
+@c * Draw a sprite
+@c * Respond to user input
+@c @end menu
 
 @node API Reference
 @chapter API Reference
 
 @menu
-* Signals::                     Functional reactive programming.
+* Booting::                     Opening a window and running the game loop.
+* Math::                        Vectors, quaternions, matrices, etc.
+* Time::                        Tick-tock.
+* Input::                       Keyboard, mouse, and joystick input.
+* Rendering::                   Drawing to the screen.
+* Utilities::                   Miscellaneous conveniences.
 @end menu
 
-@include api/signals.texi
+@include api/init.texi
+@include api/math.texi
+@include api/time.texi
+@include api/input.texi
+@include api/rendering.texi
+@include api/utils.texi
 
 @node Contributing
 @chapter Contributing

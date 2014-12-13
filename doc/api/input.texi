@@ -1,0 +1,21 @@
+@node Input
+@section Input
+
+Sly can handle user input from a keyboard, mouse, or joystick.  The
+input modules expose signals that represent various input
+events (@pxref{Signals}).
+
+@menu
+* Keyboard::                    Clack clack.
+* Mouse::                       Exercise the rodent.
+* Joystick::                    Wee!
+@end menu
+
+@node Keyboard
+@subsection Keyboard
+
+@node Mouse
+@subsection Mouse
+
+@node Joystick
+@subsection Joystick

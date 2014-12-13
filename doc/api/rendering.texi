@@ -1,0 +1,48 @@
+@node Rendering
+@section Rendering
+
+@menu
+* Scene Graph::                 Declarative rendering.
+* Sprites::                     2D textured rectangles.
+* Textures::                    Pixel arrays.
+* Fonts::                       Font loading and text rendering.
+* Shapes::                      Primitive 2D/3D shapes.
+* Cameras::                     Defining a viewpoint.
+* Colors::                      Pretty colors.
+* Framebuffers::                Offscreen rendering.
+@end menu
+
+@node Scene Graph
+@subsection Scene Graph
+
+@menu
+* Models::                      Renderable objects.
+* Groups::                      Transformation hierarchy.
+@end menu
+
+@node Models
+@subsubsection Models
+
+@node Groups
+@subsubsection Groups
+
+@node Sprites
+@subsection Sprites
+
+@node Textures
+@subsection Textures
+
+@node Fonts
+@subsection Fonts
+
+@node Shapes
+@subsection Shapes
+
+@node Cameras
+@subsection Cameras
+
+@node Colors
+@subsection Colors
+
+@node Framebuffers
+@subsection Framebuffers

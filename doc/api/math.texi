@@ -1,0 +1,672 @@
+@node Math
+@section Math
+
+Modeling a virtual world requires a good dose of linear algebra,
+trigonometry, and calculus.  Sly comes with modules for 2D/3D/4D
+vector math, trigonometry, axis-aligned bounding boxes, quaternions,
+4x4 transformation matrices, and interpolation.
+
+@menu
+* Vectors::                     2D/3D/4D vectors.
+* Rectangles::                  Axis-aligned bounding boxes.
+* Transforms::                  4x4 transformation matrices.
+* Tweens::                      Interpolation between two values.
+* Quaternions::                 Representing rotations.
+* Miscellaneous::               Other useful variables and procedures.
+@end menu
+
+@node Vectors
+@subsection Vectors
+
+@example
+(use-modules (sly math vector))
+@end example
+
+Not to be confused with Guile's vector data structure, Sly provides
+dedicated data types for 2D, 3D, and 4D vectors in the mathematical
+sense.  Vector procedures are polymorphic, and will work with any
+dimensionality that the operation supports.  In some cases, such as
+@code{v+}, @code{v-}, and @code{v*}, scalar values may be passed as
+well.
+
+The @code{<vector2>}, @code{<vector3>}, and @code{<vector4>} type
+descriptors have been exposed for use with Guile's @code{(ice-9
+match)} pattern matching module.
+
+@defvr {Record Type} <vector2>
+2D vector data type with fields @code{x} and @code{y}, in that order.
+@end defvr
+
+@defvr {Record Type} <vector3>
+3D vector data type with fields @code{x}, @code{y}, and @code{z}, in
+that order.
+@end defvr
+
+@defvr {Record Type} <vector4>
+4D vector data type with fields @code{x}, @code{y}, @code{z} and
+@code{w}, in that order.
+@end defvr
+
+@deffn {Scheme Syntax} vector2 @var{x} @var{y}
+Create a new 2D vector with coordinates (@var{x}, @var{y}).
+@end deffn
+
+@deffn {Scheme Syntax} vector3 @var{x} @var{y} @var{z}
+Create a new 3D vector with coordinates (@var{x}, @var{y}, @var{z}).
+@end deffn
+
+@deffn {Scheme Syntax} vector4 @var{x} @var{y} @var{z} @var{w}
+Create a new 4D vector with coordinates (@var{x}, @var{y}, @var{z},
+@var{w}).
+@end deffn
+
+@deffn {Scheme Syntax} vector2? @var{v}
+Return @code{#t} if @code{v} is a 2D vector.
+@end deffn
+
+@deffn {Scheme Syntax} vector3? @var{v}
+Return @code{#t} if @code{v} is a 3D vector.
+@end deffn
+
+@deffn {Scheme Syntax} vector4? @var{v}
+Return @code{#t} if @code{v} is a 4D vector.
+@end deffn
+
+@deffn {Scheme Procedure} vx @var{v}
+Return the x coordinate of the 2D, 3D, or 4D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} vy @var{v}
+Return the y coordinate of the 2D, 3D, or 4D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} vz @var{v}
+Return the z coordinate of the 3D or 4D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} vw @var{v}
+Return the w coordinate of the 4D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} vmap @var{proc} @var{v}
+Return a new vector that is the result of applying @var{proc} to each
+element of the 2D, 3D, or 4D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} v+ . @var{vectors}
+Return the sum of all @var{vectors}.  @var{vectors} may contain scalar
+values, but it may not contain vectors of mixed dimensions.
+@end deffn
+
+@deffn {Scheme Procedure} v- . @var{vectors}
+Return the difference of all @var{vectors}.  @var{vectors} may contain scalar
+values, but it may not contain vectors of mixed dimensions.
+@end deffn
+
+@deffn {Scheme Procedure} v* . @var{vectors}
+Return the product of all @var{vectors}.  @var{vectors} may contain
+scalar values, but it may not contain vectors of mixed dimensions.
+@end deffn
+
+@deffn {Scheme Procedure} vdot @var{v1} @var{v2}
+Return the dot product of @var{v1} and @var{v2}.  Both vectors must be
+of the same dimensionality.
+@end deffn
+
+@deffn {Scheme Procedure} vcross @var{v1} @var{v2}
+Return the cross product of the 3D vectors @var{v1} and @var{v2}.
+@end deffn
+
+@deffn {Scheme Procedure} magnitude @var{v}
+Return the magnitude of the vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} normalize @var{v}
+Return the normalized form of the vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} vlerp @var{v1} @var{v2} @var{alpha}
+Return the linear interpolation of @var{v1} and @var{v2} by the scalar
+@var{alpha}.  @var{alpha} is expected to be in the range [0, 1].
+@end deffn
+
+@node Rectangles
+@subsection Rectangles
+
+@example
+(use-modules (sly math rect))
+@end example
+
+Rects are 2D axis-aligned bounding boxes.  They are useful for
+defining rectangular regions, such as the hitbox of a game entity, or
+the viewport of a camera.  Because rects are axis-aligned, they
+provide a cheap means to perform simple collision detection.
+
+The @code{<rect>} type descriptor has been exposed for use with
+Guile's @code{(ice-9 match)} pattern matching module.
+
+@defvr {Scheme Variable} <rect>
+Rectangle data type with fields @code{x}, @code{y}, @code{width},
+@code{height}, in that order.
+@end defvr
+
+@deffn {Scheme Procedure} make-rect @var{x} @var{y} @var{width} @var{height}
+Create a new rectangle with position (@var{x}, @var{y}), and
+dimensions (@var{width}, @var{height}).
+@end deffn
+
+@defvr {Scheme Variable} null-rect
+Rectangle with @code{x}, @code{y}, @code{width}, and @code{height} of 0.
+@end defvr
+
+@deffn {Scheme Macro} rect? @var{obj}
+Return @code{#t} if @var{obj} is a rectangle.
+@end deffn
+
+@deffn {Scheme Macro} rect-x @var{rect}
+Return the x coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Macro} rect-y @var{rect}
+Return the x coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Macro} rect-width @var{rect}
+Return the width of @var{rect}.
+@end deffn
+
+@deffn {Scheme Macro} rect-height @var{rect}
+Return the height of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-left @var{rect}
+Return the left-hand x coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-right @var{rect}
+Return the right-hand x coordinate  of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-top @var{rect}
+Return the top y coordinate of @var{rect}
+@end deffn
+
+@deffn {Scheme Procedure} rect-bottom @var{rect}
+Return the bottom y coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-top-left @var{rect}
+Return the top-left corner of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-top-right @var{rect}
+Return the top-right corner of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-bottom-left @var{rect}
+@deffnx {Scheme Procedure} rect-position @var{rect}
+Return the bottom-left corner of @var{rect}
+@end deffn
+
+@deffn {Scheme Procedure} rect-bottom-right @var{rect}
+Return the bottom-right corner of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-center-x @var{rect}
+Return the center x coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-center-y @var{rect}
+Return the center y coordinate of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-center @var{rect}
+Return the center of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-half-width @var{rect}
+Return the half width of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-half-height @var{rect}
+Return the half height of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-size @var{rect}
+Return the size of @var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-move @var{rect} @var{v}
+@deffnx {Scheme Procedure} rect-move @var{rect} @var{x} @var{y}
+Create a new rectangle by moving @var{rect} by the given 2D vector
+offset @var{v}, or the coordinates @var{x} and @var{y}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-inflate @var{rect} @var{size}
+@deffnx {Scheme Procedure} rect-inflate @var{rect} @var{width} @var{height}
+Create a new rectangle by growing @var{rect} by the 2D vector
+@var{size} (or @var{width} and @var{height}) without changing the
+center point.
+@end deffn
+
+@deffn {Scheme Procedure} rect-union @var{rect1} @var{rect2}
+Create a new rectangle that covers the area of both @var{rect1} and
+@var{rect2}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-clip @var{rect1} @var{rect2}
+Create a new rectangle that is the overlapping region of @var{rect1}
+and @var{rect2}.  If the rects do not overlap, a rect of size 0 is
+returned.
+@end deffn
+
+@deffn {Scheme Procedure} rect-clamp @var{rect} @var{v}
+Return a new 2D vector by constraining @var{v} to the bounds of
+@var{rect}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-within? @var{rect1} @var{rect2}
+Return @code{#t} if @var{rect2} is completely within @var{rect1}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-intersects? @var{rect1} @var{rect2}
+Return @code{#t} if @var{rect2} overlaps @var{rect1}.
+@end deffn
+
+@deffn {Scheme Procedure} rect-contains? @var{rect} @var{v}
+@deffnx {Scheme Procedure} rect-contains? @var{rect} @var{x} @var{y}
+Return @code{#t} if the 2D vector @var{v} (or the coordinates @var{x}
+and @var{y}) is within @var{rect}.
+@end deffn
+
+@node Transforms
+@subsection Transforms
+
+@example
+(use-modules (sly math transform))
+@end example
+
+Transforms are 4x4 transformation matrices.  Matrices are the
+fundamental structure for modeling affine transformations such as
+translation, rotation, and scaling.  Complex transformations are
+created by composing many simpler ones with the @code{transform*}
+procedure.
+
+It's a good idea to use transforms in a functional manner by treating
+them as immutable.  This is made easy because almost every procedure
+in this module returns a new transform rather than mutating an
+existing one.  However, in some cases it is necessary to use mutable
+transforms via @code{transform*!} for performance reasons.
+
+@deffn {Scheme Procedure} make-transform @var{aa} @var{ab} @var{ac} @var{ad} @var{ba} @var{bb} @var{bc} @var{bd} @var{ca} @var{cb} @var{cc} @var{cd} @var{da} @var{db} @var{dc} @var{dd}
+Create a new transform initialized with the given 16 values in
+column-major format.
+@end deffn
+
+@defvr {Scheme Variable} null-transform
+A transform composed entirely of zeroes.
+@end defvr
+
+@defvr {Scheme Variable} identity-transform
+The multiplicative identity transform.
+@end defvr
+
+@deffn {Scheme Macro} transform? @var{obj}
+Return @code{#t} if @var{obj} is a transform.
+@end deffn
+
+@deffn {Scheme Macro} transform-matrix @var{transform}
+Return the underlying 4x4 floating point array for @var{transform}.
+@end deffn
+
+@deffn {Scheme Procedure} transpose @var{transform}
+Return a transform that is the transpose of @var{transform}.
+@end deffn
+
+@deffn {Scheme Procedure} transform-vector2 @var{transform} @var{v}
+Apply @var{transform} to the 2D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} transform-position @var{transform}
+Return a 3D vector containing the positional data stored in
+@var{transform}.
+@end deffn
+
+@deffn {Scheme Procedure} transform+ . @var{transforms}
+Return the sum of @var{transforms}.  Return @code{null-transform} if
+called without any arguments.
+@end deffn
+
+@deffn {Scheme Procedure} transform* . @var{transforms}
+Return the product of @var{transforms}.  Return identity-transform if
+called without any arguments.
+@end deffn
+
+@deffn {Scheme Procedure} transform*! @var{dest} @var{a} @var{b}
+Multiply @var{a} and @var{b}, storing the result in @var{dest}.
+@end deffn
+
+@deffn {Scheme Procedure} translate @var{v}
+Create a new transform that translates by the 2D or 3D vector @var{v}.
+@end deffn
+
+@deffn {Scheme Procedure} scale @var{v}
+@deffnx {Scheme Procedure} scale @var{scalar}
+Create a new transform that scales by the 2D or 3D vector @var{v}, or
+by @var{scalar} to scale evenly in all dimensions.
+@end deffn
+
+@deffn {Scheme Procedure} rotate-x @var{angle}
+Create a new transform that rotates the x axis by @var{angle} radians.
+@end deffn
+
+@deffn {Scheme Procedure} rotate-y @var{angle}
+Create a new transform that rotates the y axis by @var{angle} radians.
+@end deffn
+
+@deffn {Scheme Procedure} rotate-z @var{angle}
+Create a new transform that rotates the z axis by @var{angle} radians.
+@end deffn
+
+@deffn {Scheme Procedure} rotate @var{q}
+Convert the quaternion @var{q} into a rotation transform.
+@xref{Quaternions} for more information.
+@end deffn
+
+One of the most common composite transformations is a translation
+multiplied by a scale multiplied by a rotation.  The
+@code{build-transform} procedure is a convenience procedure for this
+case.
+
+@deffn {Scheme Procedure} build-transform @var{[#:position=(vector3 0 0 0)] [#:scale=1] [#:rotation=null-quaternion]}
+Build a transform by multiplying the following transforms:
+
+@itemize
+@item translation by @var{position}
+@item rotation by @var{rotation}
+@item scaling by @var{scale}
+@end itemize
+
+@end deffn
+
+The procedures below are useful for creating projection and view
+matrices for cameras. @xref{Cameras} for more details.
+
+@deffn {Scheme Procedure} orthographic-projection left right top bottom near far
+Create a new transform that represents an orthographic projection for
+the vertical clipping plane @var{left} and @var{right}, the horizontal
+clipping plane @var{top} and @var{bottom}, and the depth clipping
+plane @var{near} and @var{far}.
+@end deffn
+
+@deffn {Scheme Procedure} perspective-projection @var{field-of-vision} @var{aspect-ratio} @var{near} @var{far}
+Create a new transform that represents a perspective projection with a
+@var{field-of-vision} in degrees, the desired @var{aspect-ratio}, and
+the depth clipping plane @var{near} and @var{far}.
+@end deffn
+
+@deffn {Scheme Procedure} look-at @var{eye} @var{center} [@var{up=(vector3 0 1 0)}]
+Create a view transform that looks from 3D vector @var{eye} at the 3D
+vector @var{center}, with the 3D vector @var{up} indicating which
+direction points up.
+@end deffn
+
+@node Tweens
+@subsection Tweens
+
+@example
+(use-modules (sly math tween))
+@end example
+
+Tweening is the process of interpolating between two key values to
+create the illusion of smooth animation.  There are many different
+ways to alter the rate of change, or ``ease'', one value to another.
+
+When tween functions are combined with @ref{Signals}, the result is
+animation!
+
+@menu
+* Easings::                     Easing procedures.
+* Tweening::                    The tween procedure.
+@end menu
+
+@node Easings
+@subsubsection Easings
+
+Easing procedures specify the rate of change of a value @var{alpha}
+over time.  Easings may be composed to form complex animation.
+
+The following procedures are used to control repitition by clamping
+@var{alpha} to the range [0, 1] in different ways.
+
+@deffn {Scnheme Procedure} ease-loop @var{alpha}
+When @var{alpha} reaches 1, start over from 0.
+@end deffn
+
+@deffn {Scheme Procedure} ease-reflect @var{alpha}
+When @var{alpha} reaches 1, work backwards to 0.  When @var{alpha}
+reaches 0, work forwards to 1.
+@end deffn
+
+The following easing functions control the rate of change of an
+animation:
+
+@c TODO: Add graphs like on <http://easings.net>.
+@deffn {Scheme Procedure} ease-linear @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-in-sine @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-out-sine @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-in-out-sine @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-in-quad @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-out-quad @var{alpha}
+@end deffn
+
+@deffn {Scheme Procedure} ease-in-out-quad @var{alpha}
+@end deffn
+
+@node Tweening
+@subsubsection Tweening
+
+The @code{tween} procedure creates new procedures to be used for
+animation.  For example, the code below creates a tween procedure that
+linearly interpolates (0, 0) to (10, 10) over the course of ten ticks.
+
+@example
+(define t (tween vlerp ease-linear (vector2 0 0) (vector2 10 0) 10))
+
+(t 5) ;; => (vector2 5 5)
+@end example
+
+@deffn {Scheme Procedure} tween @var{interpolator} @var{ease} @var{start} @var{end} @var{duration}
+Return a procedure that interpolates from @var{start} to @var{end} in
+@var{duration} ticks.  The value returned for a given time is
+determined by applying @var{ease} with the time ratio to acquire an
+@var{alpha} value, and then applying @var{interpolator} with
+@var{start}, @var{end}, and @var{alpha}.  @var{alpha} is a rational
+number in the range [0, 1].
+@end deffn
+
+@node Quaternions
+@subsection Quaternions
+
+@example
+(use-modules (sly math quaternion))
+@end example
+
+Quaternions are used to express rotations about an arbitrary axis in a
+way that avoids ``gimbal lock'' and allows for useful interpolation,
+unlike matrices or Euler angles.
+
+Quaternions can be used in rotation transformations
+(@pxref{Transforms}), as well as converted to and from @ref{Vectors}.
+
+@defvr {Record Type} <quaternion>
+Data type with 4 fields: @code{w}, @code{x}, @code{y}, @code{z}, in
+that order.  This type descriptor has been exposed for destructuring
+via Guile's @code{(ice-9 match)} module.
+@end defvr
+
+@deffn {Scheme Procedure} make-quaternion @var{v} @var{theta}
+@deffnx {Scheme Procedure} make-quaternion @var{w} @var{x} @var{y} @var{z}
+Create a new quaternion from an axis angle (a 3D vector @var{v} plus
+an angle @var{theta}) or from individual coordinates @var{w}, @var{x},
+@var{y}, and @var{z}.
+@end deffn
+
+@deffn {Scheme Procedure} quaternion @var{v} @var{theta}
+@deffnx {Scheme Procedure} quaternion @var{w} @var{x} @var{y} @var{z}
+Alternate spelling of @code{make-quaternion}.
+@end deffn
+
+@deffn {Scheme Macro} quaternion? @var{obj}
+Return @code{#t} if @var{obj} is a quaternion.
+@end deffn
+
+@deffn {Scheme Macro} quaternion-w @var{q}
+Return the w coordinate of the quaternion @var{q}.
+@end deffn
+
+@deffn {Scheme Macro} quaternion-x @var{q}
+Return the x coordinate of the quaternion @var{q}.
+@end deffn
+
+@deffn {Scheme Macro} quaternion-y @var{q}
+Return the y coordinate of the quaternion @var{q}.
+@end deffn
+
+@deffn {Scheme Macro} quaternion-z @var{q}
+Return the z coordinate of the quaternion @var{q}.
+@end deffn
+
+@defvr {Scheme Variable} identity-quaternion
+The multiplicative identity quaternion.
+@end defvr
+
+@defvr {Scheme Variable} null-quaternion
+A quaternion with all fields set to zero.
+@end defvr
+
+@deffn {Scheme Procedure} quaternion* . @var{quaternions}
+Return the product of all @var{quaternions}.  Return
+@code{identity-quaternion} if called without arguments.
+@end deffn
+
+@deffn {Scheme Procedure} quaternion-slerp @var{q1} @var{q2} @var{delta}
+Perform a spherical linear interpolation of the quaternions @var{q1}
+and @var{q2} and blending factor @var{delta}.
+@end deffn
+
+@deffn {Scheme Procedure} quaternion-magnitude @var{q}
+Return the magnitude of the quaternion @var{q}.
+@end deffn
+
+@deffn {Scheme Procedure} quaternion-normalize @var{q}
+Return the normalized form of the quaternion @var{q}.
+@end deffn
+
+@deffn {Scheme Procedure} vector->quaternion @var{v}
+Convert the 4D vector @var{v} to a quaternion.
+@end deffn
+
+@deffn {Scheme Procedure} quaternion->vector @var{q}
+Convert the quaternion @var{q} to a 4D vector.
+@end deffn
+
+@node Miscellaneous
+@subsection Miscellaneous
+
+@example
+(use-modules (sly math))
+@end example
+
+A grab bag of commonly used math functions and constants.
+
+@defvr {Scheme Variable} pi
+An approximation of \pi, the ratio of a circle's circumference to its
+diameter.
+@end defvr
+
+@defvr {Scheme Variable} 2pi
+@math{2\pi}
+@end defvr
+
+@defvr {Scheme Variable} pi/2
+@math{\pi/2}
+@end defvr
+
+@deffn {Scheme Procedure} degrees->radians @var{angle}
+Convert @var{angle} from degrees to radians.
+@end deffn
+
+@deffn {Scheme Procedure} radians->degrees @var{angle}
+Convert @var{angle} from radians to degrees.
+@end deffn
+
+@deffn {Scheme Procedure} sin-degrees @var{angle}
+Return the sine of @var{angle}, where @var{angle} is measured in
+degrees.
+@end deffn
+
+@deffn {Scheme Procedure} cos-degrees @var{angle}
+Return the cosine of @var{angle}, where @var{angle} is measured in
+degrees.
+@end deffn
+
+@deffn {Scheme Procedure} tan-degrees @var{angle}
+Return the tangent of @var{angle}, where @var{angle} is measured in
+degrees.
+@end deffn
+
+@deffn {Scheme Procedure} atan-degrees @var{y} @var{x}
+Return the arctangent of @var{y} and @var{x}, where @var{y} and
+@var{x} are measured in degrees.
+@end deffn
+
+@deffn {Scheme Procedure} cotan @var{z}
+Return the cotangent of @var{z}.
+@end deffn
+
+@deffn {Scheme Procedure} clamp @var{min} @var{max} @var{x}
+Restrict @var{x} to the range [@var{min}, @var{max}], assuming that
+@var{min} is actually less than @var{max}.
+@end deffn
+
+@deffn {Scheme Procedure} linear-scale @var{min} @var{max} @var{a} @var{b} @var{n}
+Map @var{n} in the range [@var{min}, @var{max}] to the range [@var{a}, @var{b}].
+@end deffn
+
+@deffn {Scheme Procedure} half @var{x}
+Return @math{@var{x} / 2}.
+@end deffn
+
+@deffn {Scheme Procedure} square @var{x}
+Return @math{@var{x}^2}.
+@end deffn
+
+@deffn {Scheme Procedure} make-lerp @var{+} @var{*}
+Return a new procedure that accepts three arguments: @var{start},
+@var{end}, and @var{alpha}.  The returned procedure uses the
+procedures @var{+} and @var{*} to linearly interpolate a value between
+@var{start} and @var{end}.  @var{alpha} should always be in the range
+[0, 1].
+@end deffn
+
+@deffn {Scheme Procedure} lerp @var{start} @var{end} @var{alpha}
+Return the linear interpolation between the numbers @var{start} and
+@var{end} with scalar factor @var{alpha}.
+@end deffn
+
+@deffn {Scheme Procedure} modulo* @var{x} @var{y}
+Return the remainder of @math{@var{x} / @var{y}}.  Works like regular
+@code{modulo}, except that @var{x} and @var{y} may be rational numbers
+or inexact numbers.
+@end deffn

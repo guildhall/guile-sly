@@ -1,0 +1,29 @@
+@node Utilities
+@section Utilities
+
+@menu
+* REPL::                        REPL server integrated with game loop.
+* Live Reloading::              Automatically reload game assets.
+* Miscellaneous-Utilities::     Generally useful things.
+@end menu
+
+@node REPL
+@subsection REPL
+
+@example
+(use-modules (sly utils repl))
+@end example
+
+@node Live Reloading
+@subsection Live Reloading
+
+@example
+(use-modules (sly utils live-reload))
+@end example
+
+@node Miscellaneous-Utilities
+@subsection Miscellaneous
+
+@example
+(use-modules (sly utils))
+@end example
