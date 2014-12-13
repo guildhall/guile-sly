@@ -113,8 +113,8 @@ TRANSFORM."
              (array-ref matrix 3 2))))
 
 (define (transform+ . transforms)
-  "Return the sum of all given transformation matrices.  Return
-null-transform if called without any arguments."
+  "Return the sum of TRANSFORM.  Return 'null-transform' if called
+without any arguments."
   (define (add a b)
     (let ((m1 (transform-matrix a))
           (m2 (transform-matrix b))
@@ -130,8 +130,8 @@ null-transform if called without any arguments."
   (bytevector->pointer (array-contents (transform-matrix t))))
 
 (define (transform* . transforms)
-  "Return the product of all given transformation matrices.  Return
-identity-transform if called without any arguments."
+  "Return the product of TRANSFORMS.  Return identity-transform if
+called without any arguments."
   (define (mul a b)
     (let ((result (%make-transform (make-4x4-matrix))))
       (transform*! result a b)
