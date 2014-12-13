@@ -89,7 +89,7 @@ unused accumulator time."
         (cond ((>= ticks max-ticks-per-frame)
                lag)
               ((>= lag tick-interval)
-               (tick-agenda!)
+               (agenda-tick!)
                (iter (- lag tick-interval) (1+ ticks)))
               (else
                lag)))

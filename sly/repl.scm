@@ -47,7 +47,7 @@ poll the REPL server upon every tick of the game loop."
                     (with-agenda error-agenda
                       (while #t
                         (poll-coop-repl-server server)
-                        (tick-agenda!)
+                        (agenda-tick!)
                         (usleep 10))))
                   (lambda (cont)
                     ;; Discard the continuation

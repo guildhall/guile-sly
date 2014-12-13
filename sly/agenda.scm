@@ -32,8 +32,8 @@
             agenda-time
             current-agenda
             with-agenda
-            tick-agenda!
-            clear-agenda!
+            agenda-tick!
+            agenda-clear!
             schedule
             schedule-interval
             schedule-each
@@ -119,7 +119,7 @@ and enqueue CALLBACK."
     ((deq! q)) ;; Execute scheduled procedure
     (flush-queue! q)))
 
-(define (%tick-agenda! agenda)
+(define (%agenda-tick! agenda)
   "Move AGENDA forward in time and run scheduled procedures."
   (set-agenda-time! agenda (1+ (%agenda-time agenda)))
   (let next-segment ()
@@ -132,7 +132,7 @@ and enqueue CALLBACK."
           (set-agenda-segments! agenda (rest-segments agenda))
           (next-segment))))))
 
-(define (%clear-agenda! agenda)
+(define (%agenda-clear! agenda)
   "Remove all scheduled procedures from AGENDA."
   (set-agenda-segments! agenda '()))
 
@@ -174,14 +174,14 @@ and enqueue CALLBACK."
   "Return the time of the current agenda."
   (%agenda-time (current-agenda)))
 
-(define (tick-agenda!)
+(define (agenda-tick!)
   "Increment time for the current agenda and run scheduled
 procedures."
-  (%tick-agenda! (current-agenda)))
+  (%agenda-tick! (current-agenda)))
 
-(define (clear-agenda!)
+(define (agenda-clear!)
   "Remove all scheduled procedures from the current agenda."
-  (%clear-agenda! (current-agenda)))
+  (%agenda-clear! (current-agenda)))
 
 (define* (schedule thunk #:optional (delay 1))
   "Schedule THUNK to be applied after DELAY ticks of the current
