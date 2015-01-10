@@ -163,7 +163,8 @@
     (cond
      ;; Nothing to do.
      ((or (tile-shown? tile)
-          (tile-flagged? tile))
+          (tile-flagged? tile)
+          (board-lose? board))
       board)
      ;; Oops!
      ((tile-mine? tile)
