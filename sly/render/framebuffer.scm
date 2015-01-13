@@ -110,9 +110,9 @@ dimensions WIDTH x HEIGHT."
                         texture-id #f width height 0 0 1 1)))
           (%make-framebuffer framebuffer-id renderbuffer-id texture))))))
 
-(define-syntax-rule (with-framebuffer framebuffer body ...)
+(define-syntax-rule (with-framebuffer fb body ...)
   (begin
     (glBindFramebuffer (version-3-0 framebuffer)
-                       (framebuffer-id framebuffer))
+                       (framebuffer-id fb))
     body ...
     (glBindFramebuffer (version-3-0 framebuffer) 0)))
