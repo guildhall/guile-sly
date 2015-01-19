@@ -26,32 +26,32 @@
   #:use-module (sly agenda)
   #:use-module (sly coroutine)
   #:use-module (sly signal)
-  #:export (live-reload-interval
-            live-reload))
+  #:export (live-reload))
 
-(define live-reload-interval 120)
-
-(define (live-reload proc)
+(define* (live-reload proc #:optional (polling-interval 120))
   "Return a new procedure that re-applies PROC whenever the associated
 file is modified.  The new procedure returns a signal that contains
 the return value of PROC.  The first argument to PROC must be a
-filename string."
-  (lambda (filename . args)
+file name string.
+
+A simple polling method is used to test for updates.  Files are polled
+every POLLING-INTERVAL ticks (120 by default)."
+  (lambda (file-name . args)
     (define (load-asset)
-      (apply proc filename args))
+      (apply proc file-name args))
 
     (define (current-mtime)
-      (let ((info (stat filename)))
+      (let ((info (stat file-name)))
         (max (stat:mtime info) (stat:ctime info))))
 
     (let ((asset (make-signal (load-asset))))
-     (coroutine
-      (let loop ((last-mtime (current-mtime)))
-        (wait live-reload-interval)
-        (let ((mtime (if (file-exists? filename)
-                         (current-mtime)
-                         last-mtime)))
-          (when (> mtime last-mtime)
-            (signal-set! asset (load-asset)))
-          (loop mtime))))
-     asset)))
+      (coroutine
+       (let loop ((last-mtime (current-mtime)))
+         (wait polling-interval)
+         (let ((mtime (if (file-exists? file-name)
+                          (current-mtime)
+                          last-mtime)))
+           (when (> mtime last-mtime)
+             (signal-set! asset (load-asset)))
+           (loop mtime))))
+      asset)))
