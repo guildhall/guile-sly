@@ -30,6 +30,7 @@
             make-tileset
             load-tileset
             tileset?
+            tileset-texture
             tileset-tiles
             tileset-width
             tileset-height
@@ -38,8 +39,9 @@
             tileset-ref))
 
 (define-record-type <tileset>
-  (%make-tileset tiles width height margin spacing)
+  (%make-tileset texture tiles width height margin spacing)
   tileset?
+  (texture tileset-texture)
   (tiles tileset-tiles)
   (width tileset-width)
   (height tileset-height)
@@ -71,18 +73,15 @@ tiles."
                               height
                               margin
                               spacing)))
-    (%make-tileset tiles width height margin spacing)))
+    (%make-tileset texture tiles width height margin spacing)))
 
 (define* (load-tileset filename width height
                        #:optional #:key (margin 0) (spacing 0))
   "Return a new tileset that is built by loading the texture at
 FILENAME and splitting the texture into tiles."
-  (let* ((tiles (split-texture (load-texture filename)
-                               width
-                               height
-                               margin
-                               spacing)))
-    (%make-tileset tiles width height margin spacing)))
+  (let* ((texture (load-texture filename))
+         (tiles (split-texture texture width height margin spacing)))
+    (%make-tileset texture tiles width height margin spacing)))
 
 (define (tileset-ref tileset i)
   "Return the tile texture of TILESET at index I."
