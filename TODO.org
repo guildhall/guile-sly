@@ -96,7 +96,7 @@
    referenced.
 
    - [ ] Create asset cache
-   - [ ] Live asset reloading
+   - [X] Live asset reloading
 
 ** TODO Keymaps
    Provide an Emacs-like way of defining key combinations so that
@@ -146,9 +146,19 @@
 ** TODO Job control for agenda
    Allow for pausing and cancelling jobs.
 
-** TODO Async/threaded signals
+** TODO Async/threaded signals?
    Not sure how to do this as some things, such as SDL and OpenGL
-   calls, *must* be done in the main thread.
+   calls, *must* be done in the main thread.  Maybe signals should
+   just stay synchronous.
+
+** TODO Smooth animation helper
+   Remove the temporal aliasing in animation by interpolating between
+   current and previous state of animated objects.
+
+** TODO Virtual DOM-like approach to rendering
+   Diff the previously drawn scene graph with the current one while
+   drawing.  Cache transformation matrices and other state to reduce
+   the cost of rendering.
 
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
