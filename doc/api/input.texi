@@ -32,11 +32,11 @@ hook should accept two arguments: @code{key}, a symbol, and
 @code{char}, a unicode character.
 @end defvr
 
-@defvr {Signal} key-last-down
+@defvr {Scheme Signal} key-last-down
 The last key pressed.
 @end defvr
 
-@defvr {Signal} key-last-up
+@defvr {Scheme Signal} key-last-up
 The last key released.
 @end defvr
 
@@ -54,11 +54,11 @@ Create a signal whose value is a 2D unit vector that can be used for
 directional keys: @code{up}, @code{down}, @code{left}, @code{right}.
 @end deffn
 
-@defvr {Signal} key-arrows
+@defvr {Scheme Signal} key-arrows
 A 2D directional vector based on the state of the arrow keys.
 @end defvr
 
-@defvr {Signal} key-wasd
+@defvr {Scheme Signal} key-wasd
 A 2D directional vector based on the state of the WASD keys.
 @end defvr
 
@@ -88,23 +88,23 @@ to this hook should accept three arguments: Symbol @code{button} and
 numbers @code{x} and @code{y}.
 @end defvr
 
-@defvr {Signal} mouse-x
+@defvr {Scheme Signal} mouse-x
 The mouse X coordinate.
 @end defvr
 
-@defvr {Signal} mouse-y
+@defvr {Scheme Signal} mouse-y
 The mouse Y coordinate.
 @end defvr
 
-@defvr {Signal} mouse-position
+@defvr {Scheme Signal} mouse-position
 The mouse position as a 2D vector.
 @end defvr
 
-@defvr {Signal} mouse-last-down
+@defvr {Scheme Signal} mouse-last-down
 The last mouse button pressed.
 @end defvr
 
-@defvr {Signal} mouse-last-up
+@defvr {Scheme Signal} mouse-last-up
 The last mouse button clicked.
 @end defvr
 
