@@ -14,6 +14,27 @@
 (use-modules (sly utils repl))
 @end example
 
+The Sly REPL is a cooperative REPL server that is integrated into the
+game loop.  It is the key to live coding games with Sly.  To connect
+to the REPL server, use the @uref{http://www.nongnu.org/geiser/,
+Geiser} extension for GNU Emacs.
+
+@deffn {Scheme Procedure} start-sly-repl [@var{port}]
+Start a cooperative REPL server that listens on the given @code{port}.
+By default, this port is 37146.  Additionally, a process is scheduled
+to poll the REPL server upon every tick of the game loop.
+@end deffn
+
+The Sly REPL detects when the game loop throws an error and enters a
+special loop for debugging.  When in this state, game state will not
+be updated or rendered.  When the errors have been fixed, calling the
+@code{resume-game-loop} procedure will hand control back to the game
+loop.
+
+@deffn {Scheme Procedure} resume-game-loop
+Abort from the error handling loop prompt and resume the game loop.
+@end deffn
+
 @node Live Reloading
 @subsection Live Reloading
 
@@ -21,9 +42,69 @@
 (use-modules (sly utils live-reload))
 @end example
 
+The live-reload module enables Sly programs to react to changes in the
+file system and reload assets automatically, which is useful when
+using external programs such as an image editor or map editor.  This
+makes it easy to see the changes made to game assets quickly.
+
+@defun live-reload @var{proc} [@var{polling-interval}]
+Return a new procedure that re-applies @code{proc} whenever the
+associated file is modified.  The new procedure returns a signal
+(@pxref{Signals}) that contains the return value of @code{proc}.  The
+first argument to @code{proc} must be a file name string.
+
+A simple polling method is used to test for updates.  Files are polled
+every @code{polling-interval} ticks (120 by default).
+@end defun
+
 @node Miscellaneous-Utilities
 @subsection Miscellaneous
 
 @example
 (use-modules (sly utils))
 @end example
+
+Miscellaneous helpful procedures.
+
+@deffn {Scheme Syntax} define-guardian @var{name} @var{reaper}
+Define a new guardian called @code{name} and call @code{reaper} when
+an object within the guardian is GC'd.  Reaping is ensured to happen
+from the same thread that is running the game loop.
+@end deffn
+
+@deffn memoize @var{proc}
+Return a memoizing version of @code{proc}.
+@end deffn
+
+@deffn {Scheme Syntax} forever @var{body} @dots{}
+Evaluate @code{body} in an unbounded loop.  Useful in coroutines that
+have no end.
+@end deffn
+
+@deffn {Scheme Syntax} trampoline @var{proc-name}
+Create a new procedure that applies the procedure bound to
+@code{proc-name} with all given arguments.
+@end deffn
+
+@deffn {Scheme Syntax} chain* @var{args} (@var{proc} @dots{}) . @var{rest}
+Handy macro for flattening nested procedure calls where the output of
+an inner call is the last argument to the outer call.
+
+@example
+(chain* (list '(1 2) '(3 4))
+  (map +)
+  (fold + 0)) ;; => 10
+@end example
+
+@end deffn
+
+@deffn {Scheme Syntax} chain @var{arg} (@var{proc} @dots{}) . @var{rest}
+Like @code{chain*} but for a single argument.
+
+@example
+(chain '(1 2 3 4)
+  (map 1+)
+  (fold + 0)) ;; => 14
+@end example
+
+@end deffn
