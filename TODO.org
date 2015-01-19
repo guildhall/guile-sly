@@ -160,6 +160,12 @@
    drawing.  Cache transformation matrices and other state to reduce
    the cost of rendering.
 
+** TODO Bitmap font rendering from tileset
+   Some fonts aren't available in TTF format, only as a tileset image.
+   It would very useful for 2D games to be able to render these.  Even
+   better if the font rendering procedures are made polymorphic to
+   handle this new type of font.
+
 ** TODO 0.1 Release
    A 0.1 release was made under the project's old name, guile-2d.  Now
    that things have changed so drastically and the name has been
