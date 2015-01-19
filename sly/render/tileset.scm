@@ -58,8 +58,8 @@ TEXTURE before the first tile begins."
 
   (let* ((tw (texture-width texture))
          (th (texture-height texture))
-         (rows (/ (- tw margin) (+ width spacing)))
-         (columns (/ (- th margin) (+ height spacing))))
+         (rows (/ (- th margin) (+ height spacing)))
+         (columns (/ (- tw margin) (+ width spacing))))
     (vector-ec (: y rows) (: x columns) (build-tile x y))))
 
 (define* (make-tileset texture width height
