@@ -14,6 +14,10 @@ events (@pxref{Signals}).
 @node Keyboard
 @subsection Keyboard
 
+@example
+(use-modules (sly input keyboard))
+@end example
+
 Keyboard hooks, signals, and procedures.
 
 @defvr {Scheme Variable} key-press-hook
@@ -61,6 +65,10 @@ A 2D directional vector based on the state of the WASD keys.
 @node Mouse
 @subsection Mouse
 
+@example
+(use-modules (sly input mouse))
+@end example
+
 Mouse hooks, signals, and procedures.
 
 @defvr {Scheme Variable} mouse-move-hook
@@ -107,6 +115,10 @@ is pressed or #f otherwise.
 
 @node Joystick
 @subsection Joystick
+
+@example
+(use-modules (sly input joystick))
+@end example
 
 Joystick hooks, signals, and procedures.
 
