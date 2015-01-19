@@ -14,8 +14,179 @@ events (@pxref{Signals}).
 @node Keyboard
 @subsection Keyboard
 
+Keyboard hooks, signals, and procedures.
+
+@defvr {Scheme Variable} key-press-hook
+This hook is run whenever a key is pressed down.  Procedures added to
+this hook should accept two arguments: @code{key}, a symbol, and
+@code{char}, a unicode character.
+@end defvr
+
+@defvr {Scheme Variable} key-release-hook
+This hook is run whenever a key is released.  Procedures added to this
+hook should accept two arguments: @code{key}, a symbol, and
+@code{char}, a unicode character.
+@end defvr
+
+@defvr {Signal} key-last-down
+The last key pressed.
+@end defvr
+
+@defvr {Signal} key-last-up
+The last key released.
+@end defvr
+
+@deffn {Scheme Procedure} key-down? @var{key}
+Create a signal for the state of @code{key}.  The signal value is
+@code{#t} when @code{key} is pressed and @code{#f} otherwise.
+@end deffn
+
+A lot of games use directional keys to control the player.  The below
+procedure and signals make this style of movement easy to use.
+
+@deffn {Scheme Procedure} key-directions @var{up} @var{down} @var{left} @var{right}
+Create a signal whose value is a 2D unit vector that can be used for
+8-directional movement.  The vector is determined by the state of the
+directional keys: @code{up}, @code{down}, @code{left}, @code{right}.
+@end deffn
+
+@defvr {Signal} key-arrows
+A 2D directional vector based on the state of the arrow keys.
+@end defvr
+
+@defvr {Signal} key-wasd
+A 2D directional vector based on the state of the WASD keys.
+@end defvr
+
 @node Mouse
 @subsection Mouse
 
+Mouse hooks, signals, and procedures.
+
+@defvr {Scheme Variable} mouse-move-hook
+This hook is run whenever the mouse is moved.  Procedures added to
+this hook should accept two arguments: Numbers @code{x} and @code{y}.
+@end defvr
+
+@defvr {Scheme Variable} mouse-press-hook
+This hook is run whenever a mouse button is pressed.  Procedures added
+to this hook should accept three arguments: Symbol @code{button} and
+numbers @code{x} and @code{y}.
+@end defvr
+
+@defvr {Scheme Variable} mouse-click-hook
+This hook is run whenever a mouse button is clicked.  Procedures added
+to this hook should accept three arguments: Symbol @code{button} and
+numbers @code{x} and @code{y}.
+@end defvr
+
+@defvr {Signal} mouse-x
+The mouse X coordinate.
+@end defvr
+
+@defvr {Signal} mouse-y
+The mouse Y coordinate.
+@end defvr
+
+@defvr {Signal} mouse-position
+The mouse position as a 2D vector.
+@end defvr
+
+@defvr {Signal} mouse-last-down
+The last mouse button pressed.
+@end defvr
+
+@defvr {Signal} mouse-last-up
+The last mouse button clicked.
+@end defvr
+
+@deffn {Scheme Procedure} mouse-down? @var{button}
+Create a signal for the state of @code{button}.  Value is #t when mouse button
+is pressed or #f otherwise.
+@end deffn
+
 @node Joystick
 @subsection Joystick
+
+Joystick hooks, signals, and procedures.
+
+Before using joystick procedures, you must first call the
+initialization procedure @code{enable-joystick}.
+
+@deffn {Scheme Procedure} enable-joystick
+Initialize joystick module.
+@end deffn
+
+@deffn {Scheme Procedure} joystick-num-axes @var{idx}
+Get number of axes of joystick at @code{idx}.
+@end deffn
+
+@deffn {Scheme Procedure} joystick-num-buttons @var{idx}
+Get number of buttons of joystick at @code{idx}.
+@end deffn
+
+@defvr {Scheme Variable} joystick-axis-hook
+This hook is run whenever a joystick motion occurs.  Procedures added
+to this hook should accept three arguments: @code{which}, the joystick
+ID; @code{axis}, the axis ID; and @code{value}, the motion coordinate.
+@end defvr
+
+@defvr {Scheme Variable} joystick-button-press-hook
+This hook is run whenever a joystick button is pressed.  Procedures
+added to this hook should accept two arguments: @code{which}, the
+joystick ID; @code{button}, the button ID.
+@end defvr
+
+@defvr {Scheme Variable} joystick-button-release-hook
+This hook is run whenever a joystick button is released.  Procedures
+added to this hook should accept two arguments: @code{which}, the
+joystick ID; @code{button}, the button ID.
+@end defvr
+
+@defvr {Scheme Variable} raw-axis-min
+-32768
+@end defvr
+
+@defvr {Scheme Variable} raw-axis-max
+32767
+@end defvr
+
+@deffn {Scheme Procedure} axis-value-raw @var{idx} @var{axis}
+Create a signal on the axis at @code{axis} of the joystick at
+@var{idx}; joystick axis values are stored in a signed 16 bit integer
+and so, values range from [@code{raw-axis-min}, @code{raw-axis-max}].
+@end deffn
+
+@deffn {Scheme Procedure} axis-value @var{idx} @var{axis}
+Create a signal for the value of @var{axis} on joystick @var{idx};
+values are scaled to the range [-1,1].
+@end deffn
+
+@deffn {Scheme Procedure} button-down? @var{idx} @var{n}
+Create a signal for the state of button @code{n} on joystick at
+@code{idx}.
+@end deffn
+
+@deffn {Scheme Procedure} make-directional-signal @var{idx} @var{x-axis} @var{y-axis}
+Create a signal for a directional pad or analog stick with @code{x}
+and @code{y} axes.  Values are scaled to the range [-1,1].
+@end deffn
+
+@deffn {Scheme Procedure} make-directional-signal-raw idx x-axis y-axis
+Create a signal for a directional pad or analog stick with @code{x}
+and @code{y} axes.  Values range from [@code{raw-axis-min},
+@code{raw-axis-max}].
+@end deffn
+
+@deffn {Scheme Procedure} axis-scale @var{raw-value}
+Map @code{raw-value} in the range [@code{raw-axis-min},
+@code{raw-axis-max}] to a value in the range [-1, 1].
+@end deffn
+
+@deffn {Scheme Procedure} joystick-name @var{joystick}
+Return the name of @code{joystick}.
+@end deffn
+
+@deffn {Scheme Procedure} num-joysticks
+Return the number of joysticks available.
+@end deffn
