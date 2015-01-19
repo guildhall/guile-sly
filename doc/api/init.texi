@@ -9,5 +9,112 @@
 @node Window Creation
 @subsection Window Creation
 
+@example
+(use-modules (sly window))
+@end example
+
+Sly uses the windowing features of SDL 1.2 under the hood, which
+currently restricts Sly applications to using only a single window.
+
+The window data structure:
+
+@deffn {Scheme Procedure} make-window [@var{#:title}] [@var{#:resolution}] [@var{#:fullscreen?}]
+Create a new window object.  @code{title} is a string to display in
+the window's title bar.  @code{resolution} is a 2D vector that
+specifies the dimensions of the window in pixels.  @code{fullscreen?}
+is a boolean that toggles fullscreen mode.
+@end deffn
+
+@deffn {Scheme Procedure} window? @var{obj}
+Return @code{#t} if @code{obj} is a window.
+@end deffn
+
+@deffn {Scheme Procedure} window-title @var{window}
+Return the title of @code{window}.
+@end deffn
+
+@deffn {Scheme Procedure} window-resolution  @var{window}
+Return the resolution of @code{window}.
+@end deffn
+
+@deffn {Scheme Procedure} window-fullscreen?  @var{window}
+Return @code{#t} if @code{window} is set to fullscreen mode.
+@end deffn
+
+The following signals hold the state of the current window:
+
+@defvr {Scheme Signal} window-width
+The width of the current window.
+@end defvr
+
+@defvr {Scheme Signal} window-height
+The height of the current window.
+@end defvr
+
+@defvr {Scheme Signal} window-size
+The size of the current window as a 2D vector.
+@end defvr
+
+In addition to signals, the following hooks are triggered upon certain
+changes to window state:
+
+@defvr {Scheme Variable} window-resize-hook
+This hook is run when the current window is resized.  Procedures added
+to this hook should accept two arguments: Numbers @code{width} and
+@code{height}, the new dimensions of the window in pixels.
+@end defvr
+
+@defvr {Scheme Variable} window-close-hook
+This hook is run when the close button is clicked.  Note that this
+event is simply a request from the user to close the window, it does
+not mean that the window has actually been closed.  Procedures added
+to this hook should accept no arguments.
+@end defvr
+
+The following procedures are used to open/close windows:
+
+@deffn {Scheme Procedure} open-window [@var{window}]
+Open the game window using the settings in @code{window}.
+@end deffn
+
+@deffn {Scheme Procedure} close-window
+Close the currently open window.
+@end deffn
+
+@deffn {Scheme Syntax} with-window @var{window} @var{body} @dots{}
+Evaluate @code{body} in the context of @code{window}.  @code{window}
+is opened before evaluating @code{body}, and closed afterwards.
+@end deffn
+
 @node The Game Loop
 @subsection The Game Loop
+
+@defvr {Scheme Variable} draw-hook
+This hook is run every time the game loop wants to render.  Procedures
+added to this hook should accept two arguments: @code{dt}, the time in
+seconds since the last render call; and @code{alpha}, a number in the
+range [0,1] that indicates how far in between two discrete updates of
+the game state the loop is in.  The @code{alpha} value is important
+for smoothing animated values to avoid the ``temporal aliasing''
+effect that causes choppy looking animations.
+@end defvr
+
+@defvr {Scheme Variable} after-game-loop-error-hook
+This hook is run every time the game loop catches an error.
+Procedures added to this hook should accept no arguments.
+@end defvr
+
+@deffn {Scheme Procedure} start-game-loop [@var{#:frame-rate}] [@var{#:tick-rate}] [@var{#:max-ticks-per-frame}]
+Start the game loop.  @code{frame-rate} specifies the optimal number
+of frames to draw per second.  @code{tick-rate} specifies the optimal
+game logic updates per second.  Both @code{frame-rate} and
+@code{tick-rate} are 60 by default.  @code{max-ticks-per-frame} is the
+maximum number of times the game loop will update game state in a
+single frame.  When this upper bound is reached due to poor
+performance, the game will start to slow down instead of becoming
+completely unresponsive and possibly crashing.
+@end deffn
+
+@deffn {Scheme Procedure} stop-game-loop
+Abort the game loop.
+@end deffn
