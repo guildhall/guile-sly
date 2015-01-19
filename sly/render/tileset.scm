@@ -24,6 +24,7 @@
 
 (define-module (sly render tileset)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-42)
   #:use-module (sly render texture)
   #:export (<tileset>
@@ -47,6 +48,16 @@
   (height tileset-height)
   (margin tileset-margin)
   (spacing tileset-spacing))
+
+(set-record-type-printer! <tileset>
+  (lambda (tileset port)
+    (format port
+            "#<tileset texture: ~a width: ~d height ~d margin: ~d spacing: ~d>"
+            (tileset-texture tileset)
+            (tileset-width tileset)
+            (tileset-height tileset)
+            (tileset-margin tileset)
+            (tileset-spacing tileset))))
 
 (define (split-texture texture width height margin spacing)
   "Split TEXTURE into a vector of texture regions of WIDTH x HEIGHT
