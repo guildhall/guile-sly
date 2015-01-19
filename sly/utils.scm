@@ -26,22 +26,11 @@
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
   #:use-module (sly agenda)
-  #:export (any-equal?
-            logand?
-            define-guardian
+  #:export (define-guardian
             memoize
             forever
             trampoline
             chain* chain))
-
-(define (any-equal? elem . args)
-  "Return #t if ELEM equals any of the elements in the list ARGS."
-  (any (lambda (e) (equal? elem e)) args))
-
-(define (logand? . args)
-  "Return #t if the result of a bitwise AND of the integers in list
-ARGS is non-zero."
-  (not (zero? (apply logand args))))
 
 (define-syntax-rule (define-guardian name reaper)
   "Define a new guardian called NAME and call REAPER when an object
