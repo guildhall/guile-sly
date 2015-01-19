@@ -103,7 +103,7 @@
     (SDL:set-caption (window-title window))))
 
 (define (close-window)
-  "Close the currently open window and audio."
+  "Close the currently open window."
   (SDL:quit))
 
 (define-syntax-rule (with-window window body ...)
