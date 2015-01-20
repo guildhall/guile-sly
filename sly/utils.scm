@@ -23,6 +23,8 @@
 ;;; Code:
 
 (define-module (sly utils)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-1)
   #:use-module (rnrs arithmetic bitwise)
   #:use-module (sly agenda)
@@ -30,7 +32,8 @@
             memoize
             forever
             trampoline
-            chain* chain))
+            chain* chain
+            list->vlist* vlist-ref*))
 
 (define-syntax-rule (define-guardian name reaper)
   "Define a new guardian called NAME and call REAPER when an object
@@ -78,3 +81,19 @@ same thread that is running the game loop."
 
 (define-syntax-rule (chain arg (proc ...) . rest)
   (chain* (list arg) (proc ...) . rest))
+
+(define (list->vlist* lst)
+  "Convert LST and all sub-lists within to vlists."
+  (list->vlist
+   (map (match-lambda
+         ((sub-lst ...)
+          (list->vlist* sub-lst))
+         (obj obj))
+        lst)))
+
+(define (vlist-ref* vlist index . rest)
+  "Return the element at index INDEX ... in the nested vlist structure
+VLIST."
+  (if (null? rest)
+      (vlist-ref vlist index)
+      (apply vlist-ref* (vlist-ref vlist index) rest)))

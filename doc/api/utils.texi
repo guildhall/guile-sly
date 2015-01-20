@@ -72,7 +72,7 @@ an object within the guardian is GC'd.  Reaping is ensured to happen
 from the same thread that is running the game loop.
 @end deffn
 
-@deffn memoize @var{proc}
+@deffn {Scheme Procedure} memoize @var{proc}
 Return a memoizing version of @code{proc}.
 @end deffn
 
@@ -107,4 +107,13 @@ Like @code{chain*} but for a single argument.
   (fold + 0)) ;; => 14
 @end example
 
+@end deffn
+
+@deffn {Scheme Procedure} list->vlist* @var{lst}
+Convert @code{lst} and all sub-lists within to vlists.
+@end deffn
+
+@deffn {Scheme Procedure} list->vlist* @var{lst} @var{index} [@dots{}]
+Return the element at index @code{index @dots{}} in the nested vlist
+structure @code{vlist}.
 @end deffn
