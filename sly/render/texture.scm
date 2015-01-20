@@ -40,6 +40,7 @@
             texture?
             texture-region?
             texture-id
+            texture-parent
             texture-width
             texture-height
             texture-s1
