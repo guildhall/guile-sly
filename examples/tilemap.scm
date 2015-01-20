@@ -16,9 +16,10 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (use-modules (ice-9 match)
+             (ice-9 vlist)
              (srfi srfi-1)
              (srfi srfi-9)
-             (srfi srfi-42)
+             (srfi srfi-26)
              (sly game)
              (sly window)
              (sly signal)
@@ -27,9 +28,12 @@
              (sly render color)
              (sly render group)
              (sly render model)
+             (sly render mesh)
+             (sly render shader)
              (sly render sprite)
              (sly render texture)
              (sly render tileset)
+             (sly render tile-map)
              (sly math vector)
              (sly math tween)
              (sly input keyboard))
@@ -44,52 +48,53 @@
 ;; loading. Just a hardcoded tile map that demonstrates the
 ;; split-texture procedure.
 
-;; A small 8x8 array of tile indices.
-(define map-width 8)
-(define map-height 8)
-(define map-tiles
-  #2((208 209 209 209 209 209 209 210)
-     (224 225 225 225 225 225 225 226)
-     (224 225 225 225 225 225 225 226)
-     (224 225 225 176 177 225 225 226)
-     (224 225 225 192 193 225 225 226)
-     (224 225 225 225 225 225 225 226)
-     (224 225 225 225 225 225 225 226)
-     (240 241 241 241 241 241 241 242)))
+(define (build-map tile-indices)
+  (list->vlist*
+   (map (lambda (row)
+          (map (cut tileset-ref tileset <>) row))
+        tile-indices)))
+
+(define (random-map width height)
+  (let ((n (vector-length (tileset-tiles tileset))))
+    (list->vlist*
+     (list-tabulate
+      height
+      (lambda (y)
+        (list-tabulate
+         width
+         (lambda (x)
+           (tileset-ref tileset (random n)))))))))
 
 (define tile-width 32)
 (define tile-height 32)
+(define tileset
+  (load-tileset "images/tiles.png" tile-width tile-height))
 
-(define (random-map width height tileset)
-  (let ((tiles (make-array 0 height width))
-        (n (vector-length (tileset-tiles tileset))))
-    (do-ec (: y height) (: x width)
-           (array-set! tiles (random n) y x))
-    tiles))
-
-(define (build-map-layer tiles tileset)
-  (define build-sprite
-    (memoize
-     (lambda (tile-index)
-       (let ((texture (tileset-ref tileset tile-index)))
-         (sprite texture #:anchor 'bottom-left)))))
-
-  (define (build-tile x y)
-    (group-move (vector2 (* x (tileset-width tileset))
-                         (* y (tileset-height tileset)))
-                (group (build-sprite (array-ref tiles y x)))))
-
-  (match (array-dimensions tiles)
-    ((height width)
-     (make-group (list-ec (: x width) (: y height)
-                          (build-tile x y))))))
-
-(define tileset (load-tileset "images/tiles.png" 32 32))
+(define map-width 20)
+(define map-height 15)
+(define map-tiles
+  (build-map
+   '((65 65 65 65 65 65 65 65 65 224 194 225 194 192 209 210 65 65 65 65)
+     (65 65 65 65 65 65 65 65 208 193 225 194 176 241 177 192 210 65 65 65)
+     (65 65 65 65 65 65 65 65 224 225 194 194 226 65 240 177 192 210 65 65)
+     (65 65 65 65 65 65 65 65 224 225 225 176 242 65 65 240 177 226 65 65)
+     (65 65 65 65 65 65 65 208 193 225 225 226 65 65 65 65 224 226 65 65)
+     (65 65 65 65 65 65 208 193 194 225 225 226 65 65 65 208 193 226 65 65)
+     (65 65 65 65 208 209 193 194 194 225 194 192 209 209 209 193 176 242 65 65)
+     (65 65 65 65 224 194 194 194 225 176 241 241 177 225 225 194 192 209 209 209)
+     (65 65 65 65 240 177 225 225 176 242 65 65 240 241 241 177 225 225 194 225)
+     (65 65 65 208 209 193 225 176 242 65 65 65 65 65 65 240 241 241 241 241)
+     (65 65 208 193 225 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65)
+     (65 208 193 225 176 241 242 65 65 65 65 65 65 65 65 65 65 65 65 65)
+     (208 193 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65)
+     (193 225 225 226 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65)
+     (225 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65))))
 
 (define scene
   (group-move (v- (vector2 320 240)
-                  (v* (vector2 tile-width tile-height) 4))
-              (group (build-map-layer map-tiles tileset))))
+                  (v* (vector2 tile-width tile-height)
+                      (vector2 10 15/2)))
+              (apply group (compile-tile-layer map-tiles 32 32))))
 
 (define camera
   (orthographic-camera 640 480))
