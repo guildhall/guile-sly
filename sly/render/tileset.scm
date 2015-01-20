@@ -23,6 +23,7 @@
 ;;; Code:
 
 (define-module (sly render tileset)
+  #:use-module (ice-9 format)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-42)
