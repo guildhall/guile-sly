@@ -25,7 +25,8 @@
   #:use-module (system foreign)
   #:export (cblas-row-major
             cblas-no-trans
-            cblas-sgemm))
+            cblas-sgemm
+            cblas-sgemv))
 
 ;;;
 ;;; Constants
@@ -47,3 +48,7 @@
 (define-foreign cblas-sgemm
   void "cblas_sgemm" (list int int int int int int float '*
                            int '* int float '* int))
+
+(define-foreign cblas-sgemv
+  void "cblas_sgemv" (list int int int int float '* int '*
+                           int float '* int))
