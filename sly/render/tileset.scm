@@ -41,7 +41,8 @@
             tileset-spacing
             tileset-rows
             tileset-columns
-            tileset-ref))
+            tileset-ref
+            tileset-invert-index))
 
 (define-record-type <tileset>
   (%make-tileset texture tiles width height margin spacing rows columns)
@@ -104,3 +105,12 @@ FILENAME and splitting the texture into tiles."
 (define (tileset-ref tileset i)
   "Return the tile texture of TILESET at index I."
   (vector-ref (tileset-tiles tileset) i))
+
+(define (tileset-invert-index tileset index)
+  "Convert INDEX, whose origin is the top-left corner of TILESET, to
+an index whose origin is the bottom-left corner."
+  (let* ((w (tileset-columns tileset))
+         (h (tileset-rows tileset))
+         (x (modulo index w))
+         (y (- h 1 (floor (/ index w)))))
+    (+ (* y w) x)))
