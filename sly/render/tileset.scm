@@ -26,6 +26,7 @@
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-42)
   #:use-module (sly render texture)
   #:export (<tileset>
@@ -38,27 +39,33 @@
             tileset-height
             tileset-margin
             tileset-spacing
+            tileset-rows
+            tileset-columns
             tileset-ref))
 
 (define-record-type <tileset>
-  (%make-tileset texture tiles width height margin spacing)
+  (%make-tileset texture tiles width height margin spacing rows columns)
   tileset?
   (texture tileset-texture)
   (tiles tileset-tiles)
   (width tileset-width)
   (height tileset-height)
   (margin tileset-margin)
-  (spacing tileset-spacing))
+  (spacing tileset-spacing)
+  (rows tileset-rows)
+  (columns tileset-columns))
 
 (set-record-type-printer! <tileset>
   (lambda (tileset port)
     (format port
-            "#<tileset texture: ~a width: ~d height ~d margin: ~d spacing: ~d>"
+            "#<tileset texture: ~a width: ~d height ~d margin: ~d spacing: ~d rows: ~d columns: ~d>"
             (tileset-texture tileset)
             (tileset-width tileset)
             (tileset-height tileset)
             (tileset-margin tileset)
-            (tileset-spacing tileset))))
+            (tileset-spacing tileset)
+            (tileset-rows tileset)
+            (tileset-columns tileset))))
 
 (define (split-texture texture width height margin spacing)
   "Split TEXTURE into a vector of texture regions of WIDTH x HEIGHT
@@ -74,26 +81,25 @@ TEXTURE before the first tile begins."
          (th (texture-height texture))
          (rows (/ (- th margin) (+ height spacing)))
          (columns (/ (- tw margin) (+ width spacing))))
-    (vector-ec (: y rows) (: x columns) (build-tile x y))))
+    (values (vector-ec (: y rows) (: x columns) (build-tile x y))
+            rows columns)))
 
 (define* (make-tileset texture width height
                        #:optional #:key (margin 0) (spacing 0))
   "Return a new tileset that is built by splitting TEXTURE into
 tiles."
-  (let ((tiles (split-texture texture
-                              width
-                              height
-                              margin
-                              spacing)))
-    (%make-tileset texture tiles width height margin spacing)))
+  (let-values (((tiles rows columns)
+                (split-texture texture width height margin spacing)))
+    (%make-tileset texture tiles width height margin spacing rows columns)))
 
 (define* (load-tileset filename width height
                        #:optional #:key (margin 0) (spacing 0))
   "Return a new tileset that is built by loading the texture at
 FILENAME and splitting the texture into tiles."
-  (let* ((texture (load-texture filename))
-         (tiles (split-texture texture width height margin spacing)))
-    (%make-tileset texture tiles width height margin spacing)))
+  (let*-values (((texture) (load-texture filename))
+                ((tiles rows columns)
+                 (split-texture texture width height margin spacing)))
+    (%make-tileset texture tiles width height margin spacing rows columns)))
 
 (define (tileset-ref tileset i)
   "Return the tile texture of TILESET at index I."
