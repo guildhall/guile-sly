@@ -44,12 +44,13 @@
 ;;;
 
 (define-record-type <vertex-buffer>
-  (%make-vertex-buffer id type attr-size length)
+  (%make-vertex-buffer id type attr-size length data)
   vertex-buffer?
   (id vertex-buffer-id)
   (type vertex-buffer-type)
   (attr-size vertex-buffer-attr-size)
-  (length vertex-buffer-length))
+  (length vertex-buffer-length)
+  (data vertex-buffer-data))
 
 (define (generate-vertex-buffer)
   (let ((bv (u32vector 1)))
@@ -118,11 +119,12 @@
       (arb-vertex-buffer-object array-buffer-arb)))
 
 (define* (make-vertex-buffer vertices #:optional (index? #f))
-  (let ((bv (vertices-bytevector vertices index?))
-        (vbo (%make-vertex-buffer (generate-vertex-buffer)
-                                  (gl-buffer-type index?)
-                                  (attribute-size (vector-ref vertices 0))
-                                  (vector-length vertices))))
+  (let* ((bv (vertices-bytevector vertices index?))
+         (vbo (%make-vertex-buffer (generate-vertex-buffer)
+                                   (gl-buffer-type index?)
+                                   (attribute-size (vector-ref vertices 0))
+                                   (vector-length vertices)
+                                   bv)))
     (with-vertex-buffer vbo
       (glBufferData (vertex-buffer-type vbo)
                     (bytevector-length bv)
