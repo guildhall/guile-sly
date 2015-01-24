@@ -118,18 +118,21 @@
       (arb-vertex-buffer-object element-array-buffer-arb)
       (arb-vertex-buffer-object array-buffer-arb)))
 
-(define* (make-vertex-buffer vertices #:optional (index? #f))
+(define* (make-vertex-buffer vertices #:optional (index? #f) (stream? #f))
   (let* ((bv (vertices-bytevector vertices index?))
          (vbo (%make-vertex-buffer (generate-vertex-buffer)
                                    (gl-buffer-type index?)
                                    (attribute-size (vector-ref vertices 0))
                                    (vector-length vertices)
-                                   bv)))
+                                   bv))
+         (usage (if stream?
+                    (arb-vertex-buffer-object static-draw-arb)
+                    (arb-vertex-buffer-object stream-draw-arb))))
     (with-vertex-buffer vbo
       (glBufferData (vertex-buffer-type vbo)
                     (bytevector-length bv)
                     (bytevector->pointer bv)
-                    (arb-vertex-buffer-object static-draw-arb)))
+                    usage))
     vbo))
 
 ;;;
