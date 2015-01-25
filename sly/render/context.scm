@@ -82,7 +82,9 @@
   (%set-render-context-mesh! context #f))
 
 (define-syntax-rule (with-render-context context body ...)
-  (begin (render-context-reset! context) body ...))
+  (begin (render-context-reset! context)
+         body ...
+         (render-context-reset! context)))
 
 (define (set-render-context-blend-mode! context blend-mode)
   (unless (equal? (render-context-blend-mode context) blend-mode)
