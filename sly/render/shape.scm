@@ -33,83 +33,83 @@
 (define* (make-cube size #:optional #:key (texture #f)
                     (shader (load-default-shader)))
   (let* ((half-size (half size))
-         (mesh (make-mesh #(
-                            ;; Front
-                            0 3 2 0 2 1
-                              ;; Back
-                              4 6 7 4 5 6
-                              ;; Top
-                              8 11 10 8 10 9
-                              ;; Bottom
-                              12 14 15 12 13 14
-                              ;; Left
-                              16 19 18 16 18 17
-                              ;; Right
-                              20 22 23 20 21 22)
-                          (vector
-                           ;; Front
-                           (vector3 (- half-size) (- half-size) (- half-size))
-                           (vector3 half-size (- half-size) (- half-size))
-                           (vector3 half-size half-size (- half-size))
-                           (vector3 (- half-size) half-size (- half-size))
-                           ;; Back
-                           (vector3 (- half-size) (- half-size) half-size)
-                           (vector3 half-size (- half-size) half-size)
-                           (vector3 half-size half-size half-size)
-                           (vector3 (- half-size) half-size half-size)
-                           ;; Top
-                           (vector3 (- half-size) half-size (- half-size))
-                           (vector3 half-size half-size (- half-size))
-                           (vector3 half-size half-size half-size)
-                           (vector3 (- half-size) half-size half-size)
-                           ;; Bottom
-                           (vector3 (- half-size) (- half-size) (- half-size))
-                           (vector3 half-size (- half-size) (- half-size))
-                           (vector3 half-size (- half-size) half-size)
-                           (vector3 (- half-size) (- half-size) half-size)
-                           ;; Left
-                           (vector3 (- half-size) (- half-size) (- half-size))
-                           (vector3 (- half-size) half-size (- half-size))
-                           (vector3 (- half-size) half-size half-size)
-                           (vector3 (- half-size) (- half-size) half-size)
-                           ;; Right
-                           (vector3 half-size (- half-size) (- half-size))
-                           (vector3 half-size half-size (- half-size))
-                           (vector3 half-size half-size half-size)
-                           (vector3 half-size (- half-size) half-size))
-                          (let ((s1 (texture-s1 texture))
-                                (t1 (texture-t1 texture))
-                                (s2 (texture-s2 texture))
-                                (t2 (texture-t2 texture)))
-                            (vector
+         (mesh (build-mesh #(
                              ;; Front
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2)
-                             ;; Back
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2)
-                             ;; Top
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2)
-                             ;; Bottom
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2)
-                             ;; Left
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2)
-                             ;; Right
-                             (vector2 s1 t1)
-                             (vector2 s2 t1)
-                             (vector2 s2 t2)
-                             (vector2 s1 t2))))))
+                             0 3 2 0 2 1
+                               ;; Back
+                               4 6 7 4 5 6
+                               ;; Top
+                               8 11 10 8 10 9
+                               ;; Bottom
+                               12 14 15 12 13 14
+                               ;; Left
+                               16 19 18 16 18 17
+                               ;; Right
+                               20 22 23 20 21 22)
+                           (vector
+                            ;; Front
+                            (vector3 (- half-size) (- half-size) (- half-size))
+                            (vector3 half-size (- half-size) (- half-size))
+                            (vector3 half-size half-size (- half-size))
+                            (vector3 (- half-size) half-size (- half-size))
+                            ;; Back
+                            (vector3 (- half-size) (- half-size) half-size)
+                            (vector3 half-size (- half-size) half-size)
+                            (vector3 half-size half-size half-size)
+                            (vector3 (- half-size) half-size half-size)
+                            ;; Top
+                            (vector3 (- half-size) half-size (- half-size))
+                            (vector3 half-size half-size (- half-size))
+                            (vector3 half-size half-size half-size)
+                            (vector3 (- half-size) half-size half-size)
+                            ;; Bottom
+                            (vector3 (- half-size) (- half-size) (- half-size))
+                            (vector3 half-size (- half-size) (- half-size))
+                            (vector3 half-size (- half-size) half-size)
+                            (vector3 (- half-size) (- half-size) half-size)
+                            ;; Left
+                            (vector3 (- half-size) (- half-size) (- half-size))
+                            (vector3 (- half-size) half-size (- half-size))
+                            (vector3 (- half-size) half-size half-size)
+                            (vector3 (- half-size) (- half-size) half-size)
+                            ;; Right
+                            (vector3 half-size (- half-size) (- half-size))
+                            (vector3 half-size half-size (- half-size))
+                            (vector3 half-size half-size half-size)
+                            (vector3 half-size (- half-size) half-size))
+                           (let ((s1 (texture-s1 texture))
+                                 (t1 (texture-t1 texture))
+                                 (s2 (texture-s2 texture))
+                                 (t2 (texture-t2 texture)))
+                             (vector
+                              ;; Front
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2)
+                              ;; Back
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2)
+                              ;; Top
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2)
+                              ;; Bottom
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2)
+                              ;; Left
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2)
+                              ;; Right
+                              (vector2 s1 t1)
+                              (vector2 s2 t1)
+                              (vector2 s2 t2)
+                              (vector2 s1 t2))))))
     (make-model #:mesh mesh #:texture texture #:shader shader)))

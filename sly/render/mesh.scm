@@ -34,9 +34,14 @@
   #:use-module (sly math vector)
   #:use-module (sly render color)
   #:use-module (sly render shader)
-  #:export (make-mesh
+  #:export (make-vertex-buffer
+            bytevector->vertex-buffer vector->vertex-buffer
+            vertex-buffer? index-buffer?
+            vertex-buffer-id vertex-buffer-type vertex-buffer-usage
+            vertex-buffer-data vertex-buffer-length
+            make-mesh build-mesh null-mesh
             mesh?
-            mesh-id mesh-length
+            mesh-id mesh-length mesh-ref
             apply-mesh with-mesh))
 
 ;;;
@@ -61,9 +66,10 @@
                 (vertex-buffer-id vbo)))
 
 (define-syntax-rule (with-vertex-buffer vbo body ...)
-  (begin
-    (bind-vertex-buffer vbo)
-    body ...))
+  (let ((target (vertex-buffer-target vbo)))
+    (glBindBuffer target (vertex-buffer-id vbo))
+    body ...
+    (glBindBuffer target 0)))
 
 (define attribute-type
   (match-lambda
@@ -122,12 +128,15 @@
      vertices)
     bv))
 
-(define (vertex-buffer-attribute-size vbo)
-  (match (vertex-buffer-type vbo)
+(define (type-size type)
+  (match type
     ((or 'float 'index) 1)
     ('vec2 2)
     ('vec3 3)
     ('vec4 4)))
+
+(define (vertex-buffer-attribute-size vbo)
+  (type-size (vertex-buffer-type vbo)))
 
 (define (index-buffer? vbo)
   (eq? (vertex-buffer-type vbo) 'index))
@@ -148,22 +157,31 @@
     ('stream
      (arb-vertex-buffer-object stream-draw-arb))))
 
-(define (make-vertex-buffer* type usage data)
-  (let ((vbo (%make-vertex-buffer (generate-vertex-buffer) type usage data)))
+(define (init-vertex-buffer-data! vbo)
+  (let ((data (vertex-buffer-data vbo)))
     (with-vertex-buffer vbo
       (glBufferData (vertex-buffer-target vbo)
                     (bytevector-length data)
                     (bytevector->pointer data)
-                    (vertex-buffer-usage-gl vbo)))
+                    (vertex-buffer-usage-gl vbo)))))
+
+(define (make-vertex-buffer type usage length)
+  (let ((data (if (eq? type 'index)
+                  (make-u32vector length)
+                  (make-f32vector (* (type-size type) length)))))
+    (bytevector->vertex-buffer type usage data)))
+
+(define (bytevector->vertex-buffer type usage bv)
+  (let ((vbo (%make-vertex-buffer (generate-vertex-buffer) type usage bv)))
+    (init-vertex-buffer-data! vbo)
     vbo))
 
-(define* (make-vertex-buffer vertices #:optional (index? #f) (usage 'static))
-  (let ((data (vertices-bytevector vertices index?)))
-    (make-vertex-buffer* (if index?
-                             'index
-                             (attribute-type (vector-ref vertices 0)))
-                         usage
-                         data)))
+(define* (vector->vertex-buffer vertices #:optional (index? #f) (usage 'static))
+  (let ((data (vertices-bytevector vertices index?))
+        (type (if index?
+                  'index
+                  (attribute-type (vector-ref vertices 0)))))
+    (bytevector->vertex-buffer type usage data)))
 
 ;;;
 ;;; Mesh
@@ -182,7 +200,11 @@
     (glDeleteVertexArrays 1 (u32vector (mesh-id mesh)))
     (let ((buffers (mesh-vbos mesh)))
       (glDeleteBuffers (length buffers)
-                       (list->u32vector (map vertex-buffer-id buffers))))))
+                       (list->u32vector
+                        (map (match-lambda
+                              ((_ . vbo)
+                               (vertex-buffer-id vbo)))
+                             buffers))))))
 
 (define (generate-vertex-array)
   (let ((bv (u32vector 1)))
@@ -205,19 +227,24 @@
     (glVertexAttribPointer location (vertex-buffer-attribute-size vbo)
                            (data-type float) #f 0 %null-pointer)))
 
-(define (make-mesh indices positions textures)
-  (let* ((index-buffer (make-vertex-buffer indices #t))
-         (position-buffer (make-vertex-buffer positions))
-         (texture-buffer (make-vertex-buffer textures))
-         (mesh (%make-mesh (generate-vertex-array)
-                           (vector-length indices)
-                           (list index-buffer
-                                 position-buffer
-                                 texture-buffer))))
+(define (make-mesh index-buffer position-buffer texture-buffer)
+  (let ((mesh (%make-mesh (generate-vertex-array)
+                          (vertex-buffer-length index-buffer)
+                          `((index . ,index-buffer)
+                            (position . ,position-buffer)
+                            (texture . ,texture-buffer)))))
     (with-mesh mesh
       (vertex-attrib-pointer vertex-position-location position-buffer)
-      (if textures
-          (vertex-attrib-pointer vertex-texture-location texture-buffer))
+      (vertex-attrib-pointer vertex-texture-location texture-buffer)
       (bind-vertex-buffer index-buffer))
     (mesh-guardian mesh)
     mesh))
+
+(define (build-mesh indices positions textures)
+  (let ((index-buffer (vector->vertex-buffer indices #t))
+        (position-buffer (vector->vertex-buffer positions))
+        (texture-buffer (vector->vertex-buffer textures)))
+    (make-mesh index-buffer position-buffer texture-buffer)))
+
+(define (mesh-ref mesh key)
+  (assq-ref (mesh-vbos mesh) key))

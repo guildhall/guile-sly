@@ -121,9 +121,9 @@ equal elements."
 
   (map (match-lambda
         ((texture (indices positions textures))
-         (make-model #:mesh (make-mesh (list->vector (offset-indices indices))
-                                       (list->vector positions)
-                                       (list->vector textures))
+         (make-model #:mesh (build-mesh (list->vector (offset-indices indices))
+                                        (list->vector positions)
+                                        (list->vector textures))
                      #:texture texture
                      #:shader shader)))
        vertices))

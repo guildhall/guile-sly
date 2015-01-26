@@ -59,17 +59,17 @@ custom SHADER can be specified."
          (t1 (texture-t1 texture))
          (s2 (texture-s2 texture))
          (t2 (texture-t2 texture))
-         (mesh (make-mesh #(0 3 2 0 2 1)
-                          (vector
-                           (vector3 x1 y1 0)
-                           (vector3 x2 y1 0)
-                           (vector3 x2 y2 0)
-                           (vector3 x1 y2 0))
-                          (vector
-                           (vector2 s1 t1)
-                           (vector2 s2 t1)
-                           (vector2 s2 t2)
-                           (vector2 s1 t2)))))
+         (mesh (build-mesh #(0 3 2 0 2 1)
+                           (vector
+                            (vector3 x1 y1 0)
+                            (vector3 x2 y1 0)
+                            (vector3 x2 y2 0)
+                            (vector3 x1 y2 0))
+                           (vector
+                            (vector2 s1 t1)
+                            (vector2 s2 t1)
+                            (vector2 s2 t2)
+                            (vector2 s1 t2)))))
     (make-model #:shader shader
                 #:texture texture
                 #:mesh mesh
