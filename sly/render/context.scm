@@ -79,7 +79,7 @@
   (glUseProgram 0)
   (%set-render-context-shader! context #f)
   (glBindVertexArray 0)
-  (%set-render-context-mesh! context #f))
+  (%set-render-context-mesh! context null-mesh))
 
 (define-syntax-rule (with-render-context context body ...)
   (begin (render-context-reset! context)

@@ -206,6 +206,8 @@
                                (vertex-buffer-id vbo)))
                              buffers))))))
 
+(define null-mesh (%make-mesh 0 0 '()))
+
 (define (generate-vertex-array)
   (let ((bv (u32vector 1)))
     (glGenVertexArrays 1 (bytevector->pointer bv))
