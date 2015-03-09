@@ -17,20 +17,23 @@
 
 (use-modules (sly game)
              (sly window)
+             (sly utils)
              (sly math vector)
              (sly render camera)
-             (sly render group)
-             (sly render sprite))
+             (sly render model)
+             (sly render sprite)
+             (sly render color))
 
 (load "common.scm")
 
 (define scene
-  (group-move (vector2 320 240)
-              (group (load-sprite "images/p1_front.png"))))
+  (chain (load-sprite "images/p1_front.png")
+    (paint red)
+    (move (vector2 320 240))))
 
 (define camera (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-group scene camera)))
+(add-hook! draw-hook (lambda _ (draw-model scene camera)))
 
 (with-window (make-window #:title "Simple Sprite Demo")
   (start-game-loop))

@@ -28,7 +28,6 @@
              (sly input joystick)
              (sly render camera)
              (sly render model)
-             (sly render group)
              (sly render sprite)
              (sly render texture)
              (sly render font))
@@ -56,8 +55,7 @@
 
 (define-signal caption
   (signal-map (lambda (text)
-                (group-move (vector2 -76 -90)
-                            (group (label font text))))
+                (move (vector2 -76 -90) (label font text)))
               (signal-merge
                (make-signal "Press a button")
                (button-caption-signal "Hello there" 0)
@@ -67,13 +65,12 @@
 
 (define-signal scene
   (signal-map (lambda (position caption)
-                (group-move position
-                            (group player caption)))
+                (move position (group player caption)))
               player-position caption))
 
 (define camera (orthographic-camera (vx resolution) (vy resolution)))
 
-(add-hook! draw-hook (lambda _ (draw-group (signal-ref scene) camera)))
+(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
 
 (add-hook! joystick-axis-hook
            (lambda (which axis value)

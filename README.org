@@ -33,16 +33,15 @@
                   (sly window)
                   (sly math vector)
                   (sly render camera)
-                  (sly render group)
+                  (sly render model)
                   (sly render sprite))
 
      (define scene
-       (group-move (vector2 320 240)
-                   (group (load-sprite "gnu.png"))))
+       (move (vector2 320 240) (load-sprite "gnu.png")))
 
      (define camera (orthographic-camera 640 480))
 
-     (add-hook! draw-hook (lambda _ (draw-group scene camera)))
+     (add-hook! draw-hook (lambda _ (draw-model scene camera)))
 
      (with-window (make-window #:title "Hello, world!")
        (start-game-loop))

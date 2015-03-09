@@ -40,29 +40,35 @@
   #:use-module (sly render mesh)
   #:export (make-model model model-inherit
             model?
-            model-mesh model-texture model-shader model-color
-            model-blend-mode model-depth-test?
+            model-mesh model-transform model-texture model-shader model-color
+            model-blend-mode model-depth-test? model-children
             draw-model
-            model-paint model-blend))
+            paint blend group group* move place))
 
 ;; Representation of a single OpenGL render call.
 (define-record-type <model>
-  (%make-model mesh texture shader color blend-mode depth-test?)
+  (%make-model mesh transform texture shader color blend-mode
+               depth-test? children)
   model?
   (mesh model-mesh)
+  (transform model-transform)
   (texture model-texture)
   (shader model-shader)
   (color model-color)
   (blend-mode model-blend-mode)
-  (depth-test? model-depth-test?))
+  (depth-test? model-depth-test?)
+  (children model-children))
 
-(define* (make-model #:optional #:key (mesh #f) (texture #f) (shader #f)
-                     (color white) (blend-mode default-blend-mode)
-                     (depth-test? #t))
+(define* (make-model #:optional #:key (mesh null-mesh)
+                     (transform identity-transform) (texture null-texture)
+                     (shader (load-default-shader)) (color white)
+                     (blend-mode default-blend-mode) (depth-test? #t)
+                     (children '()))
   "Create a new model from MESH and the given rendering state.  When
 rendering, TEXTURE and SHADER are bound, BLEND-MODE and DEPTH-TEST?
 are set, and the COLOR uniform variable is set."
-  (%make-model mesh texture shader color blend-mode depth-test?))
+  (%make-model mesh transform texture shader color blend-mode
+               depth-test? children))
 
 (define model make-model)
 
@@ -90,35 +96,93 @@ changing the fields specified in KWARGS."
                             (struct-ref original index))))
                     fields field-indices))))))
 
-(define (draw-model model world-transform view context)
-  "Render MODEL by applying its transform (multiplied by VIEW), texture,
+(define (set-transform-identity! t)
+  (let ((matrix (transform-matrix t)))
+    (array-set! matrix 1 0 0)
+    (array-set! matrix 0 0 1)
+    (array-set! matrix 0 0 2)
+    (array-set! matrix 0 0 3)
+    (array-set! matrix 0 1 0)
+    (array-set! matrix 1 1 1)
+    (array-set! matrix 0 1 2)
+    (array-set! matrix 0 1 3)
+    (array-set! matrix 0 2 0)
+    (array-set! matrix 0 2 1)
+    (array-set! matrix 1 2 2)
+    (array-set! matrix 0 2 3)
+    (array-set! matrix 0 3 0)
+    (array-set! matrix 0 3 1)
+    (array-set! matrix 0 3 2)
+    (array-set! matrix 1 3 3)))
+
+(define draw-model
+  (let ((context (make-render-context)))
+    (lambda* (model camera #:optional (context context))
+      "Render MODEL by applying its transform (multiplied by VIEW), texture,
 shader, vertex array, uniforms, blend mode, etc. to the render
 CONTEXT."
-  (match model
-    (($ <model> mesh texture shader color blend-mode depth-test?)
-     (with-temp-transform context mvp
-       (transform*! mvp world-transform view)
-       (set-render-context-depth-test?! context depth-test?)
-       (set-render-context-blend-mode! context blend-mode)
-       (set-render-context-shader! context shader)
-       (set-render-context-mesh! context mesh)
-       (set-render-context-texture! context texture)
-       ;; TODO: Support user-defined uniforms.
-       (uniform-set! shader "mvp" mvp)
-       (uniform-set! shader "color" color)
-       (glDrawElements (begin-mode triangles)
-                       (mesh-length mesh)
-                       (data-type unsigned-int)
-                       %null-pointer)))))
+      (define (iter model world-transform view context)
+        (match model
+          (($ <model> mesh transform texture shader color blend-mode
+                      depth-test? children)
+           (with-temp-transform context new-transform
+             (transform*! new-transform transform world-transform)
+             (with-temp-transform context mvp
+              (transform*! mvp new-transform view)
+              (set-render-context-depth-test?! context depth-test?)
+              (set-render-context-blend-mode! context blend-mode)
+              (set-render-context-shader! context shader)
+              (set-render-context-mesh! context mesh)
+              (set-render-context-texture! context texture)
+              ;; TODO: Support user-defined uniforms.
+              (uniform-set! shader "mvp" mvp)
+              (uniform-set! shader "color" color)
+              (glDrawElements (begin-mode triangles)
+                              (mesh-length mesh)
+                              (data-type unsigned-int)
+                              %null-pointer))
+             (for-each (lambda (child)
+                         (iter child new-transform view context))
+                       children)))))
+
+      (with-render-context context
+        (with-temp-transform context view
+          (transform*! view
+                       (camera-location camera)
+                       (camera-projection camera))
+          (with-temp-transform context base-transform
+            (set-transform-identity! base-transform)
+            (apply-viewport (camera-viewport camera))
+            (iter model base-transform view context)))))))
 
 ;;;
 ;;; Utility Procedures
 ;;;
 
-(define (model-paint color model)
+(define (paint color model)
   "Create a copy of MODEL, but with a new COLOR."
   (model-inherit model #:color color))
 
-(define (model-blend blend-mode model)
+(define (blend blend-mode model)
   "Create a copy of MODEL, but with a new BLEND-MODE."
   (model-inherit model #:blend-mode blend-mode))
+
+(define (group . children)
+  "Create a new group containing the list of CHILDREN."
+  (make-model #:children children))
+
+(define (group* children)
+  "Create a new group containing the list of CHILDREN."
+  (make-model #:children children))
+
+(define (move position model)
+  "Create a new group in which the list of CHILDREN are translated by
+the vector POSITION."
+  (model-inherit model #:transform (transform* (model-transform model)
+                                               (translate position))))
+
+(define (place transform model)
+  "Create a new group in which the tranformation matrices of the
+CHILDREN are multiplied by TRANSFORM."
+  (model-inherit model #:transform (transform* (model-transform model)
+                                               transform)))

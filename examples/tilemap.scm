@@ -26,7 +26,6 @@
              (sly utils)
              (sly render camera)
              (sly render color)
-             (sly render group)
              (sly render model)
              (sly render mesh)
              (sly render shader)
@@ -91,15 +90,15 @@
      (225 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65))))
 
 (define scene
-  (group-move (v- (vector2 320 240)
-                  (v* (vector2 tile-width tile-height)
-                      (vector2 10 15/2)))
-              (apply group (compile-tile-layer map-tiles 32 32))))
+  (move (v- (vector2 320 240)
+            (v* (vector2 tile-width tile-height)
+                (vector2 10 15/2)))
+        (group* (compile-tile-layer map-tiles 32 32))))
 
 (define camera
   (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-group scene camera)))
+(add-hook! draw-hook (lambda _ (draw-model scene camera)))
 
 (with-window (make-window #:title "Tilemap")
   (start-game-loop))

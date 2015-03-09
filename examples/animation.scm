@@ -22,7 +22,7 @@
              (sly math tween)
              (sly math vector)
              (sly render camera)
-             (sly render group)
+             (sly render model)
              (sly render sprite)
              (sly render tileset))
 
@@ -45,18 +45,15 @@
     (tween (compose floor lerp) (compose ease-linear ease-loop)
            0 frame-count (* frame-count frame-rate))))
 
-(define-signal timer
-  (signal-fold + 0 (signal-every 1)))
-
 (define-signal scene
   (signal-map (lambda (time)
-                (group-move (position-tween time)
-                            (group (vector-ref walk-cycle (frame-tween time)))))
-              timer))
+                (move (position-tween time)
+                      (vector-ref walk-cycle (frame-tween time))))
+              (signal-timer)))
 
 (define camera (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-group (signal-ref scene) camera)))
+(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
 
 (with-window (make-window #:title "Animation")
   (start-game-loop))

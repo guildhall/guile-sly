@@ -49,7 +49,6 @@ SOURCES = 					\
   sly/render/framebuffer.scm			\
   sly/render/mesh.scm				\
   sly/render/model.scm				\
-  sly/render/group.scm				\
   sly/render/texture.scm			\
   sly/render/shader.scm				\
   sly/render/shape.scm				\

@@ -24,7 +24,7 @@
              (sly render color)
              (sly render font)
              (sly render model)
-             (sly render group)
+             (sly render model)
              (sly input mouse))
 
 (load "common.scm")
@@ -34,21 +34,20 @@
 (define font (load-default-font 18))
 
 (define-signal message-label
-  (group-move (vector2 320 240)
-              (group
-               (label font "The quick brown fox jumped over the lazy dog."
-                      #:anchor 'center))))
+  (move (vector2 320 240)
+        (label font "The quick brown fox jumped over the lazy dog."
+               #:anchor 'center)))
 
 (define-signal fps-label
   (signal-map (lambda (fps)
                 (let ((text (format #f "FPS: ~d" fps)))
-                  (group-move (vector2 0 480) (group (label font text)))))
+                  (move (vector2 0 480) (label font text))))
               fps))
 
 (define-signal mouse-label
   (signal-map (lambda (p)
                 (let ((text (format #f "Mouse: (~d, ~d)" (vx p) (vy p))))
-                  (group-move (vector2 0 460) (group (label font text)))))
+                  (move (vector2 0 460) (label font text))))
               (signal-throttle 5 mouse-position)))
 
 (define-signal scene
@@ -56,7 +55,7 @@
 
 (define camera (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-group (signal-ref scene) camera)))
+(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
 
 (with-window (make-window #:title "Fonts")
   (start-game-loop))
