@@ -35,7 +35,6 @@
   #:use-module (sly math)
   #:use-module (sly render mesh)
   #:use-module (sly render model)
-  #:use-module (sly render shader)
   #:use-module (sly render texture)
   #:use-module (sly math vector)
   #:export (make-sprite sprite load-sprite))
@@ -45,11 +44,9 @@
 ;;;
 
 (define* (make-sprite texture #:optional #:key
-                      (shader (load-default-shader))
                       (anchor 'center))
   "Return a 2D rectangular mesh that displays the image TEXTURE.  The
-size of the mesh is the size of TEXTURE, in pixels.  Optionally, a
-custom SHADER can be specified."
+size of the mesh is the size of TEXTURE, in pixels."
   (let* ((anchor (anchor-texture texture anchor))
          (x1 (- (floor (vx anchor))))
          (y1 (- (floor (vy anchor))))
@@ -70,15 +67,12 @@ custom SHADER can be specified."
                             (vector2 s2 t1)
                             (vector2 s2 t2)
                             (vector2 s1 t2)))))
-    (make-model #:shader shader
-                #:texture texture
+    (make-model #:texture texture
                 #:mesh mesh
                 #:depth-test? #f)))
 
 (define sprite make-sprite)
 
-(define* (load-sprite file-name #:optional #:key (shader (load-default-shader))
-                      (anchor 'center))
-  "Return a sprite mesh for the texture loaded from FILE-NAME.
-Optionally, a custom SHADER can be specified."
-  (make-sprite (load-texture file-name) #:shader shader #:anchor anchor))
+(define* (load-sprite file-name #:key (anchor 'center))
+  "Return a sprite mesh for the texture loaded from FILE-NAME."
+  (make-sprite (load-texture file-name) #:anchor anchor))

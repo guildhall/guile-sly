@@ -34,7 +34,6 @@
   #:use-module (sly render color)
   #:use-module (sly config)
   #:use-module (sly render mesh)
-  #:use-module (sly render shader)
   #:use-module (sly render sprite)
   #:use-module (sly render texture)
   #:export (enable-fonts
@@ -97,9 +96,8 @@ HEIGHT, 32 bit color bytevector."
     (bytevector->texture pixels width height 'linear 'linear)))
 
 (define* (make-label font text #:optional #:key
-                     (anchor 'top-left)
-                     (shader (load-default-shader)))
+                     (anchor 'top-left))
   (let ((texture (render-text font text)))
-    (make-sprite texture #:shader shader #:anchor anchor)))
+    (make-sprite texture #:anchor anchor)))
 
 (define label make-label)
