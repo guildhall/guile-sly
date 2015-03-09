@@ -191,6 +191,11 @@ Create a new signal that takes on the value of @var{signal} every
 Create a new signal that emits @var{step} every @var{step} ticks.
 @end deffn
 
+@deffn {Scheme Procedure} signal-timer [@var{step}]
+Create a new signal that emits the total time elapsed since its
+creation every @var{step} (1 by default) ticks.
+@end deffn
+
 @deffn {Scheme Procedure} signal-since @var{step} @var{signal}
 Create a new signal that emits the time since @var{signal} was updated
 ever @var{step} ticks.

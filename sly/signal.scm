@@ -50,7 +50,7 @@
             signal-tap
             signal-timestamp signal-time
             signal-sample
-            signal-every signal-since
+            signal-every signal-timer signal-since
             signal-delay
             signal-throttle
             signal-generator))
@@ -365,6 +365,11 @@ ticks."
 (define (signal-every step)
   "Create a new signal that emits STEP every STEP ticks."
   (signal-sample step (make-signal step)))
+
+(define* (signal-timer #:optional (step 1))
+  "Create a new signal that emits the total time elapsed since its
+creation every STEP ticks."
+  (signal-fold + 0 (signal-every step)))
 
 (define (signal-since step signal)
   "Create a new signal that emits the time since SIGNAL was updated
