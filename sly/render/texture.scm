@@ -47,6 +47,7 @@
             texture-t1
             texture-s2
             texture-t2
+            null-texture
             anchor-texture
             texture-vertex
             pack-texture-vertices
@@ -71,6 +72,8 @@
   (t1 texture-t1)
   (s2 texture-s2)
   (t2 texture-t2))
+
+(define null-texture (%make-texture 0 #f 0 0 0 0 0 0))
 
 (define (texture-region? texture)
   "Return #t if TEXTURE has a parent texture."

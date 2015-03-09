@@ -75,7 +75,7 @@
   (gl-disable (enable-cap depth-test))
   (%set-render-context-depth-test?! context #f)
   (glBindTexture (texture-target texture-2d) 0)
-  (%set-render-context-texture! context #f)
+  (%set-render-context-texture! context null-texture)
   (glUseProgram 0)
   (%set-render-context-shader! context #f)
   (glBindVertexArray 0)
