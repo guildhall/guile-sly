@@ -63,8 +63,7 @@
 (define (compact lst)
   (filter identity lst))
 
-(define (nonzero? n)
-  (not (= n 0)))
+(define nonzero? (negate zero?))
 
 ;;;
 ;;; Model
@@ -77,6 +76,21 @@
   (shown? tile-shown?)
   (flag tile-flag)
   (mine-count tile-mine-count))
+
+(define (tile-shown-mine? tile)
+  (and (tile-shown? tile)
+       (tile-mine? tile)))
+
+(define (tile-hidden-mine? tile)
+  (and (not (tile-shown? tile))
+       (tile-mine? tile)))
+
+(define (tile-shown-not-mine? tile)
+  (and (tile-shown? tile)
+       (not (tile-mine? tile))))
+
+(define (tile-neighboring-mines? tile)
+  (nonzero? (tile-mine-count tile)))
 
 (define tile-show
   (match-lambda
@@ -106,6 +120,12 @@
 (define (tile-flagged? tile)
   (not (eq? (tile-flag tile) 'none)))
 
+(define (tile-flagged-mine? tile)
+  (eq? (tile-flag tile) 'flag))
+
+(define (tile-flagged-maybe? tile)
+  (eq? (tile-flag tile) 'maybe))
+
 (define (make-board size mine-count)
   (define (random-mine)
     (vector2 (random size) (random size)))
@@ -134,9 +154,10 @@
 
 (define board-ref
   (case-lambda
-    ((board x y) (list-ref (list-ref board y) x))
-    ((board p)
-     (list-ref (list-ref board (vy p)) (vx p)))))
+    ((board x y)
+     (list-ref (list-ref board y) x))
+    ((board v)
+     (list-ref (list-ref board (vy v)) (vx v)))))
 
 (define (board-update board position tile)
   (match position
@@ -178,7 +199,7 @@
              (board (board-update board position tile)))
         ;; Recursively reveal neighboring tiles if the chosen tile
         ;; does not border a mine.
-        (if (= mine-count 0)
+        (if (zero? mine-count)
             (fold (lambda (pos prev) (board-reveal prev pos))
                   board neighbors)
             board))))))
@@ -188,18 +209,15 @@
                 (tile-toggle-flag (board-ref board position))))
 
 (define (board-win? board)
-  (every (match-lambda
-          ((or ($ <tile> #f #t _ _)
-               ($ <tile> #t #f _ _))
-           #t)
-          (else #f))
-         (concatenate board)))
+  (every (lambda (row)
+           (every (lambda (tile)
+                    (or (tile-shown-not-mine? tile)
+                        (tile-hidden-mine? tile)))
+                  row))
+         board))
 
 (define (board-lose? board)
-  (any (match-lambda
-        (($ <tile> #t #t _ _) #t)
-        (else #f))
-       (concatenate board)))
+  (any (cut any tile-shown-mine? <>) board))
 
 ;;;
 ;;; State
@@ -241,7 +259,7 @@
    (make-signal 'null)
    (signal-map (cut list 'reveal <>) reveal-clicks)
    (signal-map (cut list 'flag <>) flag-clicks)
-   (signal-map (lambda _ 'restart) (key-down? 'n))))
+   (signal-constant 'restart (key-down? 'n))))
 
 (define (make-fresh-board)
   (make-board (signal-ref board-size) 10))
@@ -312,18 +330,19 @@
 
 (define (tile-base-sprite tile)
   (sprite-ref
-   (match tile
-     (($ <tile> _ #t _ _) 'tile-down)
-     (_ 'tile-up))))
+   (if (tile-shown? tile)
+       'tile-down
+       'tile-up)))
 
 (define (tile-overlay-sprite tile)
-  (and=> (match tile
-           (($ <tile> #t #t _ _) 'exploded)
-           (($ <tile> _ #f 'flag _) 'flag)
-           (($ <tile> _ #f 'maybe _) 'maybe)
-           (($ <tile> #f #t _ (? nonzero? mine-count))
-            mine-count)
-           (_ #f))
+  (and=> (cond
+          ((tile-shown-mine? tile) 'exploded)
+          ((tile-flagged-mine? tile) 'flag)
+          ((tile-flagged-maybe? tile) 'maybe)
+          ((and (tile-shown-not-mine? tile)
+                (tile-neighboring-mines? tile))
+           (tile-mine-count tile))
+          (else #f))
          sprite-ref))
 
 (define draw-tile
