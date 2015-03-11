@@ -43,6 +43,24 @@
             render-context-shader set-render-context-shader!
             render-context-mesh set-render-context-mesh!))
 
+(define-record-type <gl-parameter>
+  (%make-gl-parameter default bind value)
+  gl-parameter?
+  (default gl-parameter-default)
+  (bind gl-parameter-bind)
+  (value gl-parameter-ref %gl-parameter-set!))
+
+(define (make-gl-parameter default bind)
+  (%make-gl-parameter default bind default))
+
+(define* (gl-parameter-set! parameter value #:optional force?)
+  (unless (and (not force?) (equal? (gl-parameter-ref parameter) value))
+    (%gl-parameter-set! parameter value)
+    ((gl-parameter-bind parameter) value)))
+
+(define (gl-parameter-reset! parameter)
+  (gl-parameter-set! parameter (gl-parameter-default parameter) #t))
+
 (define-record-type <render-context>
   (%make-render-context blend-mode depth-test? texture shader
                         mesh transform-stack)
