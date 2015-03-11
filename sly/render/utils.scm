@@ -27,14 +27,10 @@
   #:use-module (srfi srfi-9)
   #:use-module (gl low-level)
   #:use-module (gl enums)
-  #:export (draw
-            make-blend-mode blend-mode?
+  #:export (make-blend-mode blend-mode?
             blend-mode-source blend-mode-destination
             default-blend-mode
             apply-blend-mode))
-
-;; Generic method for rendering objects.
-(define-generic draw)
 
 ;;;
 ;;; Blending
