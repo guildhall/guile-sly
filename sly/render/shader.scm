@@ -52,6 +52,7 @@
             shader-program-id
             shader-program?
             shader-program-linked?
+            null-shader-program
             apply-shader-program
             with-shader-program
             load-default-shader
@@ -281,7 +282,8 @@ VERTEX-SHADER and FRAGMENT-SHADER."
                        (load-fragment-shader fragment-shader-file-name)
                        uniforms attributes))
 
-(define current-shader-program (make-parameter #f))
+(define null-shader-program
+  (%make-shader-program 0 '() '()))
 
 (define (apply-shader-program shader-program)
   (glUseProgram (shader-program-id shader-program)))
