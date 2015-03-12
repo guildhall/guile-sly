@@ -30,7 +30,8 @@
   #:export (make-blend-mode blend-mode?
             blend-mode-source blend-mode-destination
             default-blend-mode
-            apply-blend-mode))
+            apply-blend-mode
+            apply-depth-test))
 
 ;;;
 ;;; Blending
@@ -85,3 +86,8 @@
                      (destination-blend-function
                       (blend-mode-destination blend-mode))))
       (gl-disable (enable-cap blend))))
+
+(define (apply-depth-test depth-test?)
+  (if depth-test?
+      (gl-enable (enable-cap depth-test))
+      (gl-disable (enable-cap depth-test))))
