@@ -220,7 +220,9 @@ vector to be returned."
   (pack vertices (+ offset 3) texture-vertex width 0 s2 t1))
 
 (define (apply-texture texture)
-  (glBindTexture (texture-target texture-2d) (texture-id texture)))
+  (gl-enable (enable-cap texture-2d))
+  (glBindTexture (texture-target texture-2d)
+                 (texture-id texture)))
 
 (define-syntax-rule (with-texture texture body ...)
   (begin
