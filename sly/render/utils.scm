@@ -26,7 +26,7 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-9)
   #:use-module (gl low-level)
-  #:use-module (gl enums)
+  #:use-module (gl)
   #:export (make-blend-mode blend-mode?
             blend-mode-source blend-mode-destination
             default-blend-mode
@@ -78,5 +78,10 @@
    ('one-minus-constant-alpha 32772)))
 
 (define (apply-blend-mode blend-mode)
-  (glBlendFunc (source-blend-function (blend-mode-source blend-mode))
-               (destination-blend-function (blend-mode-destination blend-mode))))
+  (if blend-mode
+      (begin
+        (gl-enable (enable-cap blend))
+        (glBlendFunc (source-blend-function (blend-mode-source blend-mode))
+                     (destination-blend-function
+                      (blend-mode-destination blend-mode))))
+      (gl-disable (enable-cap blend))))
