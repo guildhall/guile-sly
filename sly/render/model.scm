@@ -121,39 +121,40 @@ changing the fields specified in KWARGS."
       "Render MODEL by applying its transform (multiplied by VIEW), texture,
 shader, vertex array, uniforms, blend mode, etc. to the render
 CONTEXT."
-      (define (iter model world-transform view context)
+      (define (iter model view context)
         (match model
-          (($ <model> mesh transform texture shader color blend-mode
+          (($ <model> mesh local-transform texture shader color blend-mode
                       depth-test? children)
-           (with-temp-transform context new-transform
-             (transform*! new-transform transform world-transform)
-             (with-temp-transform context mvp
-              (transform*! mvp new-transform view)
+           (with-transform-excursion context
+             (render-context-transform*! context local-transform)
+             (with-transform-excursion context
+              (render-context-transform*! context view)
               (set-render-context-depth-test?! context depth-test?)
               (set-render-context-blend-mode! context blend-mode)
               (set-render-context-shader! context shader)
               (set-render-context-mesh! context mesh)
               (set-render-context-texture! context texture)
               ;; TODO: Support user-defined uniforms.
-              (uniform-set! shader "mvp" mvp)
+              (uniform-set! shader "mvp" (render-context-transform context))
               (uniform-set! shader "color" color)
               (glDrawElements (begin-mode triangles)
                               (mesh-length mesh)
                               (data-type unsigned-int)
                               %null-pointer))
              (for-each (lambda (child)
-                         (iter child new-transform view context))
+                         (iter child view context))
                        children)))))
 
       (with-render-context context
-        (with-temp-transform context view
-          (transform*! view
-                       (camera-location camera)
-                       (camera-projection camera))
-          (with-temp-transform context base-transform
-            (set-transform-identity! base-transform)
-            (apply-viewport (camera-viewport camera))
-            (iter model base-transform view context)))))))
+        (with-transform-excursion context
+          (let ((view (render-context-transform context)))
+            (transform*! view
+                         (camera-location camera)
+                         (camera-projection camera))
+            (with-transform-excursion context
+              (render-context-transform-identity! context)
+              (apply-viewport (camera-viewport camera))
+              (iter model view context))))))))
 
 ;;;
 ;;; Utility Procedures

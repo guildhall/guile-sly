@@ -36,12 +36,15 @@
   #:use-module (sly render mesh)
   #:export (make-render-context
             render-context?
-            with-render-context with-temp-transform
+            with-render-context
             render-context-blend-mode set-render-context-blend-mode!
             render-context-depth-test? set-render-context-depth-test?!
             render-context-texture set-render-context-texture!
             render-context-shader set-render-context-shader!
-            render-context-mesh set-render-context-mesh!))
+            render-context-mesh set-render-context-mesh!
+            render-context-transform render-context-transform*!
+            render-context-transform-identity!
+            with-transform-excursion))
 
 (define-record-type <gl-parameter>
   (%make-gl-parameter default bind value)
@@ -97,7 +100,8 @@
   (gl-parameter-reset! (render-context-depth-test? context))
   (gl-parameter-reset! (render-context-texture context))
   (gl-parameter-reset! (render-context-shader context))
-  (gl-parameter-reset! (render-context-mesh context)))
+  (gl-parameter-reset! (render-context-mesh context))
+  (render-context-transform-identity! context))
 
 (define-syntax-rule (with-render-context context body ...)
   (begin (render-context-reset! context)
@@ -123,9 +127,32 @@
 (define-context-setter set-render-context-mesh!
   render-context-mesh)
 
-;; emacs: (put 'with-temp-transform 'scheme-indent-function 2)
-(define-syntax-rule (with-temp-transform context name body ...)
-  (let* ((stack (render-context-transform-stack context))
-         (name (q-pop! stack)))
-    (begin body ...)
-    (q-push! stack name)))
+(define (render-context-transform context)
+  (q-front (render-context-transform-stack context)))
+
+(define (render-context-push-transform! context t)
+  (q-push! (render-context-transform-stack context) t))
+
+(define render-context-pop-transform!
+  (compose q-pop! render-context-transform-stack))
+
+(define (copy-transform! src dest)
+  (array-copy! (transform-matrix src) (transform-matrix dest)))
+
+;; emacs: (put 'with-transform-excursion 'scheme-indent-function 1)
+(define-syntax-rule (with-transform-excursion context body ...)
+  (let ((t (render-context-pop-transform! context)))
+    (dynamic-wind
+      (lambda ()
+        (copy-transform! t (render-context-transform context)))
+      (lambda () body ...)
+      (lambda ()
+        (render-context-push-transform! context t)))))
+
+(define (render-context-transform*! context t)
+  (let ((dest (render-context-transform context)))
+    (with-transform-excursion context
+      (transform*! dest (render-context-transform context) t))))
+
+(define (render-context-transform-identity! context)
+  (copy-transform! identity-transform (render-context-transform context)))
