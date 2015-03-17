@@ -33,19 +33,10 @@
              (gnu packages maths)
              (gnu packages image))
 
-;; The development environment needs a tweaked LTDL_LIBRARY_PATH for
-;; finding libfreeimage.
-(define freeimage
-  (package (inherit freeimage)
-    (native-search-paths
-     (list (search-path-specification
-            (variable "LTDL_LIBRARY_PATH")
-            (directories '("lib")))))))
-
 (package
   (name "sly")
   (version "0.0")
-  (source #f)
+  (source ".")
   (build-system gnu-build-system)
   (inputs
    `(("pkg-config" ,pkg-config)
@@ -62,4 +53,8 @@
 Sly differs from most game engines in that it emphasizes functional
 reactive programming and live coding.")
   (home-page "https://gitorious.org/sly/sly")
-  (license gpl3+))
+  (license gpl3+)
+  (native-search-paths
+   (list (search-path-specification
+          (variable "LTDL_LIBRARY_PATH")
+          (files '("lib"))))))
