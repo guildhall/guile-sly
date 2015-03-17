@@ -99,7 +99,8 @@
     (SDL:enable-unicode #t)
     (SDL:init 'everything)
     ;; Open SDL window in OpenGL mode.
-    (SDL:set-video-mode width height 24 flags)
+    (unless (SDL:set-video-mode width height 24 flags)
+      (error "Failed to open window:" width height flags))
     (SDL:set-caption (window-title window))))
 
 (define (close-window)
