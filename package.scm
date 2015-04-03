@@ -26,9 +26,10 @@
              (guix build-system gnu)
              (gnu packages)
              (gnu packages autotools)
+             (gnu packages pkg-config)
+             (gnu packages texinfo)
              (gnu packages guile)
              (gnu packages gl)
-             (gnu packages pkg-config)
              (gnu packages sdl)
              (gnu packages maths)
              (gnu packages image))
@@ -47,11 +48,13 @@
   (version "0.0")
   (source ".")
   (build-system gnu-build-system)
-  (inputs
+  (native-inputs
    `(("pkg-config" ,pkg-config)
      ("autoconf" ,autoconf)
      ("automake" ,automake)
-     ("guile" ,guile-2.0)
+     ("texinfo" ,texinfo)))
+  (inputs
+   `(("guile" ,guile-2.0)
      ("guile-sdl" ,guile-sdl)
      ("guile-opengl" ,guile-opengl)
      ("gsl" ,gsl)
