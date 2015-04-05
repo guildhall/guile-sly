@@ -90,10 +90,11 @@
      (225 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65))))
 
 (define scene
-  (move (v- (vector2 320 240)
-            (v* (vector2 tile-width tile-height)
-                (vector2 10 15/2)))
-        (group* (compile-tile-layer map-tiles 32 32))))
+  (chain (compile-tile-layer map-tiles 32 32)
+    (list->model)
+    (model-move (v- (vector2 320 240)
+                    (v* (vector2 tile-width tile-height)
+                        (vector2 10 15/2))))))
 
 (define camera
   (orthographic-camera 640 480))

@@ -47,8 +47,8 @@
 
 (define-signal scene
   (signal-map (lambda (time)
-                (move (position-tween time)
-                      (vector-ref walk-cycle (frame-tween time))))
+                (model-move (position-tween time)
+                            (vector-ref walk-cycle (frame-tween time))))
               (signal-timer)))
 
 (define camera (orthographic-camera 640 480))

@@ -43,7 +43,12 @@
             model-mesh model-transform model-texture model-shader model-color
             model-blend-mode model-depth-test? model-children
             draw-model
-            paint blend group group* move place))
+            model-paint
+            model-blend
+            model-group
+            list->model
+            model-move
+            model-place))
 
 ;; Representation of a single OpenGL render call.
 (define-record-type <model>
@@ -160,29 +165,29 @@ CONTEXT."
 ;;; Utility Procedures
 ;;;
 
-(define (paint color model)
+(define (model-paint color model)
   "Create a copy of MODEL, but with a new COLOR."
   (model-inherit model #:color color))
 
-(define (blend blend-mode model)
+(define (model-blend blend-mode model)
   "Create a copy of MODEL, but with a new BLEND-MODE."
   (model-inherit model #:blend-mode blend-mode))
 
-(define (group . children)
-  "Create a new group containing the list of CHILDREN."
+(define (model-group . children)
+  "Create a new compound model containing the list of CHILDREN."
   (make-model #:children children))
 
-(define (group* children)
-  "Create a new group containing the list of CHILDREN."
+(define (list->model children)
+  "Create a new compound model containing the list of CHILDREN."
   (make-model #:children children))
 
-(define (move position model)
+(define (model-move position model)
   "Create a new group in which the list of CHILDREN are translated by
 the vector POSITION."
   (model-inherit model #:transform (transform* (model-transform model)
                                                (translate position))))
 
-(define (place transform model)
+(define (model-place transform model)
   "Create a new group in which the tranformation matrices of the
 CHILDREN are multiplied by TRANSFORM."
   (model-inherit model #:transform (transform* (model-transform model)

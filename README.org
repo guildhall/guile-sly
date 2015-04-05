@@ -37,7 +37,7 @@
                   (sly render sprite))
 
      (define scene
-       (move (vector2 320 240) (load-sprite "gnu.png")))
+       (model-move (vector2 320 240) (load-sprite "gnu.png")))
 
      (define camera (orthographic-camera 640 480))
 

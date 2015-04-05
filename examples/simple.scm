@@ -27,9 +27,8 @@
 (load "common.scm")
 
 (define scene
-  (chain (load-sprite "images/p1_front.png")
-    (paint red)
-    (move (vector2 320 240))))
+  (model-move (vector2 320 240)
+              (load-sprite "images/p1_front.png")))
 
 (define camera (orthographic-camera 640 480))
 

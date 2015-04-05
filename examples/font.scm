@@ -34,24 +34,24 @@
 (define font (load-default-font 18))
 
 (define-signal message-label
-  (move (vector2 320 240)
-        (label font "The quick brown fox jumped over the lazy dog."
-               #:anchor 'center)))
+  (model-move (vector2 320 240)
+              (label font "The quick brown fox jumped over the lazy dog."
+                     #:anchor 'center)))
 
 (define-signal fps-label
   (signal-map (lambda (fps)
                 (let ((text (format #f "FPS: ~d" fps)))
-                  (move (vector2 0 480) (label font text))))
+                  (model-move (vector2 0 480) (label font text))))
               fps))
 
 (define-signal mouse-label
   (signal-map (lambda (p)
                 (let ((text (format #f "Mouse: (~d, ~d)" (vx p) (vy p))))
-                  (move (vector2 0 460) (label font text))))
+                  (model-move (vector2 0 460) (label font text))))
               (signal-throttle 5 mouse-position)))
 
 (define-signal scene
-  (signal-map group message-label fps-label mouse-label))
+  (signal-map model-group message-label fps-label mouse-label))
 
 (define camera (orthographic-camera 640 480))
 

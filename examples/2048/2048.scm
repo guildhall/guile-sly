@@ -323,15 +323,14 @@
          (label (assoc-ref tile-label-cache n))
          (label-color (tile-text-color n))
          (bg-color (tile-bg-color n)))
-    (move (vector2 (* x w) (* y h))
-          (group*
-           (cons (paint bg-color tile-sprite)
-                 (if (zero? n)
-                     '()
-                     (list (move (vector2 (/ w 2) (/ h 2))
-                                 (group
-                                  (paint label-color
-                                         label))))))))))
+    (chain `(,(model-paint bg-color tile-sprite)
+             ,@(if (zero? n)
+                   '()
+                   (list (chain label
+                           (model-paint label-color)
+                           (model-move (vector2 (/ w 2) (/ h 2)))))))
+      (list->model)
+      (model-move (vector2 (* x w) (* y h))))))
 
 (define window-width 640)
 (define window-height 480)
@@ -347,7 +346,7 @@
 
 (define-signal tiles
   (signal-map (lambda (board)
-                (group*
+                (list->model
                  (append-map
                   (match-lambda
                    ((y (row ...))
@@ -361,25 +360,26 @@
 (define play-again-font (load-default-font 16))
 
 (define-signal status-message
-  (let ((play-again (paint black (label play-again-font
-                                        "Press N to play again"
-                                        #:anchor 'top-center)))
-        (game-over (paint black (label font "GAME OVER"
-                                       #:anchor 'bottom-center)))
-        (you-win (paint black (label font "YOU WIN!"
-                                     #:anchor 'bottom-center))))
+  (let ((play-again (model-paint black (label play-again-font
+                                              "Press N to play again"
+                                              #:anchor 'top-center)))
+        (game-over (model-paint black (label font "GAME OVER"
+                                             #:anchor 'bottom-center)))
+        (you-win (model-paint black (label font "YOU WIN!"
+                                           #:anchor 'bottom-center))))
     (signal-map
-           (lambda (board)
-             (let ((message (cond
-                             ((board-lose? board) game-over)
-                             ((board-win? board) you-win)
-                             (else #f))))
-               (move (vector2 (/ board-width 2)
-                              (/ board-height 2))
-                     (group* (if message
-                                 (list message play-again)
-                                 '())))))
-           board)))
+     (lambda (board)
+       (let ((message (cond
+                       ((board-lose? board) game-over)
+                       ((board-win? board) you-win)
+                       (else #f))))
+         (chain (if message
+                    (list message play-again)
+                    '())
+           (list->model)
+           (model-move (vector2 (/ board-width 2)
+                                (/ board-height 2))))))
+     board)))
 
 (define instruction-font (load-default-font 16))
 
@@ -387,11 +387,11 @@
   "Use the arrow keys to join the numbers and get to the 2048 tile!")
 
 (define-signal instructions
-  (move (vector2 (/ board-width 2) (- window-height (vy center-pos)))
-        (group
-         (paint text-color-1
-                (label instruction-font instruction-text
-                       #:anchor 'top-center)))))
+  (chain (label instruction-font instruction-text
+                #:anchor 'top-center)
+    (model-paint text-color-1)
+    (model-move (vector2 (/ board-width 2)
+                         (- window-height (vy center-pos))))))
 
 (define score-header-font (load-default-font 14))
 (define score-font (load-default-font 22))
@@ -408,13 +408,12 @@
     (signal-map (lambda (score timer)
                   (let ((score (label score-font (number->string score)
                                       #:anchor 'center)))
-                    (move (vector2 x (- window-height 28))
-                          (group
-                           (paint text-color-1 header)
-                           (move (position-tween timer)
-                                 (group
-                                  (paint (color-tween timer)
-                                         score)))))))
+                    (model-move (vector2 x (- window-height 28))
+                                (model-group
+                                 (model-paint text-color-1 header)
+                                 (chain score
+                                   (model-paint (color-tween timer))
+                                   (model-move (position-tween timer)))))))
                 score
                 (signal-drop (lambda (t) (> t duration))
                              0 (signal-since 1 score)))))
@@ -427,9 +426,9 @@
                (- board-width (/ board-width 4))))
 
 (define-signal 2048-scene
-  (signal-map (cut move center-pos <>)
-              (signal-map group instructions tiles score
-                          best-score status-message)))
+  (signal-map (cut model-move center-pos <>)
+              (signal-map model-group
+                          instructions tiles score best-score status-message)))
 
 (define camera
   (orthographic-camera window-width window-height

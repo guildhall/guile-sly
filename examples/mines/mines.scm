@@ -350,24 +350,25 @@
     (lambda (tile)
       ;; A tile may or may not have an overlay, so we do a little
       ;; quasiquoting magic to build the right list.
-      (group*
+      (list->model
        `(,(tile-base-sprite tile)
          ,@(let ((overlay (tile-overlay-sprite tile)))
             (if overlay
-                (list (place offset (group overlay)))
+                (list (model-place offset overlay))
                 '())))))))
 
 (define-signal board-view
   (signal-map (lambda (board)
                 (define (draw-column tile x)
-                  (move (vector2 (* x tile-size) 0)
-                        (draw-tile tile)))
+                  (model-move (vector2 (* x tile-size) 0)
+                              (draw-tile tile)))
 
                 (define (draw-row row y)
-                  (move (vector2 0 (* y tile-size))
-                        (group* (enumerate-map draw-column row))))
+                  (chain (enumerate-map draw-column row)
+                    (list->model)
+                    (model-move (vector2 0 (* y tile-size)))))
 
-                (group* (enumerate-map draw-row board)))
+                (list->model (enumerate-map draw-row board)))
               board))
 
 (define-signal status-message
@@ -375,9 +376,9 @@
                 (define (make-message message)
                   (label font message #:anchor 'center))
 
-                (move
+                (model-move
                  (vector2 (/ (vx resolution) 2) (- (vy resolution) 64))
-                 (group*
+                 (list->model
                   (cond
                    ((board-lose? board)
                     (list (make-message "GAME OVER - Press N to play again")))
@@ -388,9 +389,8 @@
 
 (define-signal scene
   (signal-map (lambda (board-view status center-position)
-                (group
-                 status
-                 (move center-position board-view)))
+                (model-group status
+                             (model-move center-position board-view)))
               board-view status-message center-position))
 
 (define camera

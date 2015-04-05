@@ -55,7 +55,7 @@
 
 (define-signal caption
   (signal-map (lambda (text)
-                (move (vector2 -76 -90) (label font text)))
+                (model-move (vector2 -76 -90) (label font text)))
               (signal-merge
                (make-signal "Press a button")
                (button-caption-signal "Hello there" 0)
@@ -65,7 +65,7 @@
 
 (define-signal scene
   (signal-map (lambda (position caption)
-                (move position (group player caption)))
+                (model-move position (model-group player caption)))
               player-position caption))
 
 (define camera (orthographic-camera (vx resolution) (vy resolution)))
