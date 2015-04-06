@@ -348,14 +348,11 @@
 (define draw-tile
   (let ((offset (translate (vector2 (/ tile-size 2) (/ tile-size 2)))))
     (lambda (tile)
-      ;; A tile may or may not have an overlay, so we do a little
-      ;; quasiquoting magic to build the right list.
-      (list->model
-       `(,(tile-base-sprite tile)
-         ,@(let ((overlay (tile-overlay-sprite tile)))
-            (if overlay
-                (list (model-place offset overlay))
-                '())))))))
+      (model-group (tile-base-sprite tile)
+                   (let ((overlay (tile-overlay-sprite tile)))
+                     (if overlay
+                         (model-place offset overlay)
+                         null-model))))))
 
 (define-signal board-view
   (signal-map (lambda (board)

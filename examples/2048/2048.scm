@@ -322,15 +322,14 @@
          (h (texture-height tile-texture))
          (label (assoc-ref tile-label-cache n))
          (label-color (tile-text-color n))
-         (bg-color (tile-bg-color n)))
-    (chain `(,(model-paint bg-color tile-sprite)
-             ,@(if (zero? n)
-                   '()
-                   (list (chain label
-                           (model-paint label-color)
-                           (model-move (vector2 (/ w 2) (/ h 2)))))))
-      (list->model)
-      (model-move (vector2 (* x w) (* y h))))))
+         (bg-color (tile-bg-color n))
+         (tile (model-group (model-paint bg-color tile-sprite)
+                            (if (zero? n)
+                                null-model
+                                (chain label
+                                  (model-paint label-color)
+                                  (model-move (vector2 (/ w 2) (/ h 2))))))))
+    (model-move (vector2 (* x w) (* y h)) tile)))
 
 (define window-width 640)
 (define window-height 480)
@@ -373,12 +372,11 @@
                        ((board-lose? board) game-over)
                        ((board-win? board) you-win)
                        (else #f))))
-         (chain (if message
-                    (list message play-again)
-                    '())
-           (list->model)
-           (model-move (vector2 (/ board-width 2)
-                                (/ board-height 2))))))
+         (if message
+             (model-move (vector2 (/ board-width 2)
+                                  (/ board-height 2))
+                         (model-group message play-again))
+             null-model)))
      board)))
 
 (define instruction-font (load-default-font 16))
