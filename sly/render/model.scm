@@ -38,8 +38,11 @@
   #:use-module (sly render color)
   #:use-module (sly render context)
   #:use-module (sly render mesh)
-  #:export (make-model model model-inherit
-            model?
+  #:export (make-model
+            model
+            model-inherit
+            model? model-null?
+            null-model
             model-mesh model-transform model-texture model-shader model-color
             model-blend-mode model-depth-test? model-children
             draw-model
@@ -101,6 +104,14 @@ changing the fields specified in KWARGS."
                             (struct-ref original index))))
                     fields field-indices))))))
 
+(define null-model
+  (make-model #:shader null-shader-program))
+
+(define (model-null? model)
+  "Return #t if MODEL has no mesh and no children."
+  (and (eq? (model-mesh model) null-mesh)
+       (null? (model-children model))))
+
 (define (set-transform-identity! t)
   (let ((matrix (transform-matrix t)))
     (array-set! matrix 1 0 0)
@@ -128,6 +139,8 @@ shader, vertex array, uniforms, blend mode, etc. to the render
 CONTEXT."
       (define (iter model view context)
         (match model
+          ((? model-null? _)
+           *unspecified*)
           (($ <model> mesh local-transform texture shader color blend-mode
                       depth-test? children)
            (with-transform-excursion context
