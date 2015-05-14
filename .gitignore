@@ -29,3 +29,4 @@ Makefile.in
 /2d/config.scm
 /pre-inst-env
 /sly/config.scm
+/sandbox

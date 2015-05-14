@@ -6,9 +6,11 @@ AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability foreign])
 AM_SILENT_RULES([yes])
 
+AC_PATH_PROG([GUILE], [guile])
 AC_CONFIG_FILES([Makefile doc/Makefile examples/Makefile data/Makefile])
 AC_CONFIG_FILES([env], [chmod +x env])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
+AC_CONFIG_FILES([sandbox], [chmod +x sandbox])
 
 GUILE_PROGS([2.0.11])
 GUILE_MODULE_REQUIRED([sdl sdl])
