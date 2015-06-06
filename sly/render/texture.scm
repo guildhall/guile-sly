@@ -39,6 +39,7 @@
             load-texture
             texture?
             texture-region?
+            texture-null?
             texture-id
             texture-parent
             texture-width
@@ -74,6 +75,10 @@
   (t2 texture-t2))
 
 (define null-texture (%make-texture 0 #f 0 0 0 0 0 0))
+
+(define (texture-null? texture)
+  "Return #t if TEXTURE is the null texture."
+  (eq? texture null-texture))
 
 (define (texture-region? texture)
   "Return #t if TEXTURE has a parent texture."
