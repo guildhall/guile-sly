@@ -305,7 +305,7 @@ VERTEX-SHADER and FRAGMENT-SHADER."
                      "/shaders/default-vertex.glsl")
       (string-append %pkgdatadir
                      "/shaders/default-fragment.glsl")
-      '("mvp" "color")
+      '("mvp" "color" "use_texture")
       '("position" "tex")))))
 
 ;;;

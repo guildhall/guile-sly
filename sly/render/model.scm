@@ -155,6 +155,7 @@ CONTEXT."
               ;; TODO: Support user-defined uniforms.
               (uniform-set! shader "mvp" (render-context-transform context))
               (uniform-set! shader "color" color)
+              (uniform-set! shader "use_texture" (not (texture-null? texture)))
               (glDrawElements (begin-mode triangles)
                               (mesh-length mesh)
                               (data-type unsigned-int)
