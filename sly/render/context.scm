@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (sly render context)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 q)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-42)
@@ -34,6 +35,8 @@
   #:use-module (sly render texture)
   #:use-module (sly render utils)
   #:use-module (sly render mesh)
+  #:use-module (sly render framebuffer)
+  #:use-module (sly render camera)
   #:export (make-render-context
             render-context?
             with-render-context
@@ -42,6 +45,8 @@
             render-context-texture set-render-context-texture!
             render-context-shader set-render-context-shader!
             render-context-mesh set-render-context-mesh!
+            render-context-framebuffer set-render-context-framebuffer!
+            render-context-viewport set-render-context-viewport!
             render-context-transform render-context-transform*!
             render-context-transform-identity!
             with-transform-excursion))
@@ -66,13 +71,15 @@
 
 (define-record-type <render-context>
   (%make-render-context blend-mode depth-test? texture shader
-                        mesh transform-stack)
+                        mesh framebuffer viewport transform-stack)
   render-context?
   (blend-mode render-context-blend-mode)
   (depth-test? render-context-depth-test?)
   (texture render-context-texture)
   (shader render-context-shader)
   (mesh render-context-mesh)
+  (framebuffer render-context-framebuffer)
+  (viewport render-context-viewport)
   (transform-stack render-context-transform-stack))
 
 (define (make-null-transform)
@@ -93,6 +100,8 @@
                         (make-gl-parameter null-shader-program
                                            apply-shader-program)
                         (make-gl-parameter null-mesh apply-mesh)
+                        (make-gl-parameter null-framebuffer apply-framebuffer)
+                        (make-gl-parameter null-viewport apply-viewport)
                         (make-transform-stack transform-stack-size)))
 
 (define (render-context-reset! context)
@@ -101,6 +110,8 @@
   (gl-parameter-reset! (render-context-texture context))
   (gl-parameter-reset! (render-context-shader context))
   (gl-parameter-reset! (render-context-mesh context))
+  (gl-parameter-reset! (render-context-framebuffer context))
+  (gl-parameter-reset! (render-context-viewport context))
   (render-context-transform-identity! context))
 
 (define-syntax-rule (with-render-context context body ...)
@@ -126,6 +137,12 @@
 
 (define-context-setter set-render-context-mesh!
   render-context-mesh)
+
+(define-context-setter set-render-context-framebuffer!
+  render-context-framebuffer)
+
+(define-context-setter set-render-context-viewport!
+  render-context-viewport)
 
 (define (render-context-transform context)
   (q-front (render-context-transform-stack context)))
