@@ -195,7 +195,7 @@ be coerced into one."
        (signal-let* rest body ...)))))
 
 ;;;
-;;; Higher Order Signals
+;;; Signal Combinators
 ;;;
 
 (define (hook->signal hook init proc)
