@@ -33,7 +33,8 @@
             framebuffer?
             framebuffer-id framebuffer-renderbuffer-id
             framebuffer-texture
-            with-framebuffer))
+            null-framebuffer
+            apply-framebuffer))
 
 (define (generate-framebuffer)
   "Generate a new OpenGL framebuffer object."
@@ -53,6 +54,9 @@
   (id framebuffer-id)
   (renderbuffer-id framebuffer-renderbuffer-id)
   (texture framebuffer-texture))
+
+(define null-framebuffer
+  (%make-framebuffer 0 0 #f))
 
 (define make-framebuffer
   (let ((draw-buffers (u32vector (version-3-0 color-attachment0))))
@@ -110,9 +114,6 @@ dimensions WIDTH x HEIGHT."
                         texture-id #f width height 0 0 1 1)))
           (%make-framebuffer framebuffer-id renderbuffer-id texture))))))
 
-(define-syntax-rule (with-framebuffer fb body ...)
-  (begin
-    (glBindFramebuffer (version-3-0 framebuffer)
-                       (framebuffer-id fb))
-    body ...
-    (glBindFramebuffer (version-3-0 framebuffer) 0)))
+(define (apply-framebuffer framebuffer)
+  (glBindFramebuffer (version-3-0 framebuffer)
+                     (framebuffer-id framebuffer)))
