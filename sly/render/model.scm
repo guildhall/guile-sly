@@ -51,6 +51,7 @@
             model-group
             list->model
             model-move
+            model-scale
             model-place))
 
 ;; Representation of a single OpenGL render call.
@@ -198,6 +199,11 @@ CONTEXT."
 the vector POSITION."
   (model-inherit model #:transform (transform* (model-transform model)
                                                (translate position))))
+
+(define (model-scale factor model)
+  "Create a version of MODEL that is scaled up/down by FACTOR."
+  (model-inherit model #:transform (transform* (model-transform model)
+                                               (scale factor))))
 
 (define (model-place transform model)
   "Create a new group in which the tranformation matrices of the
