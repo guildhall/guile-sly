@@ -34,6 +34,8 @@
   #:use-module (sly signal)
   #:use-module (sly math vector)
   #:use-module (sly window)
+  #:use-module (sly render context)
+  #:use-module (sly render scene)
   #:export (draw-hook
             after-game-loop-error-hook
             start-game-loop
@@ -60,25 +62,30 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop #:optional #:key
+(define* (start-game-loop scene #:key
                           (frame-rate 60)
                           (tick-rate 60)
                           (max-ticks-per-frame 4))
-  "Start the game loop. FRAME-RATE specifies the optimal number of
-frames to draw per second.  TICK-RATE specifies the optimal game logic
+  "Run the game loop.  SCENE is a signal which contains the current
+scene to render.  FRAME-RATE specifies the optimal number of frames to
+draw SCENE per second.  TICK-RATE specifies the optimal game logic
 updates per second.  Both FRAME-RATE and TICK-RATE are 60 by default.
 MAX-TICKS-PER-FRAME is the maximum number of times the game loop will
 update game state in a single frame.  When this upper bound is reached
 due to poor performance, the game will start to slow down instead of
 becoming completely unresponsive and possibly crashing."
-  (let ((tick-interval (interval tick-rate))
-        (frame-interval (interval frame-rate)))
+  (let ((tick-interval  (interval tick-rate))
+        (frame-interval (interval frame-rate))
+        (context        (make-render-context)))
+
     (define (draw dt alpha)
       "Render a frame."
       (let ((size (signal-ref window-size)))
         (gl-viewport 0 0 (vx size) (vy size)))
       (gl-clear (clear-buffer-mask color-buffer depth-buffer))
       (run-hook draw-hook dt alpha)
+      (with-render-context context
+        (draw-scene (signal-ref scene) context))
       (SDL:gl-swap-buffers))
 
     (define (update lag)
