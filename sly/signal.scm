@@ -184,15 +184,15 @@ be coerced into one."
        #'(define name (make-signal-maybe value))))))
 
 (define-syntax-rule (signal-let ((var signal) ...) body ...)
-  ((lambda (var ...) body ...) (signal-ref signal) ...))
+  "Similar to 'let', but produces a signal whose value is dependent
+upon all signals in the bindings list."
+  (signal-map (lambda (var ...) body ...) signal ...))
 
-(define-syntax signal-let*
-  (syntax-rules ()
-    ((_ ((var signal)) body ...)
-     (signal-let ((var signal)) body ...))
-    ((_ ((var signal) . rest) body ...)
-     (signal-let ((var signal))
-       (signal-let* rest body ...)))))
+(define-syntax-rule (signal-let* ((var signal) ...) body ...)
+  "Similar to 'signal-let', but the signal variable bindings are
+performed sequentially."
+  (let* ((var signal) ...)
+    (signal-map (lambda (var ...) body ...) var ...)))
 
 ;;;
 ;;; Signal Combinators
