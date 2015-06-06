@@ -35,6 +35,7 @@
   #:export (make-viewport viewport?
             viewport-area viewport-clear-color viewport-clear-flags
             %standard-clear-flags apply-viewport
+            null-viewport
             make-camera camera?
             camera-location camera-projection camera-viewport
             orthographic-camera))
@@ -60,6 +61,8 @@ the buffers denoted by the list of symbols in CLEAR-FLAGS.  Possible
 values for CLEAR-FLAGS are 'color-buffer', 'depth-buffer',
 'accum-buffer', and 'stencil-buffer'."
   (%make-viewport area clear-color clear-flags))
+
+(define null-viewport (make-viewport (make-rect 0 0 0 0)))
 
 (define clear-buffer-mask
   (memoize
