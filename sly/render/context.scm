@@ -49,7 +49,8 @@
             render-context-viewport set-render-context-viewport!
             render-context-transform render-context-transform*!
             render-context-transform-identity!
-            with-transform-excursion))
+            with-transform-excursion
+            with-render-context-excursion))
 
 (define-record-type <gl-parameter>
   (%make-gl-parameter default bind value)
@@ -173,3 +174,23 @@
 
 (define (render-context-transform-identity! context)
   (copy-transform! identity-transform (render-context-transform context)))
+
+(define-syntax-rule (with-render-context-excursion context body ...)
+  (match context
+    (($ <render-context> blend-mode depth-test? texture shader mesh
+        viewport framebuffer _)
+     (let ((prev-blend-mode  (gl-parameter-ref blend-mode))
+           (prev-depth-test? (gl-parameter-ref depth-test?))
+           (prev-texture     (gl-parameter-ref texture))
+           (prev-shader      (gl-parameter-ref shader))
+           (prev-mesh        (gl-parameter-ref mesh))
+           (prev-framebuffer (gl-parameter-ref framebuffer))
+           (prev-viewport    (gl-parameter-ref viewport)))
+       body ...
+       (gl-parameter-set! blend-mode  prev-blend-mode)
+       (gl-parameter-set! depth-test? prev-depth-test?)
+       (gl-parameter-set! texture     prev-texture)
+       (gl-parameter-set! shader      prev-shader)
+       (gl-parameter-set! mesh        prev-mesh)
+       (gl-parameter-set! framebuffer prev-framebuffer)
+       (gl-parameter-set! viewport    prev-viewport)))))
