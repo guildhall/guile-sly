@@ -56,6 +56,7 @@ SOURCES = 					\
   sly/render/tileset.scm			\
   sly/render/tile-map.scm			\
   sly/render/context.scm			\
+  sly/render/scene.scm				\
   $(WRAPPER_SOURCES)
 
 WRAPPER_SOURCES =				\

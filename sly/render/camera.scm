@@ -32,10 +32,15 @@
   #:use-module (sly render color)
   #:use-module (sly math rect)
   #:use-module (sly math transform)
-  #:export (make-viewport viewport?
-            viewport-area viewport-clear-color viewport-clear-flags
-            %standard-clear-flags apply-viewport
+  #:export (make-viewport
+            viewport?
+            viewport-area
+            viewport-clear-color
+            viewport-clear-flags
             null-viewport
+            %standard-clear-flags
+            apply-viewport
+            clear-viewport
             make-camera camera?
             camera-location camera-projection camera-viewport
             orthographic-camera))
@@ -86,7 +91,10 @@ area, set the clear color, and clear necessary buffers."
      (gl-scissor x y width height)))
   (match (viewport-clear-color viewport)
     (($ <color> r g b a)
-     (gl-clear-color r g b a)))
+     (gl-clear-color r g b a))))
+
+(define (clear-viewport viewport)
+  "Clear the relevant OpenGL buffers VIEWPORT."
   (gl-clear (clear-buffer-mask (viewport-clear-flags viewport))))
 
 ;;;

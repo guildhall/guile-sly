@@ -44,7 +44,7 @@
             model? model-null?
             null-model
             model-mesh model-transform model-texture model-shader model-color
-            model-blend-mode model-depth-test? model-children
+            model-blend-mode model-depth-test? model-sub-scene model-children
             draw-model
             model-paint
             model-blend
@@ -56,7 +56,7 @@
 ;; Representation of a single OpenGL render call.
 (define-record-type <model>
   (%make-model mesh transform texture shader color blend-mode
-               depth-test? children)
+               depth-test? sub-scene children)
   model?
   (mesh model-mesh)
   (transform model-transform)
@@ -65,18 +65,21 @@
   (color model-color)
   (blend-mode model-blend-mode)
   (depth-test? model-depth-test?)
+  (sub-scene model-sub-scene)
   (children model-children))
 
 (define* (make-model #:optional #:key (mesh null-mesh)
                      (transform identity-transform) (texture null-texture)
                      (shader (load-default-shader)) (color white)
                      (blend-mode default-blend-mode) (depth-test? #t)
-                     (children '()))
+                     sub-scene (children '()))
   "Create a new model from MESH and the given rendering state.  When
 rendering, TEXTURE and SHADER are bound, BLEND-MODE and DEPTH-TEST?
-are set, and the COLOR uniform variable is set."
+are set, and the COLOR uniform variable is set.  The presence of a
+SUB-SCENE indicates that the model uses the scene's framebuffer as
+it's texture, so it must be rendered first."
   (%make-model mesh transform texture shader color blend-mode
-               depth-test? children))
+               depth-test? sub-scene children))
 
 (define model make-model)
 
@@ -131,49 +134,44 @@ changing the fields specified in KWARGS."
     (array-set! matrix 0 3 2)
     (array-set! matrix 1 3 3)))
 
-(define draw-model
-  (let ((context (make-render-context)))
-    (lambda* (model camera #:optional (context context))
-      "Render MODEL by applying its transform (multiplied by VIEW), texture,
+;; Avoid circular dependency.
+(define draw-sub-scene
+  (delay (module-ref (resolve-interface '(sly render scene)) 'draw-scene)))
+
+(define (draw-model model view context)
+  "Render MODEL by applying its transform (multiplied by VIEW), texture,
 shader, vertex array, uniforms, blend mode, etc. to the render
 CONTEXT."
-      (define (iter model view context)
-        (match model
-          ((? model-null? _)
-           *unspecified*)
-          (($ <model> mesh local-transform texture shader color blend-mode
-                      depth-test? children)
-           (with-transform-excursion context
-             (render-context-transform*! context local-transform)
-             (with-transform-excursion context
-              (render-context-transform*! context view)
-              (set-render-context-depth-test?! context depth-test?)
-              (set-render-context-blend-mode! context blend-mode)
-              (set-render-context-shader! context shader)
-              (set-render-context-mesh! context mesh)
-              (set-render-context-texture! context texture)
-              ;; TODO: Support user-defined uniforms.
-              (uniform-set! shader "mvp" (render-context-transform context))
-              (uniform-set! shader "color" color)
-              (uniform-set! shader "use_texture" (not (texture-null? texture)))
-              (glDrawElements (begin-mode triangles)
-                              (mesh-length mesh)
-                              (data-type unsigned-int)
-                              %null-pointer))
-             (for-each (lambda (child)
-                         (iter child view context))
-                       children)))))
+  (match model
+    ((? model-null? _)
+     *unspecified*)
+    (($ <model> mesh local-transform texture shader color blend-mode
+        depth-test? sub-scene children)
 
-      (with-render-context context
-        (with-transform-excursion context
-          (let ((view (render-context-transform context)))
-            (transform*! view
-                         (camera-location camera)
-                         (camera-projection camera))
-            (with-transform-excursion context
-              (render-context-transform-identity! context)
-              (apply-viewport (camera-viewport camera))
-              (iter model view context))))))))
+     (when sub-scene
+       (with-render-context-excursion context
+         ((force draw-sub-scene) sub-scene context)))
+
+     (with-transform-excursion context
+       (render-context-transform*! context local-transform)
+       (with-transform-excursion context
+         (render-context-transform*! context view)
+         (set-render-context-depth-test?! context depth-test?)
+         (set-render-context-blend-mode! context blend-mode)
+         (set-render-context-shader! context shader)
+         (set-render-context-mesh! context mesh)
+         (set-render-context-texture! context texture)
+         ;; TODO: Support user-defined uniforms.
+         (uniform-set! shader "mvp" (render-context-transform context))
+         (uniform-set! shader "color" color)
+         (uniform-set! shader "use_texture" (not (texture-null? texture)))
+         (glDrawElements (begin-mode triangles)
+                         (mesh-length mesh)
+                         (data-type unsigned-int)
+                         %null-pointer))
+       (for-each (lambda (child)
+                   (draw-model child view context))
+                 children)))))
 
 ;;;
 ;;; Utility Procedures
