@@ -19,39 +19,18 @@
              (sly window)
              (sly utils)
              (sly signal)
-             (sly math transform)
              (sly math vector)
              (sly render camera)
              (sly render model)
              (sly render sprite)
-             (sly render texture)
              (sly render color)
-             (sly render framebuffer)
-             (sly render scene)
-             (sly render context))
+             (sly render scene))
 
 (load "common.scm")
 
-(define s (load-sprite "images/p1_front.png"))
-
-(define bg (load-sprite "images/lava.png"))
-
-(define fb (make-framebuffer 320 240))
-
-(define base-model
-  (model-move (vector2 160 120) s))
-
-(define base-camera
-  (orthographic-camera 320 240))
-
-(define base-scene
-  (scene base-camera base-model fb))
-
 (define model
-  (model-group (model-move (vector2 320 240) bg)
-               (chain (scene->sprite base-scene)
-                 (model-move (vector2 320 240))
-                 (model-scale 2))))
+  (model-move (vector2 320 240)
+              (load-sprite "images/p1_front.png")))
 
 (define camera (orthographic-camera 640 480))
 
