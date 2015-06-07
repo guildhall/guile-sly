@@ -39,6 +39,7 @@
              (sly render font)
              (sly render model)
              (sly render sprite)
+             (sly render scene)
              (sly input keyboard)
              (sly input mouse))
 
@@ -227,19 +228,21 @@
 (define tile-size 32)
 
 (define-signal board-size 8)
+
 (define-signal board-area
-  (signal-map (lambda (size) (make-rect 0 0 size size)) board-size))
+  (signal-let ((size board-size))
+    (make-rect 0 0 size size)))
 
 (define-signal center-position
-  (signal-map (lambda (board-size)
-                (v- (v* 1/2 resolution)
-                    (/ (* board-size tile-size) 2)))
-              board-size))
+  (signal-let ((board-size board-size))
+    (v- (v* 1/2 resolution)
+        (/ (* board-size tile-size) 2))))
 
 (define-signal tile-position
-  (signal-map (lambda (p size center)
-                (vmap floor (v* (v- p center) (/ 1 tile-size))))
-              mouse-position board-size center-position))
+  (signal-let ((p      mouse-position)
+               (size   board-size)
+               (center center-position))
+    (vmap floor (v* (v- p center) (/ 1 tile-size)))))
 
 (define-signal reveal-clicks
   (chain mouse-last-up
@@ -355,40 +358,38 @@
                          null-model))))))
 
 (define-signal board-view
-  (signal-map (lambda (board)
-                (define (draw-column tile x)
-                  (model-move (vector2 (* x tile-size) 0)
-                              (draw-tile tile)))
+  (signal-let ((board board))
+    (define (draw-column tile x)
+      (model-move (vector2 (* x tile-size) 0)
+                  (draw-tile tile)))
 
-                (define (draw-row row y)
-                  (chain (enumerate-map draw-column row)
-                    (list->model)
-                    (model-move (vector2 0 (* y tile-size)))))
+    (define (draw-row row y)
+      (chain (enumerate-map draw-column row)
+        (list->model)
+        (model-move (vector2 0 (* y tile-size)))))
 
-                (list->model (enumerate-map draw-row board)))
-              board))
+    (list->model (enumerate-map draw-row board))))
 
 (define-signal status-message
-  (signal-map (lambda (board)
-                (define (make-message message)
-                  (label font message #:anchor 'center))
+  (signal-let ((board board))
+    (define (make-message message)
+      (label font message #:anchor 'center))
 
-                (model-move
-                 (vector2 (/ (vx resolution) 2) (- (vy resolution) 64))
-                 (list->model
-                  (cond
-                   ((board-lose? board)
-                    (list (make-message "GAME OVER - Press N to play again")))
-                   ((board-win? board)
-                    (list (make-message "YOU WIN! - Press N to play again")))
-                   (else '())))))
-              board))
+    (model-move
+     (vector2 (/ (vx resolution) 2) (- (vy resolution) 64))
+     (list->model
+      (cond
+       ((board-lose? board)
+        (list (make-message "GAME OVER - Press N to play again")))
+       ((board-win? board)
+        (list (make-message "YOU WIN! - Press N to play again")))
+       (else '()))))))
 
-(define-signal scene
-  (signal-map (lambda (board-view status center-position)
-                (model-group status
-                             (model-move center-position board-view)))
-              board-view status-message center-position))
+(define-signal model
+  (signal-let ((view   board-view)
+               (status status-message)
+               (center center-position))
+    (model-group status (model-move center view))))
 
 (define camera
   (orthographic-camera
@@ -396,8 +397,8 @@
    #:viewport (make-viewport (make-rect (vector2 0 0) resolution)
                              #:clear-color tango-dark-plum)))
 
-(define (draw-scene dt alpha)
-  (draw-model (signal-ref scene) camera))
+(define-signal scene
+  (signal-map (lambda (model) (make-scene camera model)) model))
 
 ;;;
 ;;; Initialization
@@ -406,10 +407,9 @@
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
-(add-hook! draw-hook (trampoline draw-scene))
 
 (with-window (make-window #:title "Mines" #:resolution resolution)
-  (start-game-loop))
+  (start-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile mines.scm"

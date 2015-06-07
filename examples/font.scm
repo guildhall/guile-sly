@@ -24,7 +24,7 @@
              (sly render color)
              (sly render font)
              (sly render model)
-             (sly render model)
+             (sly render scene)
              (sly input mouse))
 
 (load "common.scm")
@@ -39,26 +39,25 @@
                      #:anchor 'center)))
 
 (define-signal fps-label
-  (signal-map (lambda (fps)
-                (let ((text (format #f "FPS: ~d" fps)))
-                  (model-move (vector2 0 480) (label font text))))
-              fps))
+  (signal-let ((fps fps))
+    (let ((text (format #f "FPS: ~d" fps)))
+      (model-move (vector2 0 480) (label font text)))))
 
 (define-signal mouse-label
-  (signal-map (lambda (p)
-                (let ((text (format #f "Mouse: (~d, ~d)" (vx p) (vy p))))
-                  (model-move (vector2 0 460) (label font text))))
-              (signal-throttle 5 mouse-position)))
+  (signal-let ((pos (signal-throttle 5 mouse-position)))
+    (let ((text (format #f "Mouse: (~d, ~d)" (vx pos) (vy pos))))
+      (model-move (vector2 0 460) (label font text)))))
 
-(define-signal scene
+(define-signal model
   (signal-map model-group message-label fps-label mouse-label))
 
 (define camera (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
+(define-signal scene
+  (signal-map (lambda (model) (make-scene camera model)) model))
 
 (with-window (make-window #:title "Fonts")
-  (start-game-loop))
+  (start-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile font.scm"

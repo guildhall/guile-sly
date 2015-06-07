@@ -38,6 +38,7 @@
              (sly render context)
              (sly render font)
              (sly render model)
+             (sly render scene)
              (sly render sprite)
              (sly render texture)
              (sly input keyboard)
@@ -401,20 +402,18 @@
                            (tween vlerp ease-linear from to duration)))
          (color-tween (tween color-lerp ease-linear
                              transparent text-color-1 duration))
-         (score (signal-drop-repeats score))
          (header (label score-header-font text #:anchor 'top-center)))
-    (signal-map (lambda (score timer)
-                  (let ((score (label score-font (number->string score)
-                                      #:anchor 'center)))
-                    (model-move (vector2 x (- window-height 28))
-                                (model-group
-                                 (model-paint text-color-1 header)
-                                 (chain score
-                                   (model-paint (color-tween timer))
-                                   (model-move (position-tween timer)))))))
-                score
-                (signal-drop (lambda (t) (> t duration))
-                             0 (signal-since 1 score)))))
+    (signal-let* ((score (signal-drop-repeats score))
+                  (timer (signal-drop (lambda (t) (> t duration))
+                                      0 (signal-since 1 score))))
+      (let ((score (label score-font (number->string score)
+                          #:anchor 'center)))
+        (model-move (vector2 x (- window-height 28))
+                    (model-group
+                     (model-paint text-color-1 header)
+                     (chain score
+                       (model-paint (color-tween timer))
+                       (model-move (position-tween timer)))))))))
 
 (define-signal score
   (score-label "SCORE" (signal-map 2048-score 2048-state) (/ board-width 4)))
@@ -423,19 +422,20 @@
   (score-label "BEST" (signal-map 2048-best-score 2048-state)
                (- board-width (/ board-width 4))))
 
-(define-signal 2048-scene
+(define-signal 2048-model
   (signal-map (cut model-move center-pos <>)
               (signal-map model-group
                           instructions tiles score best-score status-message)))
 
 (define camera
-  (orthographic-camera window-width window-height
-                       #:viewport (make-viewport (make-rect 0 0 640 480)
-                                                 #:clear-color background)))
+  (let ((viewport (make-viewport (make-rect 0 0 640 480)
+                                 #:clear-color background)))
+    (orthographic-camera window-width window-height
+                         #:viewport viewport)))
 
-(define (draw-2048 dt alpha)
-  (signal-let ((scene 2048-scene))
-    (draw-model scene camera)))
+(define-signal 2048-scene
+  (signal-let ((model 2048-model))
+    (make-scene camera model)))
 
 ;;;
 ;;; Initialization
@@ -444,10 +444,9 @@
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)
-(add-hook! draw-hook (trampoline draw-2048))
 
 (with-window (make-window #:title "2048")
-  (start-game-loop))
+  (start-game-loop 2048-scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile 2048.scm"

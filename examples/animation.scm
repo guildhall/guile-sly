@@ -24,7 +24,8 @@
              (sly render camera)
              (sly render model)
              (sly render sprite)
-             (sly render tileset))
+             (sly render tileset)
+             (sly render scene))
 
 (load "common.scm")
 
@@ -45,18 +46,16 @@
     (tween (compose floor lerp) (compose ease-linear ease-loop)
            0 frame-count (* frame-count frame-rate))))
 
-(define-signal scene
-  (signal-map (lambda (time)
-                (model-move (position-tween time)
-                            (vector-ref walk-cycle (frame-tween time))))
-              (signal-timer)))
-
 (define camera (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
+(define-signal scene
+  (signal-let ((time (signal-timer)))
+    (let* ((frame (vector-ref walk-cycle (frame-tween time)))
+           (model (model-move (position-tween time) frame)))
+      (make-scene camera model))))
 
 (with-window (make-window #:title "Animation")
-  (start-game-loop))
+  (start-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile animation.scm"

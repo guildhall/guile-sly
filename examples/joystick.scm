@@ -30,7 +30,8 @@
              (sly render model)
              (sly render sprite)
              (sly render texture)
-             (sly render font))
+             (sly render font)
+             (sly render scene))
 
 (load "common.scm")
 
@@ -63,14 +64,15 @@
                (button-caption-signal "This is the other caption" 2)
                (button-caption-signal "This is the other other caption" 3))))
 
-(define-signal scene
+(define-signal model
   (signal-map (lambda (position caption)
                 (model-move position (model-group player caption)))
               player-position caption))
 
 (define camera (orthographic-camera (vx resolution) (vy resolution)))
 
-(add-hook! draw-hook (lambda _ (draw-model (signal-ref scene) camera)))
+(define-signal scene
+  (signal-map (lambda (model) (make-scene camera model)) model))
 
 (add-hook! joystick-axis-hook
            (lambda (which axis value)
@@ -89,7 +91,7 @@
 
 (with-window (make-window #:title "Joystick test"
                           #:resolution resolution)
-             (start-game-loop))
+             (start-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile joystick.scm"

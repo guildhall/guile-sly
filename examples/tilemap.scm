@@ -33,6 +33,7 @@
              (sly render texture)
              (sly render tileset)
              (sly render tile-map)
+             (sly render scene)
              (sly math vector)
              (sly math tween)
              (sly input keyboard))
@@ -89,20 +90,19 @@
      (193 225 225 226 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65)
      (225 225 176 242 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65))))
 
-(define scene
-  (chain (compile-tile-layer map-tiles 32 32)
-    (list->model)
-    (model-move (v- (vector2 320 240)
-                    (v* (vector2 tile-width tile-height)
-                        (vector2 10 15/2))))))
+(define model
+  (model-move (v- (vector2 320 240)
+                  (v* (vector2 tile-width tile-height)
+                      (vector2 10 15/2)))
+              (list->model (compile-tile-layer map-tiles 32 32))))
 
 (define camera
   (orthographic-camera 640 480))
 
-(add-hook! draw-hook (lambda _ (draw-model scene camera)))
+(define-signal scene (make-scene camera model))
 
 (with-window (make-window #:title "Tilemap")
-  (start-game-loop))
+  (start-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile tilemap.scm"
