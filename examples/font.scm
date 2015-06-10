@@ -57,7 +57,7 @@
   (signal-map (lambda (model) (make-scene camera model)) model))
 
 (with-window (make-window #:title "Fonts")
-  (start-game-loop scene))
+  (run-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile font.scm"

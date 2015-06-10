@@ -409,7 +409,7 @@
 (add-hook! window-close-hook stop-game-loop)
 
 (with-window (make-window #:title "Mines" #:resolution resolution)
-  (start-game-loop scene))
+  (run-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile mines.scm"

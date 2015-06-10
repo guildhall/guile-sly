@@ -104,7 +104,7 @@ This hook is run every time the game loop catches an error.
 Procedures added to this hook should accept no arguments.
 @end defvr
 
-@deffn {Scheme Procedure} start-game-loop [@var{#:frame-rate}] [@var{#:tick-rate}] [@var{#:max-ticks-per-frame}]
+@deffn {Scheme Procedure} run-game-loop [@var{#:frame-rate}] [@var{#:tick-rate}] [@var{#:max-ticks-per-frame}]
 Start the game loop.  @code{frame-rate} specifies the optimal number
 of frames to draw per second.  @code{tick-rate} specifies the optimal
 game logic updates per second.  Both @code{frame-rate} and

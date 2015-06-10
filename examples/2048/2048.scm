@@ -446,7 +446,7 @@
 (add-hook! window-close-hook stop-game-loop)
 
 (with-window (make-window #:title "2048")
-  (start-game-loop 2048-scene))
+  (run-game-loop 2048-scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../../pre-inst-env guile 2048.scm"

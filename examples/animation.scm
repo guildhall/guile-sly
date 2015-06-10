@@ -55,7 +55,7 @@
       (make-scene camera model))))
 
 (with-window (make-window #:title "Animation")
-  (start-game-loop scene))
+  (run-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile animation.scm"

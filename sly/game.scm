@@ -38,7 +38,7 @@
   #:use-module (sly render scene)
   #:export (draw-hook
             after-game-loop-error-hook
-            start-game-loop
+            run-game-loop
             stop-game-loop))
 
 ;;;
@@ -62,7 +62,7 @@ for the given STACK and error KEY with additional arguments ARGS."
     (apply display-error (stack-ref stack 0) cep args)
     (newline cep)))
 
-(define* (start-game-loop scene #:key
+(define* (run-game-loop scene #:key
                           (frame-rate 60)
                           (tick-rate 60)
                           (max-ticks-per-frame 4))

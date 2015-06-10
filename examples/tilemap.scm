@@ -102,7 +102,7 @@
 (define-signal scene (make-scene camera model))
 
 (with-window (make-window #:title "Tilemap")
-  (start-game-loop scene))
+  (run-game-loop scene))
 
 ;;; Local Variables:
 ;;; compile-command: "../pre-inst-env guile tilemap.scm"
