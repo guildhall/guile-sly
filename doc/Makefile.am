@@ -10,3 +10,5 @@ sly_TEXINFOS =					\
   api/input.texi				\
   api/rendering.texi				\
   api/utils.texi
+
+dvi: # Don't build dvi docs

@@ -24,7 +24,7 @@ SOURCES = 					\
   sly/utils.scm					\
   sly/agenda.scm 				\
   sly/audio.scm					\
-  sly/config.scm					\
+  sly/config.scm				\
   sly/coroutine.scm				\
   sly/event.scm					\
   sly/fps.scm					\
@@ -40,8 +40,8 @@ SOURCES = 					\
   sly/math/tween.scm				\
   sly/math/vector.scm				\
   sly/repl.scm					\
-  sly/signal.scm					\
-  sly/window.scm					\
+  sly/signal.scm				\
+  sly/window.scm				\
   sly/render/utils.scm				\
   sly/render/color.scm				\
   sly/render/camera.scm				\
@@ -65,10 +65,9 @@ WRAPPER_SOURCES =				\
   sly/wrappers/gsl.scm				\
   sly/wrappers/util.scm
 
-sly/config.scm: Makefile
-	sed -e "s|@pkgdatadir\@|$(pkgdatadir)|" $@.in > $@
-
-EXTRA_DIST += env.in
+EXTRA_DIST += 					\
+  pre-inst-env.in				\
+  sandbox.in
 
 SUBDIRS =					\
 	data					\
