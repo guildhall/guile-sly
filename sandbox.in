@@ -1,5 +1,4 @@
-#!@GUILE@ \
--L . -s
+#!@GUILE@ --no-auto-compile
 !#
 
 ;;; Sly
@@ -33,6 +32,7 @@
              (sly render texture)
              (sly render model)
              (sly render camera)
+             (sly render scene)
              (sly input keyboard)
              (sly input mouse)
              (sly math rect)
@@ -46,23 +46,22 @@
 
 (display "Welcome to the Sly sandbox.  Happy hacking!\n")
 
-(define-signal scene null-model)
+(define-signal model null-model)
 
 (define-signal camera
   (orthographic-camera 640 480))
 
-(define (draw-scene dt alpha)
-  (signal-let ((scene scene)
-               (camera camera))
-    (draw-model scene camera)))
-
-(add-hook! draw-hook (trampoline draw-scene))
+(define-signal scene
+  (signal-let ((camera camera)
+               (model model))
+    (make-scene camera model)))
 
 (with-window (make-window #:title "Sly Sandbox")
-  (run-game-loop))
+  (run-game-loop scene))
 
 (display "Bye!\n")
 
 ;;; Local Variables:
 ;;; compile-command: "./pre-inst-env sandbox"
+;;; mode: scheme
 ;;; End:
