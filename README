@@ -29,21 +29,27 @@ Sly differentiates itself from most other game engines by encouraging
 
   #+BEGIN_SRC scheme
     (use-modules (sly game)
+                 (sly signal)
                  (sly window)
                  (sly math vector)
                  (sly render camera)
                  (sly render model)
-                 (sly render sprite))
+                 (sly render sprite)
+                 (sly render scene))
 
-    (define scene
+    ;; The object to render.
+    (define model
       (model-move (vector2 320 240) (load-sprite "gnu.png")))
 
+    ;; The way we see the world.
     (define camera (orthographic-camera 640 480))
 
-    (add-hook! draw-hook (lambda _ (draw-model scene camera)))
+    ;; View the model from the perspective of the camera.
+    (define-signal scene
+      (make-scene camera model))
 
     (with-window (make-window #:title "Hello, world!")
-      (start-game-loop))
+      (run-game-loop scene))
   #+END_SRC
 
 * Features
@@ -60,14 +66,14 @@ Sly differentiates itself from most other game engines by encouraging
    updates. Additionally, a fixed timestep allows for a deterministic
    simulation, unlike a variable timestep.
 
-   To start up the game loop, simply call =(start-game-loop)=. It's a
+   To start up the game loop, simply call =(run-game-loop)=. It's a
    good idea to set up the game window prior to starting the loop via
    the =with-window= form.
 
    #+BEGIN_SRC scheme
      (with-window (make-window #:title "Best Game Ever"
                                #:resolution #(640 480))
-       (start-game-loop))
+       (run-game-loop))
    #+END_SRC
 
 ** Functional Reactive Programming
@@ -200,6 +206,10 @@ Sly differentiates itself from most other game engines by encouraging
   - SDL 1.2
   - FreeImage >= 3.0
   - GNU Scientific Library (GSL)
+
+* Releases
+
+  Releases can be found on Sly's [[http://dthompson.us/pages/software/sly.html][home page]].
 
 * Community
 
