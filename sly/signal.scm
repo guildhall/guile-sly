@@ -183,10 +183,14 @@ be coerced into one."
       ((_ name value)
        #'(define name (make-signal-maybe value))))))
 
+;; emacs: (put 'signal-let 'scheme-indent-function 1)
+
 (define-syntax-rule (signal-let ((var signal) ...) body ...)
   "Similar to 'let', but produces a signal whose value is dependent
 upon all signals in the bindings list."
   (signal-map (lambda (var ...) body ...) signal ...))
+
+;; emacs: (put 'signal-let* 'scheme-indent-function 1)
 
 (define-syntax-rule (signal-let* ((var signal) ...) body ...)
   "Similar to 'signal-let', but the signal variable bindings are
