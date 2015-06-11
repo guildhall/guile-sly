@@ -23,6 +23,7 @@ nobase_dist_examples_DATA =			\
 	joystick.scm				\
 	simple.scm				\
 	tilemap.scm				\
+	life.scm				\
 	mines/mines.scm				\
 	images/bullet.png			\
 	images/p1_front.png			\
