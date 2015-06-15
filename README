@@ -28,14 +28,10 @@ Sly differentiates itself from most other game engines by encouraging
   Here is the simplest Sly application (so far).
 
   #+BEGIN_SRC scheme
-    (use-modules (sly game)
-                 (sly signal)
-                 (sly window)
-                 (sly math vector)
-                 (sly render camera)
-                 (sly render model)
-                 (sly render sprite)
-                 (sly render scene))
+    (use-modules (sly))
+
+    ;; Create OpenGL context and do other setup.
+    (sly-init)
 
     ;; The object to render.
     (define model

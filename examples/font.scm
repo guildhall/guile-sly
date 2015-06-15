@@ -29,8 +29,6 @@
 
 (load "common.scm")
 
-(enable-fonts)
-
 (define font (load-default-font 18))
 
 (define-signal message-label

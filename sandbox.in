@@ -2,7 +2,7 @@
 !#
 
 ;;; Sly
-;;; Copyright (C) 2014 David Thompson <dthompson2@worcester.edu>
+;;; Copyright (C) 2015 David Thompson <davet@gnu.org>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License as
@@ -18,28 +18,9 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-;; Include almost every Sly module for convenience.
-(use-modules (sly audio)
-             (sly fps)
-             (sly game)
-             (sly signal)
-             (sly window)
-             (sly repl)
-             (sly utils)
-             (sly render color)
-             (sly render font)
-             (sly render sprite)
-             (sly render texture)
-             (sly render model)
-             (sly render camera)
-             (sly render scene)
-             (sly input keyboard)
-             (sly input mouse)
-             (sly math rect)
-             (sly math transform)
-             (sly math vector))
+(use-modules (sly))
 
-(open-window)
+(sly-init)
 (start-sly-repl)
 
 (add-hook! window-close-hook stop-game-loop)

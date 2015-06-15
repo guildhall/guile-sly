@@ -15,15 +15,10 @@
 ;;; along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(use-modules (sly agenda)
-             (sly fps)
-             (sly game)
-             (sly input keyboard)
-             (sly repl)
-             (sly signal)
-             (sly window))
+(use-modules (sly)
+             (sly fps))
 
-(open-window)
+(sly-init)
 
 (add-hook! key-press-hook (lambda (key unicode)
                             (when (eq? key 'escape)
